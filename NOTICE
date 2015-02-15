@@ -1,0 +1,14 @@
+FTLDB
+Copyright 2014-2015 Victor Osolovskiy, Sergey Navrotskiy
+
+This product release archive includes FreeMarker Java library (freemarker.jar)
+that is developed by Attila Szegedi, Daniel Dekany, Jonathan Revusky
+(http://freemarker.org) and licensed under the Apache License, Version 2.0.
+
+FreeMarker (freemarker.jar) includes a number of files that are licensed by
+the Apache Software Foundation under the Apache License, Version 2.0.
+These files are:
+    freemarker/ext/jsp/web-app_2_2.dtd
+    freemarker/ext/jsp/web-app_2_3.dtd
+    freemarker/ext/jsp/web-jsptaglibrary_1_1.dtd
+    freemarker/ext/jsp/web-jsptaglibrary_1_2.dtd

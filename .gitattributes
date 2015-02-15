@@ -1,0 +1,7 @@
+# These files should be normalized to the specified EOL 
+*.bat eol=crlf
+*.sh  eol=lf
+
+# These files are binary and should be left untouched
+# (binary is a macro for -text -diff)
+*.png binary
