@@ -3,9 +3,9 @@ FTLDB
 
 <img src="https://raw.github.com/ftldb/ftldb/master/logo.png" align="right" width="250px" />
 
-Embedding of [FreeMarker](http://freemarker.org) Java template engine into
-[Oracle Database](http://oracle.com/database/index.html) for easier server-side
-code generation.
+An embedment of the [FreeMarker](http://freemarker.org) Java template engine
+within [Oracle Database](http://oracle.com/database/index.html) for easier
+server-side code generation.
 
 Allows you to create, store and execute templates written in FTL inside a
 database. You can generate any kind of SQL/DML/DDL statements or stored program
