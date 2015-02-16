@@ -4,7 +4,7 @@ FTLDB
 <img src="https://raw.github.com/ftldb/ftldb/master/logo.png" align="right" width="250px" />
 
 An integration of [FreeMarker](http://freemarker.org) Java template engine
-into [Oracle Database](http://oracle.com/database/index.html) for an easier
+into [Oracle Database](http://oracle.com/database/index.html) for easier
 server-side code generation.
 
 Allows you to create, store and execute templates written in FTL inside a
