@@ -155,8 +155,7 @@ begin
     ')' || chr(10) ||
     'partition by list(shop_id) (';
 
-  for r in cur_partitions
-  loop
+  for r in cur_partitions loop
     l_scr := l_scr ||
       case when cur_partitions%rowcount > 1 then ',' end || chr(10) ||
       '  partition ' || r.name || ' values (' || r.vals || ')';
@@ -251,15 +250,25 @@ end;
 
 #### Client-side FTLDB
 
-Content of the `orders.ftl` file (still needs the `get_partitions` function from
-the previous `generator` package):
+Content of the `orders.ftl` file:
 ```sql
-<#import "sql.ftl" as sql/>
-<#assign void = set_default_connection(new_connection(
-  "jdbc:oracle:thin:@//localhost:1521/orcl",
-  "scott", "tiger"
-))/>
-<#assign partitions = sql.fetch('generator.get_partitions')/>
+<#assign
+  conn = new_connection(
+    "jdbc:oracle:thin:@//localhost:1521/orcl",
+    "scott", "tiger"
+  )
+/>
+
+<#assign
+  partitions = conn.query(
+    "select " +
+      "t.region name, " + 
+      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " + 
+    "from shops t " + 
+    "group by t.region " + 
+    "order by t.region"
+  )
+/>
 
 create table orders (
   order_id integer not null primary key,
@@ -278,7 +287,7 @@ partition by list(shop_id) (
 comment on table orders is 'Orders partitioned by region.'
 /
 
-<#assign void = default_connection().close()/>
+<#assign void = conn.close()/>
 ```
 
 The table creation OS-shell script:
@@ -398,7 +407,7 @@ from the `setup` directory.
 Security
 --------
 
-The FTLDB user doesn't have any privilege, except quota for the default
+The FTLDB user doesn't have any system privilege, except quota for the default
 permanent tablespace, which is needed only to load classes via the `loadjava`
 utility. All the objects in the FTLDB schema are executed with invoker rights
 and execution privileges on them are granted to `PUBLIC`.
