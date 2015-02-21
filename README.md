@@ -432,8 +432,8 @@ server-side usage examples. Check the `ut_ftldb_api$process.prc` file, which is
 probably the most interesting for you.
 
 The demo scripts are not installed automatically. You should run them manually
-step by step. Explore the `plsql/demo` directory. Each demo contains its own
-`install.sql` or `readme` file. Follow the instructions inside.
+step by step. Explore the `demo` directory. Each demo contains its own `readme`
+or `install.sql` file. Follow the instructions inside.
 
 The installation process is very similar to the previous one. Run the main
 installation script from the base directory with the following six parameters:

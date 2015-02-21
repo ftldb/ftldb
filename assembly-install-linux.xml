@@ -32,15 +32,19 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${sqlSourceDirectory}</directory>
+            <directory>src/main/plsql</directory>
+            <outputDirectory>plsql</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/ftl</directory>
+            <outputDirectory>ftl</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/scripts</directory>
             <outputDirectory>/</outputDirectory>
             <excludes>
                 <exclude>*.bat</exclude>
             </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>${ftlSourceDirectory}</directory>
-            <outputDirectory>ftl</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

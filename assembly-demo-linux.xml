@@ -32,7 +32,15 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${sqlTestDirectory}</directory>
+            <directory>src/test/plsql</directory>
+            <outputDirectory>plsql</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/demo/plsql</directory>
+            <outputDirectory>demo</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/test/scripts</directory>
             <outputDirectory>/</outputDirectory>
             <excludes>
                 <exclude>*.bat</exclude>

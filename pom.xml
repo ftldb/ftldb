@@ -11,9 +11,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sqlSourceDirectory>${project.basedir}/src/main/sql</sqlSourceDirectory>
-        <ftlSourceDirectory>${project.basedir}/src/main/ftl</ftlSourceDirectory>
-        <sqlTestDirectory>${project.basedir}/src/test/sql</sqlTestDirectory>
     </properties>
 
     <name>FTLDB</name>
@@ -85,7 +82,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
-                    <workingDirectory>src/test/scripts</workingDirectory>
+                    <workingDirectory>src/test/ftl</workingDirectory>
                     <!--skipTests>true</skipTests-->
                 </configuration>
             </plugin>
@@ -134,7 +131,7 @@
                         <exclude>src/main/resources/**</exclude>
                         <exclude>**/*.policy</exclude>
                         <!-- TODO -->
-                        <exclude>src/test/sql/plsql/demo/**</exclude>
+                        <exclude>src/demo/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -186,7 +183,7 @@
                     <applicationTitle>${project.name}</applicationTitle>
                     <fileSets>
                         <fileSet>
-                            <directory>src/main/sql/plsql</directory>
+                            <directory>src/main/plsql</directory>
                             <includes>
                                 <include>**/*.pck</include>
                                 <include>**/*.pks</include>
