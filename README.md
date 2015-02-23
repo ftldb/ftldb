@@ -65,6 +65,11 @@ The code generation problem may be solved in two ways:
 the code generation problem in the second way with a simple template language
 called FTL.
 
+It should be noted that not only [FreeMarker](http://freemarker.org). At first
+we tried [Velocity](http://velocity.apache.org) and we will succeed. But then,
+for a set, try [FreeMarker](http://freemarker.org). In our opinion, the second
+was better.
+
 FTLDB is an enhancement of FreeMarker for working with databases via JDBC. It
 provides FTL methods for retrieving data from database queries and calls. It
 also provides extra PL/SQL functionality for working in Oracle Database.
@@ -82,16 +87,18 @@ In the client-side mode templates are stored in files on a client, e.g.
 developer's computer. FTLDB runs on the local JVM, reads templates, connects to
 a database, reads data from it, processes the templates and saves the result
 into an output file, which can be run later with a database utility such as
-`sqlplus`. Thus, you need not only a database, but also a JRE, a JDBC driver and
-a database utility installed on the client.
+[`SQL*Plus`](http://en.wikipedia.org/wiki/SQL*Plus). Thus, you need not only
+a database, but also a JRE, a JDBC driver and a database utility installed on
+the client.
 
 The server-side mode looks more integral, since it allows to store templates,
 metadata and the resulting objects together and doesn't require extra machine
 and software.
 
 However, the client-side mode is more universal, since it works with any RDBMS
-not having an embedded JVM but providing a JDBC driver.
-
+not having an embedded JVM but providing a JDBC driver. For example we using
+the client-side mode to aggregate and generate a single SQL*Plus script for a
+product installation from a set of many files.
 
 Compatibility
 -------------
