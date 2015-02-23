@@ -37,7 +37,7 @@ prompt SQL*Plus script started.
 
 @setup/grant_java_permissions public
 
-@setup/create_plsql_objects &&user. public 
+@setup/create_plsql_objects &&user. public
 
 prompt SQL*Plus script finished.
 

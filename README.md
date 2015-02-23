@@ -3,9 +3,9 @@ FTLDB
 
 <img src="https://raw.github.com/ftldb/ftldb/master/logo.png" align="right" width="250px" />
 
-An integration of the [FreeMarker](http://freemarker.org) Java template engine
-into [Oracle Database](http://oracle.com/database/index.html) for easier
-server-side code generation.
+An integration of the [FreeMarker](http://freemarker.org) template engine into
+[Oracle Database](http://oracle.com/database/index.html) for easier server-side
+code generation.
 
 Allows you to create, store and execute templates written in FTL inside a
 database. You can generate any kind of SQL/DML/DDL statements or stored program
@@ -46,10 +46,10 @@ This need may be caused by working with a priori unknown conditions or
 environment, e.g. when you construct an SQL query based on user filters and
 grouping columns selection, or when you adapt your application for working on
 databases of different vendors, versions and editions. Another reason is
-following the [DRY principle](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself),
-e.g. when you work with a finite set of similar data structures, to which a common
-processing algorithm is applied, and you are able to implement one template and
-generate many slightly different procedures from it.
+following the [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
+principle, e.g. when you work with a finite set of similar data structures, to
+which a common processing algorithm is applied, and you are able to implement
+one template and generate many slightly different procedures from it.
 
 The code generation problem may be solved in two ways:
 
@@ -61,14 +61,14 @@ The code generation problem may be solved in two ways:
      and easily readable from a template, while the *generator* code is
      secondary and takes much less attention.
 
-[FreeMarker](http://freemarker.org) is a template engine that allows to solve
-the code generation problem in the second way with a simple template language
-called FTL.
+[FreeMarker](http://freemarker.org) is a Java-based template engine that allows
+to solve the code generation problem in the second way with a simple template
+language called FTL.
 
-It should be noted that not only [FreeMarker](http://freemarker.org). At first
-we tried [Velocity](http://velocity.apache.org) and we will succeed. But then,
-for a set, try [FreeMarker](http://freemarker.org). In our opinion, the second
-was better.
+> **Notice**: FreeMarker is not the only possible option. We have also tried its
+> closest competitor [Velocity](http://velocity.apache.org) and succeeded, but
+> the project seems frozen and its language is not as convenient as FTL. See an
+> old [feature comparison](http://freemarker.org/fmVsVel.html) for more details.
 
 FTLDB is an enhancement of FreeMarker for working with databases via JDBC. It
 provides FTL methods for retrieving data from database queries and calls. It
@@ -78,27 +78,28 @@ FTLDB may work either as a database application or as an external utility. We
 call it *server-side* and *client-side* mode correspondingly.
 
 In the server-side mode templates are stored inside a database in program unit
-bodies as plain text. FTLDB runs on the embedded JVM, reads templates, retrieves
-data from the database, processes the templates and returns the result as an
-object, which can be saved to a table or run immediately as a script. Thus, you
-need only a database, but necessarily with Java support.
+bodies as plain text. FTLDB runs on the embedded JVM, reads templates and
+complementary data from the database, processes the templates and returns the
+result as an object, which can be saved to a table or run immediately as a
+script. Thus, you need only a database, but necessarily with Java support.
 
 In the client-side mode templates are stored in files on a client, e.g.
 developer's computer. FTLDB runs on the local JVM, reads templates, connects to
-a database, reads data from it, processes the templates and saves the result
-into an output file, which can be run later with a database utility such as
-[`SQL*Plus`](http://en.wikipedia.org/wiki/SQL*Plus). Thus, you need not only
-a database, but also a JRE, a JDBC driver and a database utility installed on
-the client.
+a database, reads complementary data from it, processes the templates and saves
+the result into an output file, which can be run later with a database utility
+such as [SQL*Plus](http://en.wikipedia.org/wiki/SQL*Plus). Thus, you need not
+only a database but also a JRE, a JDBC driver and a database utility installed
+on the client.
 
 The server-side mode looks more integral, since it allows to store templates,
 metadata and the resulting objects together and doesn't require extra machine
 and software.
 
-However, the client-side mode is more universal, since it works with any RDBMS
-not having an embedded JVM but providing a JDBC driver. For example we using
-the client-side mode to aggregate and generate a single SQL*Plus script for a
-product installation from a set of many files.
+However, the client-side mode is more universal, since it works with almost any
+RDBMS and provides a command line launcher for FreeMarker, which is useful even
+without database features, e.g. for combining multiple files into a single
+installation script.
+
 
 Compatibility
 -------------
@@ -298,10 +299,9 @@ comment on table orders is 'Orders partitioned by region.'
 ```
 
 The table creation OS-shell script:
-```bash
-java -jar ftldb.jar orders.ftl >1 orders.sql
-sqlplus scott/tiger@orcl @orders.sql
-```
+
+    java -jar ftldb.jar orders.ftl >1 orders.sql
+    sqlplus scott/tiger@orcl @orders.sql
 
 The result of all three executions is the `orders` table created and the
 following script printed:
@@ -373,17 +373,20 @@ OS. The archive includes:
   * `ftl` directory
     * the same macros for the client-side work
   * `setup` directory
-    * installation SQL*Plus scripts for creating objects and granting privileges
-  * `install.bat` or `install.sh` - the main installation script (depends on OS)
+    * SQL*Plus scripts for creating objects and granting privileges
+  * `*.bat` or `*.sh` scripts (depends on OS) - installers and deinstallers
 
-The installation script must be run under any database superuser with the DBA
-privilege (e.g. `SYS` or `SYSTEM`). By default FTLDB is installed in your
-database as a standalone schema. You can choose its name and password.
+#### Full access
+
+If you have DBA access to the target database, use the `dba_install` script. It
+must be run under any database superuser with the DBA privilege (e.g. `SYS` or
+`SYSTEM`). It installs FTLDB as a standalone schema with the specified name and
+password and grants all the required privileges.
 
 > **Warning**: If the specified schema already exists, it is dropped and
-> recreated during installation.
+> recreated during the installation.
 
-Run the main installation script from the base directory with the following five
+Run the DBA installation script from the base directory with the following five
 parameters:
 
   1. target instance TNS name
@@ -397,31 +400,67 @@ parameters:
 
 For example, on Windows you would run in the command line:
 
-    install.bat orcl sys manager ftldb ftldb
+    dba_install.bat orcl sys manager ftldb ftldb
 
 On Linux (or another *NIX-like OS):
 
-    ./install.sh orcl sys manager ftldb ftldb
+    ./dba_install.sh orcl sys manager ftldb ftldb
 
-You can change the default behavior and install FTLDB manually using the scripts
-from the `setup` directory.
+#### Restricted access
+
+If you don't have full access to the target database, ask the DBA to create a
+new schema with the following privileges (or grant them to an existing one):
+
+  * `CREATE SESSION`
+  * `CREATE TABLE`
+  * `CREATE PROCEDURE`
+  * `CREATE TYPE`
+  * `QUOTA` on the default tablespace
+
+and run the `setup/grant_java_permissions.sql` script (see description inside).
+
+To install FTLDB run the `usr_install` script with the following three
+parameters:
+
+  1. target instance TNS name
+  2. FTLDB schema name
+  3. FTLDB password 
+
+For example, on Windows you would run in the command line:
+
+    usr_install.bat orcl ftldb ftldb
+
+On Linux (or another *NIX-like OS):
+
+    ./usr_install.sh orcl ftldb ftldb
 
 > **Notice**: It is not recommended to install FTLDB into a schema containing
-> other objects. Instead, install it as a standalone schema (by default) and
-> create local synonyms for the FTLDB objects.
+> other objects. Instead, install it as a standalone schema and create local
+> synonyms for the FTLDB objects.
+
+---
+
+You can change the default behavior and install FTLDB manually using scripts
+from the `setup` directory.
+
+In order to uninstall FTLDB run one of the `*uninstall` scripts corresponding to
+your OS and installation type.
 
 
 Security
 --------
 
-The FTLDB user doesn't have any system privilege, except quota for the default
-permanent tablespace, which is needed only to load classes via the `loadjava`
-utility. All the objects in the FTLDB schema are executed with invoker rights
-and execution privileges on them are granted to `PUBLIC`.
+When installed with the DBA script the FTLDB user is not granted with any system
+privileges, excepting quota for the default permanent tablespace, which is
+needed only to load classes via the `loadjava` utility. All the objects in the
+FTLDB schema are created with the invoker-rights option and execution privileges
+on them are granted to `PUBLIC`. Thus, the FTLDB schema serves only as a
+container for its program units and doesn't provide its users with extra
+privileges.
 
-FreeMarker needs the `getClassLoader` Java runtime permission. By default this
-permission is granted to `PUBLIC`. If you consider this insecure, you may grant
-it only to a strict list of users working with FTLDB by changing the
+FreeMarker requires the `getClassLoader` Java runtime permission. By default
+this permission is granted to `PUBLIC`. If you consider this insecure, you may
+grant it only to a strict list of users working with FTLDB by changing the
 `install.sql` file in the `setup` directory.
 
 

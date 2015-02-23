@@ -29,7 +29,7 @@ define grantee = "&1"
   It's quite safe to grant this permission to PUBLIC, but if you consider it 
   crucial, grant it only to the users who work with FTLDB.
 */
-prompt Grant "getClassLoader" Java Runtime Permission to &&grantee..
+prompt Grant "getClassLoader" Java runtime permission to &&grantee..
 begin
   dbms_java.grant_permission(
     grantee => upper('&&grantee.'),
