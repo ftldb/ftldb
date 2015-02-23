@@ -16,7 +16,7 @@
 
 create or replace package sql_ftl authid current_user as
 /**
- * This package is a PL/SQL container for "sql.ftl" macro library.
+ * This package is a PL/SQL container for the "sql.ftl" macro library.
  * @headcom
  */
 

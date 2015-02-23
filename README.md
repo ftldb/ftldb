@@ -367,11 +367,11 @@ OS. The archive includes:
     * `freemarker.jar` - FreeMarker template engine
     * `ftldb.jar` - own classes for working with database connections, queries,
       callable statements and result sets in FTL (server-side & client-side)
+  * `ftl` directory
+    * FTL macro libraries for basic needs
   * `plsql` directory
     * types and packages providing API for using in PL/SQL
-    * collection of FTL macros for basic needs
-  * `ftl` directory
-    * the same macros for the client-side work
+    * PL/SQL containers for the FTL macro libraries
   * `setup` directory
     * SQL*Plus scripts for creating objects and granting privileges
   * `*.bat` or `*.sh` scripts (depends on OS) - installers and deinstallers
