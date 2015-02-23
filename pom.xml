@@ -185,7 +185,6 @@
                         <fileSet>
                             <directory>src/main/plsql</directory>
                             <includes>
-                                <include>**/*.pck</include>
                                 <include>**/*.pks</include>
                                 <include>**/*.typ</include>
                                 <include>**/*.tps</include>

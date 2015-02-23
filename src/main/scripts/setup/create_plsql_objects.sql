@@ -52,7 +52,7 @@ show errors package source_util
 show errors package body source_util
 
 prompt Create FTLDB_WRAPPER package.
-@plsql/ftldb_wrapper.pck
+@plsql/ftldb_wrapper.pks
 show errors package ftldb_wrapper
 
 prompt Create FTLDB_API package.
@@ -61,13 +61,13 @@ show errors package ftldb_api
 @plsql/ftldb_api.pkb
 show errors package body ftldb_api
 
-prompt Create STANDARD_FTL procedure.
-@plsql/standard_ftl.prc
-show errors procedure standard_ftl
+prompt Create STANDARD_FTL package.
+@plsql/standard_ftl.ftc
+show errors package standard_ftl
 
-prompt Create SQL_FTL procedure.
-@plsql/sql_ftl.prc
-show errors procedure sql_ftl
+prompt Create SQL_FTL package.
+@plsql/sql_ftl.ftc
+show errors package sql_ftl
 
 prompt Check for compilation errors.
 declare
