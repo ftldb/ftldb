@@ -46,10 +46,10 @@ This need may be caused by working with a priori unknown conditions or
 environment, e.g. when you construct an SQL query based on user filters and
 grouping columns selection, or when you adapt your application for working on
 databases of different vendors, versions and editions. Another reason is
-following the DRY principle, e.g. when you work with a finite set of similar
-data structures, to which a common processing algorithm is applied, and you are
-able to implement one template and generate many slightly different procedures
-from it.
+following the [DRY principle](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself),
+e.g. when you work with a finite set of similar data structures, to which a common
+processing algorithm is applied, and you are able to implement one template and
+generate many slightly different procedures from it.
 
 The code generation problem may be solved in two ways:
 
