@@ -498,7 +498,7 @@ finished you can connect to the demo schema and run the demos manually.
 Building the project
 --------------------
 
-In order to make a build by yourself, you need **Maven 3** with the [Oracle JDBC
+In order to make a build by yourself you need **Maven 3** with the [Oracle JDBC
 driver](http://download.oracle.com/otn/utilities_drivers/jdbc/121020/ojdbc7.jar)
 installed manually (the latest version is not necessary but recommended):
 
@@ -507,7 +507,7 @@ installed manually (the latest version is not necessary but recommended):
 Do the following:
 
   1. Download and unpack the source archive or clone from the repository.
-  2. Open the `src/test/scripts/dbconn.config.ftl` file and set valid JDBC
+  2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
   3. Run in the command line from the base project directory:
      `mvn clean package`
