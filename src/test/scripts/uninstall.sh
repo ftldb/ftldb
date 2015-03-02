@@ -15,43 +15,41 @@
 # limitations under the License.
 #
 
-if [ $# -lt 6 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]
+if [ $# -lt 4 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]
 then
   echo Wrong parameters!
-  echo Proper usage: $0 instance_tns_name super_user super_user_pswd ftldb_schema demo_schema demo_pswd
-  echo Example: $0 orcl sys manager ftldb ftldemo ftldemo
+  echo Proper usage: $0 instance_tns_name super_user super_user_pswd demo_schema
+  echo Example: $0 orcl sys manager ftldemo
   exit 1
 fi
 
 instance_tns_name=$1
 super_user=$2
 super_user_pswd=$3
-ftldb_schema=$4
-demo_schema=$5
-demo_pswd=$6
-logfile="$(basename $0 .sh)_${1}_${5}.log"
-sqlfile="$(basename $0 .sh)_${1}_${5}.sql"
+demo_schema=$4
+logfile="$(basename $0 .sh)_${1}_${4}.log"
+sqlfile="$(basename $0 .sh)_${1}_${4}.sql"
 
 exit_if_failed () {
   if [ "$1" -gt 0 ]; then
     echo
     echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    echo !!!!!!!!!! INSTALLATION FAILED !!!!!!!!!!!!
+    echo !!!!!!!!! DEINSTALLATION FAILED !!!!!!!!!!!
     echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     exit 1
   fi
 }
 
 echo -------------------------------------------
-echo ---------- INSTALLING FTLDB DEMO ----------
+echo --------- DEINSTALLING FTLDB DEMO ---------
 echo -------------------------------------------
 echo
 echo Log file: setup/$logfile
 
 echo
-echo Build SQL*Plus installation script.
-java -jar java/ftldb.jar setup/install.ftl \
-  $instance_tns_name $super_user $ftldb_schema $demo_schema \
+echo Build SQL*Plus deinstallation script.
+java -jar java/ftldb.jar setup/uninstall.ftl \
+  $instance_tns_name $super_user $demo_schema \
   1> setup/$sqlfile 2> setup/$logfile
 
 exit_if_failed $?
@@ -60,13 +58,13 @@ echo
 echo SQL file: setup/$sqlfile
 
 echo
-echo Run SQL*Plus installation script.
-sqlplus /nolog @setup/$sqlfile $super_user_pswd $demo_pswd setup/$logfile
+echo Run SQL*Plus deinstallation script.
+sqlplus /nolog @setup/$sqlfile $super_user_pswd setup/$logfile
 
 exit_if_failed $?
 
 echo
 echo -------------------------------------------
-echo --- INSTALLATION COMPLETED SUCCESSFULLY ---
+echo -- DEINSTALLATION COMPLETED SUCCESSFULLY --
 echo -------------------------------------------
 exit 0

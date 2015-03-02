@@ -14,28 +14,20 @@
 -- limitations under the License.
 --
 
-create or replace procedure ut_source_util$extract_sect as
+set serveroutput on size unlimited
+
+prompt Create SHOPS table.
+@shops.sql
+
+prompt Create GENERATOR package.
+@generator.pck
+
+prompt Generate ORDERS table.
 begin
-  null;
-
-$iF Null $thEn
-   <begin>xxx<end>
-
--- %Begin AAA
-     section A
-  --%End aaa
-
-
-  --%begin Bbb
-     section B
-  --%end bbb
-
-
-  --%Begin AAA
-     section A2
-  --%end AAA
-
-$EnD
-
+  dbms_output.put_line('-- PURE PL/SQL OUTPUT --');
+  generator.gen_orders_plsql();
+  
+  dbms_output.put_line('-- FTLDB OUTPUT --');
+  generator.gen_orders_ftldb().show();
 end;
 /

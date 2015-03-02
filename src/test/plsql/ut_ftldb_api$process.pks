@@ -14,11 +14,26 @@
 -- limitations under the License.
 --
 
-create or replace procedure ut_ftldb_api$process as
-begin
-  null;
+create or replace package ut_ftldb_api$process as
 
 $if null $then
+
+
+--%begin args
+  arg_num = ${template_args?size}
+  <#list template_args as arg>
+  arg_${arg_index} = ${arg}
+  </#list>
+--%end args
+
+
+--%begin args_res
+  arg_num = 3
+  arg_0 = x
+  arg_1 = y
+  arg_2 = z
+--%end args_res
+
 
 --%begin java_binds
   <#assign conn = default_connection()>
@@ -382,7 +397,7 @@ column4, column5
   <#assign res = sql.eval("NUMERIC", "utl_raw.big_endian")>
   ${res}
 
-  <#assign res = sql.eval("BOOLEAN", "utl_ident.is_oracle_server")>
+  <#assign res = sql.eval("BOOLEAN", "dbms_db_version.ver_le_9")>
   ${res?c}
 
   <#assign res =
@@ -409,7 +424,7 @@ column4, column5
 
   1
 
-  true
+  false
 
 
   1, 3, 4

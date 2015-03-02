@@ -14,22 +14,16 @@
 -- limitations under the License.
 --
 
-create table ut_ftldb_api$template$tab (
-  templ_name varchar2(50) primary key,
-  templ_body clob
-)
+create table shops (shop_id, name, region) as
+select
+  rownum,
+  'Shop #' || rownum,
+  case mod(rownum, 4)
+    when 0 then 'east'
+    when 1 then 'west'
+    when 2 then 'north'
+    else 'south'
+  end
+from dual
+connect by level <= 15
 /
-
-insert into ut_ftldb_api$template$tab (templ_name, templ_body)
-values (
-  'templ_1',
-  'create or replace view ${tab_name}_cur as' || chr(10) ||
-  'select' || chr(10) ||
-  '  t.*, t.rowid row_id' || chr(10) ||
-  'from ${tab_name}_hist t' || chr(10) ||
-  'where' || chr(10) ||
-  '  t.dt_beg >= sysdate and sysdate < t.dt_end' || chr(10) ||
-  '/'
-);
-
-commit;

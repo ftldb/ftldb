@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-if [ $# -lt 5 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]
+if [ $# -lt 4 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]
 then
   echo Wrong parameters!
   echo Proper usage: $0 instance_tns_name super_user super_user_pswd ftldb_schema
@@ -52,7 +52,7 @@ echo Log file: setup/$logfile
 echo
 echo Run SQL*Plus deinstallation script.
 sqlplus -L $super_user/$super_user_pswd@$instance_tns_name $sys_option \
-  @setup/dba_install $ftldb_schema setup/$logfile
+  @setup/dba_uninstall $ftldb_schema setup/$logfile
 
 exit_if_failed $?
 

@@ -54,5 +54,10 @@ is
 language java name 'ftldb.oracle.DBTemplateProcessor.processBody(java.sql.Clob) return java.sql.Clob';
 
 
+procedure set_arguments(in_templ_args in varchar2_nt)
+is
+language java name 'ftldb.oracle.DBTemplateProcessor.setArguments(java.sql.Array)';
+
+
 end ftldb_wrapper;
 /

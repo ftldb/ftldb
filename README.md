@@ -71,8 +71,8 @@ language called FTL.
 > old [feature comparison](http://freemarker.org/fmVsVel.html) for more details.
 
 FTLDB is an enhancement of FreeMarker for working with databases via JDBC. It
-provides FTL methods for retrieving data from database queries and calls. It
-also provides extra PL/SQL functionality for working in Oracle Database.
+provides FTL methods for retrieving data from a database with queries and calls.
+It also provides extra PL/SQL functionality for working in Oracle Database.
 
 FTLDB may work either as a database application or as an external utility. We
 call it *server-side* and *client-side* mode correspondingly.
@@ -110,10 +110,6 @@ editions except for XE).
 
 The client-side mode suits for any versions of Oracle Database, as well as
 PostgreSQL, MySQL, DB2 and other RDBMSs, which provide a JDBC driver.
-
-The server-side support for PostgreSQL using
-[PL/pgSQL](http://postgresql.org/docs/current/static/plpgsql.html) and
-[PL/Java](http://github.com/tada/pljava) is in plans.
 
 
 Usage comparison
@@ -183,7 +179,10 @@ begin
 
 end gen_orders_plsql;
 
+...
+
 end generator;
+/
 ```
 
 The table creation PL/SQL script:
@@ -191,6 +190,7 @@ The table creation PL/SQL script:
 begin
   generator.gen_orders_plsql();
 end;
+/
 ```
 
 #### Server-side FTLDB
@@ -198,6 +198,8 @@ end;
 A fragment of the `generator` package:
 ```sql
 create or replace package body generator as
+
+...
 
 function get_partitions return sys_refcursor
 is
@@ -247,6 +249,7 @@ begin
 end gen_orders_ftldb;
 
 end generator;
+/
 ```
 
 The table creation PL/SQL script:
@@ -254,6 +257,7 @@ The table creation PL/SQL script:
 begin
   generator.gen_orders_ftldb().exec(true);
 end;
+/
 ```
 
 #### Client-side FTLDB
@@ -299,9 +303,13 @@ comment on table orders is 'Orders partitioned by region.'
 ```
 
 The table creation OS-shell script:
+```
+java -cp ../java/* ftldb.CommandLine orders.ftl 1> orders.sql
+sqlplus scott/tiger@orcl @orders.sql
+```
 
-    java -jar ftldb.jar orders.ftl >1 orders.sql
-    sqlplus scott/tiger@orcl @orders.sql
+> **Notice**: Classpath may differ from the one specified above but must include
+> `ftldb.jar`, `freemarker.jar` and the JDBC driver.
 
 The result of all three executions is the `orders` table created and the
 following script printed:
@@ -402,7 +410,7 @@ For example, on Windows you would run in the command line:
 
     dba_install.bat orcl sys manager ftldb ftldb
 
-On Linux (or another *NIX-like OS):
+On Linux (or another *nix-like OS):
 
     ./dba_install.sh orcl sys manager ftldb ftldb
 
@@ -430,7 +438,7 @@ For example, on Windows you would run in the command line:
 
     usr_install.bat orcl ftldb ftldb
 
-On Linux (or another *NIX-like OS):
+On Linux (or another *nix-like OS):
 
     ./usr_install.sh orcl ftldb ftldb
 
@@ -443,8 +451,8 @@ On Linux (or another *NIX-like OS):
 You can change the default behavior and install FTLDB manually using scripts
 from the `setup` directory.
 
-In order to uninstall FTLDB run one of the `*uninstall` scripts corresponding to
-your OS and installation type.
+In order to uninstall FTLDB run one of the `*_uninstall.*` scripts corresponding
+to your OS and installation type.
 
 
 Security
@@ -470,11 +478,12 @@ Demo
 The demo archive contains the installer of another standalone schema, which
 demonstrates the work of FTLDB with unit tests and several manual scripts.
 
-The installer is itself an example of client-side FTLDB usage (but it doesn't
-access any database). Check the `*.ftl` files in the `setup` directory.
+The installer is itself an example of client-side FTLDB usage (it doesn't access
+any database but demonstrates several script composing techniques). Check the
+`*.ftl` files in the `setup` directory.
 
 The tests are used for the CI purposes and can be useful as a source of
-server-side usage examples. Check the `ut_ftldb_api$process.prc` file, which is
+server-side usage examples. Check the `ut_ftldb_api$process.pks` file, which is
 probably the most interesting for you.
 
 The demo scripts are not installed automatically. You should run them manually
@@ -493,6 +502,9 @@ installation script from the base directory with the following six parameters:
 
 It creates the demo schema and runs the tests. After the installation has
 finished you can connect to the demo schema and run the demos manually.
+
+> **Notice**: Make sure that the target instance has the same TNS name on the
+> server and the client. Otherwise some unit tests won't pass.
 
 
 Building the project

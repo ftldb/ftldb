@@ -1,5 +1,4 @@
-<#--
-
+====
     Copyright 2014-2015 Victor Osolovskiy, Sergey Navrotskiy
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +12,18 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+====
 
--->
--- ${.template_name} START --
-Passed arguments:
-<#list template_args as arg>
-  arg[${arg_index}] = "${arg}"
-</#list>
+Demo from the main README.
 
-Save them to the global context variable "v".
-<#assign void = global_context.set("v", template_args)>
--- ${.template_name} END --
+1. Connect to the demo schema and run `install.sql` from the current directory.
+
+2. Explore the results of execution.
+
+3. Copy the Oracle JDBC driver to the `java` directory (or set proper
+classpath), edit the `orders.ftl` file (set database connection properties) and
+run in the command line:
+
+    java -cp ../../java/* ftldb.CommandLine orders.ftl 1> orders.sql
+
+4. See the `orders.sql` file.

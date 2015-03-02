@@ -16,10 +16,11 @@
 package ftldb.oracle;
 
 
+import ftldb.Configurator;
 import ftldb.TemplateProcessor;
-import oracle.sql.CLOB;
 
 import java.io.Writer;
+import java.sql.Array;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -41,7 +42,7 @@ public class DBTemplateProcessor {
      */
     public static Clob process(String templateName) throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:default:connection");
-        Clob ret = CLOB.createTemporary(connection, true, CLOB.DURATION_SESSION);
+        Clob ret = oracle.sql.CLOB.createTemporary(connection, true, oracle.sql.CLOB.DURATION_SESSION);
         Writer w = ret.setCharacterStream(0);
         TemplateProcessor.process(templateName, w);
         w.close();
@@ -60,11 +61,24 @@ public class DBTemplateProcessor {
      */
     public static Clob processBody(Clob templateBody) throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:default:connection");
-        Clob ret = CLOB.createTemporary(connection, true, CLOB.DURATION_SESSION);
+        Clob ret = oracle.sql.CLOB.createTemporary(connection, true, oracle.sql.CLOB.DURATION_SESSION);
         Writer w = ret.setCharacterStream(0);
         TemplateProcessor.processBody(templateBody.getCharacterStream(), w);
         w.close();
         return ret;
+    }
+
+
+    /**
+     * Adds the specified SQL collection to the configuration as a sequence named {@code template_args}.
+     *
+     * <p>This method is a part of FTLDB API for PL/SQL.
+     *
+     * @param templateArgs the collection of template arguments
+     * @throws Exception if a configuration or database access error occurs
+     */
+    public static void setArguments(Array templateArgs) throws Exception {
+        Configurator.getConfiguration().setSharedVariable("template_args", (String[]) templateArgs.getArray());
     }
 
 }

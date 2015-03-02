@@ -7,14 +7,14 @@
 
     <groupId>ftldb</groupId>
     <artifactId>ftldb</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <name>FTLDB</name>
-    <description>FTLDB is an integration of FreeMarker Java template engine into Oracle Database.</description>
+    <description>FTLDB is an integration of the FreeMarker template engine into Oracle Database.</description>
     <url>https://github.com/ftldb/ftldb</url>
     <inceptionYear>2014</inceptionYear>
 
@@ -29,7 +29,7 @@
     <scm>
         <connection>scm:git:git://github.com/ftldb/ftldb.git</connection>
         <url>https://github.com/ftldb/ftldb</url>
-        <tag>HEAD</tag>
+        <tag>master</tag>
     </scm>
 
     <dependencies>
@@ -123,15 +123,15 @@
                         <typ>DOUBLEDASHES_STYLE</typ>
                         <tps>DOUBLEDASHES_STYLE</tps>
                         <tpb>DOUBLEDASHES_STYLE</tpb>
+                        <ftc>DOUBLEDASHES_STYLE</ftc>
                     </mapping>
                     <includes>
                         <include>src/**</include>
                     </includes>
                     <excludes>
                         <exclude>src/main/resources/**</exclude>
-                        <exclude>**/*.policy</exclude>
                         <!-- TODO -->
-                        <exclude>src/demo/**</exclude>
+                        <exclude>src/demo/plsql/_temp/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

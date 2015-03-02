@@ -27,7 +27,7 @@ import java.util.List;
 
 
 /**
- * This class provides a command line launcher for the FreeMarker engine with the support of FTLDB functionality.
+ * This class provides a command line launcher for the FreeMarker engine with the support of the FTLDB functionality.
  * The result of processing FTL templates is directed to {@link System#out}.
  */
 public class CommandLine {
@@ -57,7 +57,7 @@ public class CommandLine {
 
     /**
      * The main entry point. Processes each listed template in left-to-right order, passing its arguments as a sequence
-     * named {@code command_line_args}. Templates (with their arguments) are delimited by a '!' sign.
+     * named {@code template_args}. Templates (with their arguments) are delimited by a '!' sign.
      *
      * @param args the full list of arguments
      * @throws IOException if a file access error occurs
@@ -79,13 +79,17 @@ public class CommandLine {
         List calls = getFtlCalls(args);
         for (Iterator cmdIt = calls.iterator(); cmdIt.hasNext(); ) {
             List call = (List) cmdIt.next();
-            String[] callArgs = (String[]) call.toArray(new String[]{});
-            if (callArgs[0] == null || "".equals(callArgs[0].trim())) {
+            if (call.size() == 0) continue;
+
+            String templateName = (String) call.get(0);
+            if ("".equals(templateName.trim())) {
                 throw new RuntimeException("Empty template file name in call: " + call);
             }
 
-            Configurator.getConfiguration().setSharedVariable("command_line_args", callArgs);
-            TemplateProcessor.process(callArgs[0], out);
+            String[] templateArgs = (String[]) call.subList(1, call.size()).toArray(new String[call.size() - 1]);
+
+            Configurator.getConfiguration().setSharedVariable("template_args", templateArgs);
+            TemplateProcessor.process(templateName, out);
         }
 
     }

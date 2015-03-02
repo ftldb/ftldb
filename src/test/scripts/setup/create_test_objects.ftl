@@ -25,7 +25,7 @@ show errors
 prompt Create UT_SOURCE_UTIL package and additional objects.
 <#include "../plsql/ut_source_util$long2clob$vw.sql">
 show errors
-<#include "../plsql/ut_source_util$extract_sect.prc">
+<#include "../plsql/ut_source_util$extract_sect.pks">
 show errors
 <#include "../plsql/ut_source_util.pck">
 show errors
@@ -35,9 +35,7 @@ prompt Create UT_SCRIPT_OT package.
 show errors
 
 prompt Create UT_FTLDB_API package and additional objects.
-<#include "../plsql/ut_ftldb_api$process.prc" parse=false>
-show errors
-<#include "../plsql/ut_ftldb_api$template$tab.sql" parse=false>
+<#include "../plsql/ut_ftldb_api$process.pks" parse=false>
 show errors
 <#include "../plsql/ut_ftldb_api.pck" parse=false>
 show errors

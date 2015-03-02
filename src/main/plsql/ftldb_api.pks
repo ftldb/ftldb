@@ -22,33 +22,18 @@ create or replace package ftldb_api authid current_user as
 
 
 /**
- * Resolves the template's name into an Oracle object, extracts a section from
- * its source and returns it as a template's body. If the name matches
- * [OWNER.]PROCNAME[@DBLINK] pattern, then the sought section is non-compiled.
- * If it matches [OWNER.]PROCNAME[@DBLINK]%SECNAME pattern, then the sought
- * section is named.
- *
- * @param  in_templ_name  the template's name
- * @return                the template itself
- */
-function extract(in_templ_name in varchar2) return clob;
-
-
-/**
  * Loads the template by its name.
  *
- * If the template's name starts with the 'exec:' prefix, executes it as
- * a PL/SQL function that returns a CLOB. If the template's name contains a list
- * of arguments in parentheses, passes it to the template's body as
- * the <b>template_args</b> variable of the Hash type. Otherwise repeats
- * the functionality of the {@link extract} function.
+ * Resolves the template's name into an Oracle object, extracts a section from
+ * its source and returns it as a template's body. If the name matches
+ * [OWNER.]OBJNAME[@DBLINK] pattern, then the sought section is non-compiled.
+ * If it matches [OWNER.]OBJNAME%SECNAME[@DBLINK] pattern, then the sought
+ * section is named.
  *
  * @param  in_templ_name  the template's name
  * @return                the loaded template
  */
-function default_template_loader(
-  in_templ_name in varchar2
-) return clob;
+function default_template_loader(in_templ_name in varchar2) return clob;
 
 
 /**
@@ -67,29 +52,39 @@ procedure init(in_templ_loader in varchar2 := null);
  * Processes the template with the specified name with the FreeMarker engine.
  *
  * @param  in_templ_name  the template's name
+ * @param  in_templ_args  the template's arguments
  * @return                the processed template as a CLOB
  */
-function process_to_clob(in_templ_name in varchar2) return clob;
+function process_to_clob(
+  in_templ_name in varchar2,
+  in_templ_args in varchar2_nt := varchar2_nt()
+) return clob;
 
 
 /**
  * Processes the specified template with the FreeMarker engine.
  *
  * @param  in_templ_body  the template's body
+ * @param  in_templ_args  the template's arguments
  * @return                the processed template as a CLOB
  */
-function process_body_to_clob(in_templ_body in clob) return clob;
+function process_body_to_clob(
+  in_templ_body in clob,
+  in_templ_args in varchar2_nt := varchar2_nt()
+) return clob;
 
 
 /**
  * Processes the template with the specified name with the FreeMarker engine.
  *
  * @param  in_templ_name  the template's name
+ * @param  in_templ_args  the template's arguments
  * @param  in_stmt_delim  the delimiter for splitting the result into statements
  * @return                the processed template as a {@link script_ot} object
  */
 function process(
   in_templ_name in varchar2,
+  in_templ_args in varchar2_nt := varchar2_nt(),
   in_stmt_delim in varchar2 := '</>'
 ) return script_ot;
 
@@ -98,11 +93,13 @@ function process(
  * Processes the specified template with the FreeMarker engine.
  *
  * @param  in_templ_body  the template's body
+ * @param  in_templ_args  the template's arguments
  * @param  in_stmt_delim  the delimiter for splitting the result into statements
  * @return                the processed template as a {@link script_ot} object
  */
 function process_body(
   in_templ_body in clob,
+  in_templ_args in varchar2_nt := varchar2_nt(),
   in_stmt_delim in varchar2 := '</>'
 ) return script_ot;
 

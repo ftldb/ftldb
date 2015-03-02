@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-if [ $# -lt 5 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
+if [ $# -lt 3 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
 then
   echo Wrong parameters!
   echo Proper usage: $0 instance_tns_name ftldb_schema ftldb_pswd

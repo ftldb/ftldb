@@ -19,28 +19,24 @@ if "%~1" == "" goto :usage
 if "%~2" == "" goto :usage
 if "%~3" == "" goto :usage
 if "%~4" == "" goto :usage
-if "%~5" == "" goto :usage
-if "%~6" == "" goto :usage
 
 set instance_tns_name=%1
 set super_user=%2
 set super_user_pswd=%3
-set ftldb_schema=%4
-set demo_schema=%5
-set demo_pswd=%6
-set logfile=%~n0_%1_%5.log
-set sqlfile=%~n0_%1_%5.sql
+set demo_schema=%4
+set logfile=%~n0_%1_%4.log
+set sqlfile=%~n0_%1_%4.sql
 
 echo -------------------------------------------
-echo ---------- INSTALLING FTLDB DEMO ----------
+echo --------- DEINSTALLING FTLDB DEMO ---------
 echo -------------------------------------------
 echo.
 echo Log file: setup\%logfile%
 
 echo.
-echo Build SQL*Plus installation script.
-java -jar java/ftldb.jar setup/install.ftl ^
-  %instance_tns_name% %super_user% %ftldb_schema% %demo_schema% ^
+echo Build SQL*Plus deinstallation script.
+java -jar java/ftldb.jar setup/uninstall.ftl ^
+  %instance_tns_name% %super_user% %demo_schema% ^
   1> setup\%sqlfile% 2> setup\%logfile%
 
 if errorlevel 1 goto :failure
@@ -49,26 +45,26 @@ echo.
 echo SQL file: setup\%sqlfile%
 
 echo.
-echo Run SQL*Plus installation script.
-sqlplus /nolog @setup/%sqlfile% %super_user_pswd% %demo_pswd% setup/%logfile%
+echo Run SQL*Plus deinstallation script.
+sqlplus /nolog @setup/%sqlfile% %super_user_pswd% setup/%logfile%
 
 if errorlevel 1 goto :failure
 
 echo.
 echo -------------------------------------------
-echo --- INSTALLATION COMPLETED SUCCESSFULLY ---
+echo -- DEINSTALLATION COMPLETED SUCCESSFULLY --
 echo -------------------------------------------
 exit /B 0
 
 :failure
 echo.
 echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-echo !!!!!!!!!! INSTALLATION FAILED !!!!!!!!!!!!
+echo !!!!!!!!! DEINSTALLATION FAILED !!!!!!!!!!!
 echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 exit /B 1
 
 :usage
 echo Wrong parameters!
-echo Proper usage: %~nx0 instance_tns_name super_user super_user_pswd ftldb_schema demo_schema demo_pswd
-echo Example: %~nx0 orcl sys manager ftldb ftldemo ftldemo
+echo Proper usage: %~nx0 instance_tns_name super_user super_user_pswd demo_schema
+echo Example: %~nx0 orcl sys manager ftldemo
 exit /B 1

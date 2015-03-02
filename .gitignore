@@ -2,4 +2,4 @@
 .idea
 target
 **/.svn
-src/demo/**
+src/demo/plsql/_temp/**

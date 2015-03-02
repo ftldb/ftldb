@@ -81,9 +81,8 @@ prompt Run UT_FTLDB_API tests.
 begin
   ut_ftldb_api.ut_dflt_templ_loader#proc;
   ut_ftldb_api.ut_dflt_templ_loader#sect;
-  ut_ftldb_api.ut_dflt_templ_loader#exec;
-  ut_ftldb_api.ut_dflt_templ_loader#args;
 
+  ut_ftldb_api.ut_process#args;
   ut_ftldb_api.ut_process#java_binds;
   ut_ftldb_api.ut_process#java_hlp_methods1;
   ut_ftldb_api.ut_process#java_hlp_methods2;
