@@ -5,6 +5,7 @@
     <formats>
         <format>zip</format>
     </formats>
+    <baseDirectory>${project.build.finalName}-demo</baseDirectory>
     <dependencySets>
         <dependencySet>
             <scope>runtime</scope>
@@ -17,7 +18,7 @@
     <fileSets>
         <fileSet>
             <directory>${project.basedir}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>.</outputDirectory>
             <includes>
                 <include>README*</include>
                 <include>LICENSE*</include>
@@ -41,7 +42,7 @@
         </fileSet>
         <fileSet>
             <directory>src/test/scripts</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>*.sh</exclude>
             </excludes>
