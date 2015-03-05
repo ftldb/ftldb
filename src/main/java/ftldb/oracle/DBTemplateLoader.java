@@ -145,4 +145,14 @@ public class DBTemplateLoader implements StatefulTemplateLoader {
      */
     public void closeTemplateSource(Object o) throws IOException { }
 
+
+    /**
+     * Returns the template loader name that is used in error log messages.
+     *
+     * @return the class name and the database call
+     */
+    public String toString() {
+        return this.getClass().getName() + "(" + templateLoaderCall + ")";
+    }
+
 }

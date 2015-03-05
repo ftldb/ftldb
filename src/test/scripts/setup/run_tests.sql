@@ -83,6 +83,7 @@ begin
   ut_ftldb_api.ut_dflt_templ_loader#sect;
 
   ut_ftldb_api.ut_process#args;
+  ut_ftldb_api.ut_process#include_args;
   ut_ftldb_api.ut_process#java_binds;
   ut_ftldb_api.ut_process#java_hlp_methods1;
   ut_ftldb_api.ut_process#java_hlp_methods2;

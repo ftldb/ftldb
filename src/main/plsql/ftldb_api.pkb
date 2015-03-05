@@ -45,6 +45,12 @@ begin
       else
         source_util.extract_noncompiled_section(in_templ_name)
     end;
+exception
+  when
+    source_util.e_name_not_resolved or source_util.e_source_not_found or
+    source_util.e_section_not_found
+  then
+    return null;
 end default_template_loader;
 
 
@@ -116,6 +122,7 @@ end process_body;
 
 
 begin
+  dbms_java.set_output(1000000);
   init();
 exception
   when others then

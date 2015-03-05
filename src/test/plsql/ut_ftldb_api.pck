@@ -23,6 +23,7 @@ procedure ut_dflt_templ_loader#proc;
 procedure ut_dflt_templ_loader#sect;
 
 procedure ut_process#args;
+procedure ut_process#include_args;
 procedure ut_process#java_binds;
 procedure ut_process#java_hlp_methods1;
 procedure ut_process#java_hlp_methods2;
@@ -57,7 +58,8 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_dflt_templ_loader#proc;
+
 
 procedure ut_dflt_templ_loader#sect
 is
@@ -83,7 +85,8 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_dflt_templ_loader#sect;
+
 
 procedure ut_process#args
 is
@@ -102,7 +105,28 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_process#args;
+
+
+procedure ut_process#include_args
+is
+  l_tmpl clob;
+  l_etalon clob;
+begin
+  l_tmpl := ftldb_api.process_body_to_clob(
+    '<#import "ftldb_standard_ftl" as std/>' || chr(10) ||
+    '<@std.include "ut_ftldb_api$process%args", ["x", "y", "z"]/>'
+  );
+
+  l_etalon := ftldb_api.default_template_loader(
+    'ut_ftldb_api$process%args_res'
+  );
+
+  if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
+    ftldb_clob_util.show(l_tmpl);
+    raise_application_error(-20000, 'Result is not as expected');
+  end if;
+end ut_process#include_args;
 
 
 procedure ut_process#java_binds
@@ -123,7 +147,7 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_process#java_binds;
 
 
 procedure ut_process#java_hlp_methods1
@@ -143,7 +167,7 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_process#java_hlp_methods1;
 
 
 procedure ut_process#java_hlp_methods2
@@ -168,7 +192,7 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_process#java_hlp_methods2;
 
 
 procedure ut_process#standard
@@ -188,7 +212,7 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_process#standard;
 
 
 procedure ut_process#sql
@@ -208,7 +232,7 @@ begin
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end;
+end ut_process#sql;
 
 
 end ut_ftldb_api;

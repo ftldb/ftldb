@@ -67,7 +67,7 @@
       </#list>
     </#if>
     <#if tail?size%2 == 1>
-      <#return tail[tail?size-1]/>
+      <#return tail[tail?size - 1]/>
     <#else/>
       <#-- return null -->
     </#if>
@@ -177,7 +177,7 @@
   <#local indent_width = (rshift - lshift) + (rtab - ltab)*TAB_SIZE/>
   <#local content><#nested/></#local>
   <#list content?split('\n') as it>
-    <#if it_has_next || it?trim != ''>
+    <#if it_has_next || (it?trim != '')>
       <#if (indent_width >= 0)>
         <#local
            output = output + ''?right_pad(indent_width) + it +
@@ -192,7 +192,7 @@
       </#if>
     </#if>
   </#list>
-  <#t>${output}
+  <#t/>${output}
 </#macro>
 
 
@@ -239,7 +239,7 @@
   />
   <#list content?trim?split(split_ptrn, 'ri') as it>
     <#local str = it + iif(it_has_next || trailing_delim, delim_rt, '')/>
-    <#if (len = 0) || ((str + delim_ws)?length <= max_len - len)>
+    <#if (len == 0) || ((str + delim_ws)?length <= max_len - len)>
       <#local str = iif(it_index == 0, indent, delim_ws) + str/>
       <#local len = len + str?length/>
     <#else>
@@ -248,5 +248,42 @@
     </#if>
     <#local output = output + str/>
   </#list>
-  <#lt>${output}
+  <#lt/>${output}
+</#macro>
+
+
+<#--
+-- Includes the specified template passing the specified arguments to it. This
+-- macro should be used instead of the built-in #include directive for including
+-- parameterized templates that use the "template_args" shared variable inside. 
+--
+-- @param  name            the template name
+-- @param  args            the sequence of arguments
+-- @param  ignore_missing  if true doesn't throw an exception when the template
+--                         is not found, otherwise does
+-- @param  parse           if true processes the template, otherwise only prints 
+-- @param  encoding        overrides the encoding of the top-level template
+-->
+<#macro include
+  name
+  args = []
+  ignore_missing = false
+  parse = true
+  encoding = ''
+>
+  <#local template_args = args/>
+  <#if encoding == ''>
+    <#include
+      name
+      ignore_missing = ignore_missing
+      parse = parse
+    />
+  <#else/>
+    <#include
+      name
+      ignore_missing = ignore_missing
+      parse = parse
+      encoding = encoding
+    />
+  </#if>
 </#macro>
