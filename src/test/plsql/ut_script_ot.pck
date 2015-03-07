@@ -276,7 +276,7 @@ begin
     l_cnt = 6 and
     l_lines(1) = l_scr.statements(1) and
     l_lines(2) = '/' and
-    l_lines(3) like 'error suppressed in statement #1 (' ||
+    l_lines(3) like 'Error suppressed in statement #1 (' ||
                     l_scr.statements(1) || ')%' and
     l_lines(4) = l_scr.statements(2) and
     l_lines(5) = '/' and

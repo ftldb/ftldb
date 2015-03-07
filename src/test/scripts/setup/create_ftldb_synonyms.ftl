@@ -18,6 +18,8 @@
 prompt Create synonyms for ${ftldb_schema} objects.
 create or replace synonym ftldb_api for ${ftldb_schema}.ftldb_api
 /
+create or replace synonym ftldb_wrapper for ${ftldb_schema}.ftldb_wrapper
+/
 create or replace synonym ftldb_clob_util for ${ftldb_schema}.clob_util
 /
 create or replace synonym ftldb_source_util for ${ftldb_schema}.source_util

@@ -140,7 +140,6 @@ begin
 end a;
 
 
-
 function try_to_resolve_name_in_loop(
   in_local_name in varchar2,
   in_dblink in varchar2,
@@ -471,18 +470,35 @@ exception
 end extract_noncompiled_section;
 
 
+function escape_section_name(
+  in_section_name in varchar2
+) return varchar2
+is
+begin
+  if not nvl(regexp_like(in_section_name, '^[[:alnum:]_#$]+$'), false) then
+    raise_application_error(
+      gc_invalid_argument_num,
+      'section name "' || in_section_name ||
+        '" contains characters that are not allowed'
+    );
+  end if;
+  return replace(in_section_name, '$', '\$');
+end;
+
+
 function extract_named_section(
   in_container_name in varchar2,
   in_section_name in varchar2,
   in_occurrence in positiven := 1
 ) return clob
 is
+  c_section_name constant varchar2(100) := escape_section_name(in_section_name);
 begin
   return
     extract_section_from_obj_src(
       in_container_name,
-      replace(gc_named_section_start_ptrn, '%name%', in_section_name),
-      replace(gc_named_section_end_ptrn, '%name%', in_section_name),
+      replace(gc_named_section_start_ptrn, '%name%', c_section_name),
+      replace(gc_named_section_end_ptrn, '%name%', c_section_name),
       false, true, in_occurrence
     );
 exception
@@ -603,12 +619,13 @@ function replace_named_section_in_clob(
   in_occurrence in positiven := 1
 ) return clob
 is
+  c_section_name constant varchar2(100) := escape_section_name(in_section_name);
 begin
   return
     replace_section_in_clob(
       in_container,
-      replace(gc_named_section_start_ptrn, '%name%', in_section_name),
-      replace(gc_named_section_end_ptrn, '%name%', in_section_name),
+      replace(gc_named_section_start_ptrn, '%name%', c_section_name),
+      replace(gc_named_section_end_ptrn, '%name%', c_section_name),
       in_replacement, in_keep_boundaries, true, in_occurrence
     );
 exception

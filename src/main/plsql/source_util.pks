@@ -33,22 +33,22 @@ gc_invalid_argument_num constant number := -20100;
 
 -- The exception raised when a name cannot be resolved to an object.
 e_name_not_resolved exception;
-pragma exception_init(e_name_not_resolved, -20900);
-gc_name_not_resolved_num constant number := -20900;
+pragma exception_init(e_name_not_resolved, -20101);
+gc_name_not_resolved_num constant number := -20101;
 gc_name_not_resolved_msg constant varchar2(2000) :=
   'name %s cannot be resolved';
 
 -- The exception raised when a source for an object is not found.
 e_source_not_found exception;
-pragma exception_init(e_source_not_found, -20901);
-gc_source_not_found_num constant number := -20901;
+pragma exception_init(e_source_not_found, -20102);
+gc_source_not_found_num constant number := -20102;
 gc_source_not_found_msg constant varchar2(2000) :=
   'source for object %s of type %s is not found';
 
 -- The exception raised when a section in a container is not found.
 e_section_not_found exception;
-pragma exception_init(e_section_not_found, -20902);
-gc_section_not_found_num constant number := -20902;
+pragma exception_init(e_section_not_found, -20103);
+gc_section_not_found_num constant number := -20103;
 gc_section_not_found_msg constant varchar2(2000) :=
   '%d occurrence of section bounded between regular expressions "%s" and ' ||
   '"%s" is not found in container %s';

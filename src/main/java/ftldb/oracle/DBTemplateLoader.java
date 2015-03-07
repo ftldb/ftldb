@@ -152,7 +152,9 @@ public class DBTemplateLoader implements StatefulTemplateLoader {
      * @return the class name and the database call
      */
     public String toString() {
-        return this.getClass().getName() + "(" + templateLoaderCall + ")";
+        String tlc = templateLoaderCall.replaceAll("\\s+", " ").trim();
+        if (tlc.length() > 100) tlc = tlc.substring(0, 100) + "...";
+        return this.getClass().getName() + "(templateLoaderCall=\"" + tlc + "\")";
     }
 
 }

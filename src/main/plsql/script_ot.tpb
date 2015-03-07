@@ -130,34 +130,38 @@ is
     case when in_suppress_errors then 'suppressed' else 'occurred' end ||
     ' in statement #%d (%s): %s';
   l_i pls_integer := self.statements.first();
-  l_statement_piece varchar2(60);
-  l_error_msg varchar2(2000);
+  l_statement_piece varchar2(200);
+  l_error_msg varchar2(4000);
 begin
   while l_i is not null loop
     begin
       exec(l_i, in_echo);
     exception
       when others then
-        l_statement_piece :=
-          replace(
-            to_char(substr(self.statements(l_i), 1, 50)), chr(10), ' '
-          ) ||
-          case
-            when dbms_lob.getlength(self.statements(l_i)) > 50
-            then '...'
-          end;
+        if in_echo or not in_suppress_errors then
+          l_statement_piece :=
+            to_char(
+              substr(
+                trim(regexp_replace(self.statements(l_i), '\s+', ' ')), 1, 101
+              )
+            );
 
-        l_error_msg :=
-          utl_lms.format_message(
-            c_execution_error_msg, l_i, l_statement_piece, sqlerrm
+          if length(l_statement_piece) > 100 then
+            l_statement_piece := substr(l_statement_piece, 1, 100) || '...';
+          end if;
+
+          l_error_msg :=
+            utl_lms.format_message(
+              c_execution_error_msg, l_i, l_statement_piece, sqlerrm
+            );
+
+          if not in_suppress_errors then
+            raise_application_error(c_execution_error_num, l_error_msg);
+          end if;
+
+          dbms_output.put_line(
+            upper(substr(l_error_msg, 1, 1)) || substr(l_error_msg, 2)
           );
-
-        if not in_suppress_errors then
-          raise_application_error(c_execution_error_num, l_error_msg);
-        end if;
-
-        if in_echo then
-          dbms_output.put_line(l_error_msg);
         end if;
     end;
 
