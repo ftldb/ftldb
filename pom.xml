@@ -7,7 +7,7 @@
 
     <groupId>ftldb</groupId>
     <artifactId>ftldb</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +20,7 @@
 
     <licenses>
         <license>
-            <name>Apache License 2.0</name>
+            <name>Apache License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
             <distribution>repo</distribution>
         </license>
@@ -32,25 +32,25 @@
         <tag>master</tag>
     </scm>
 
+    <repositories>
+        <!-- repo containing Oracle JDBC driver -->
+        <repository>
+            <id>codelds</id>
+            <url>https://code.lds.org/nexus/content/groups/main-repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.21</version>
+            <version>2.3.22</version>
         </dependency>
 
         <dependency>
-            <!-- install manually -->
             <groupId>com.oracle</groupId>
-            <artifactId>ojdbc7</artifactId>
-            <version>12.1.0.2.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sourceforge.pldoc</groupId>
-            <artifactId>pldoc</artifactId>
-            <version>1.5.17</version>
+            <artifactId>ojdbc6</artifactId>
+            <version>12.1.0.2</version>
             <scope>provided</scope>
         </dependency>
 
@@ -109,7 +109,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>2.6</version>
+                <version>2.8</version>
                 <configuration>
                     <header>src/main/resources/META-INF/LICENSE</header>
                     <mapping>
@@ -165,7 +165,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>attach-javadocs</id>
+                        <id>attach-javadoc</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>javadoc</goal>
@@ -195,7 +195,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>attach-plsqldocs</id>
+                        <id>attach-plsqldoc</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>pldoc</goal>
@@ -248,14 +248,15 @@
     <reporting>
         <plugins>
             <plugin>
-                <groupId>net.sourceforge.pldoc</groupId>
-                <artifactId>maven-pldoc-plugin</artifactId>
-                <version>3.0.13</version>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.10.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>net.sourceforge.pldoc</groupId>
+                <artifactId>maven-pldoc-plugin</artifactId>
+                <version>3.0.13</version>
             </plugin>
         </plugins>
     </reporting>

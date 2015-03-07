@@ -35,13 +35,8 @@ import java.util.List;
 public class Configurator {
 
     /** The currently supported version of FreeMarker */
-    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_21;
+    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_22;
     private static Configuration cfg;
-
-
-    static {
-        switchLogger(false);
-    }
 
 
     /**
@@ -75,8 +70,6 @@ public class Configurator {
      *     <li>{@code static(String)} returns the static model of a class, which allows to call any of its static
      *         methods
      *     <li>{@code template_line()} returns the current line in a template
-     *     <li>{@code stringify(Object)} calls the {@link #toString()} method of the passed object, should be used for
-     *         debugging only
      *     <li>{@code new_connection(String, String, String)} opens and returns a new connection to a database with
      *         the specified url, name and password
      *     <li>{@code new_connection()} opens and returns a new connection to a database with "jdbc:default:connection"
@@ -95,18 +88,14 @@ public class Configurator {
      *
      * current line is ${template_line()}
      *
-     * <#assign seq = 1..10/> print seq: ${stringify(seq)}
-     *
      * <#assign inner_conn = new_connection()/>
-     * <#assign ext_conn = new_connection("jdbc:oracle:thin@//172.14.56.46:1521/orcl", "scott", "tiger")/>
+     * <#assign ext_conn = new_connection("jdbc:oracle:thin@//localhost:1521/orcl", "scott", "tiger")/>
      * <#assign void = set_default_connection(ext_conn)/>
      * <#assign def_conn = default_connection()/>
      * }
      * </pre>
      */
     public static synchronized void newConfiguration() {
-        switchLogger(false);
-
         cfg = new Configuration(SUPPORTED_VERSION);
 
         cfg.setObjectWrapper(new DefaultObjectWrapperBuilder(SUPPORTED_VERSION).build());
@@ -119,10 +108,7 @@ public class Configurator {
         // Register shared methods.
         registerStaticSharedMethod();
         registerTemplateLineSharedMethod();
-        registerStringifySharedMethod();
         registerDBConnectionSharedMethods();
-
-        switchLogger(true);
     }
 
 
@@ -158,16 +144,6 @@ public class Configurator {
     }
 
 
-    private static void registerStringifySharedMethod() {
-        cfg.setSharedVariable("stringify", new TemplateMethodModelEx() {
-            public Object exec(List args) throws TemplateModelException {
-                if (args.size() != 1) throw new TemplateModelException("One argument expected, got " + args.size());
-                return args.get(0).toString();
-            }
-        });
-    }
-
-
     private static void registerDBConnectionSharedMethods() {
         DBConnectionFactory dbcf = new DBConnectionFactory();
         cfg.setSharedVariable("new_connection", dbcf.getMethodNewDBConnection());
@@ -184,10 +160,8 @@ public class Configurator {
      */
     public static synchronized void setTemplateLoader(TemplateLoader templateLoader, CacheStorage cacheStorage) {
         ensureCfg();
-        switchLogger(false);
         cfg.setTemplateLoader(templateLoader);
         cfg.setCacheStorage(cacheStorage);
-        switchLogger(true);
     }
 
 
@@ -202,9 +176,7 @@ public class Configurator {
      */
     public static synchronized void setConfigurationSetting(String name, String value) throws TemplateException {
         ensureCfg();
-        switchLogger(false);
         cfg.setSetting(name, value);
-        switchLogger(true);
     }
 
 
@@ -242,17 +214,6 @@ public class Configurator {
     private static void ensureCfg() {
         if (cfg == null) {
             throw new RuntimeException("FreeMarker configuration is not initialized");
-        }
-    }
-
-
-    private static void switchLogger(boolean on) {
-        try {
-            freemarker.log.Logger.selectLoggerLibrary(
-                    on ? freemarker.log.Logger.LIBRARY_JAVA : freemarker.log.Logger.LIBRARY_NONE
-            );
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Unable to set Java logger", e);
         }
     }
 

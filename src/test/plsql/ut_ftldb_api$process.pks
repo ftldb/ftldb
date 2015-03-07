@@ -190,30 +190,17 @@ $if null $then
 --%end java_binds_res_ora10
 
 --%begin java_hlp_methods1
-  <#assign conn = default_connection()>
-  <#assign res = conn.query("select sys.odcivarchar2list('a','b','c') from dual")>
-  <#assign sql_udt = res.seq_rows[0][0]>
-  <#assign array = sql_udt.getArray()>
-  sql_array = ${stringify(array)}
-
-  <#assign seq = [1,3,4,5]>
-  seq = ${stringify(seq)}
+  ${static("java.lang.Math").sqrt(2)?c}
 
   ${template_line()}
-
-  ${static("java.lang.Math").sqrt(2)?c}
 
 --%end java_hlp_methods1
 
 
 --%begin java_hlp_methods1_res
-  sql_array = [a, b, c]
-
-  seq = [1, 3, 4, 5]
-
-  10
-
   1.4142135623730951
+
+  3
 
 --%end java_hlp_methods1_res
 

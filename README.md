@@ -371,12 +371,14 @@ local `tnsnames.ora`.
 To install FTLDB download and unpack the release archive corresponding to your
 OS. The archive includes:
 
+  * `doc` directory
+    * Java & PL/SQL API documentation
+  * `ftl` directory
+    * FTL macro libraries for basic needs
   * `java` directory
     * `freemarker.jar` - FreeMarker template engine
     * `ftldb.jar` - own classes for working with database connections, queries,
       callable statements and result sets in FTL (server-side & client-side)
-  * `ftl` directory
-    * FTL macro libraries for basic needs
   * `plsql` directory
     * types and packages providing API for using in PL/SQL
     * PL/SQL containers for the FTL macro libraries
@@ -479,7 +481,7 @@ The demo archive contains the installer of another standalone schema, which
 demonstrates the work of FTLDB with unit tests and several manual scripts.
 
 The installer is itself an example of client-side FTLDB usage (it doesn't access
-any database but demonstrates several script composing techniques). Check the
+any database but demonstrates several script combining techniques). Check the
 `*.ftl` files in the `setup` directory.
 
 The tests are used for the CI purposes and can be useful as a source of
@@ -510,22 +512,22 @@ finished you can connect to the demo schema and run the demos manually.
 Building the project
 --------------------
 
-In order to make a build by yourself you need **Maven 3** with the [Oracle JDBC
-driver](http://download.oracle.com/otn/utilities_drivers/jdbc/121020/ojdbc7.jar)
-installed manually (the latest version is not necessary but recommended):
-
-    mvn install:install-file -Dfile=ojdbc7.jar -DgroupId=com.oracle  -DartifactId=ojdbc7 -Dversion=12.1.0.2.0 -Dpackaging=jar
+In order to make a build by yourself you need an Oracle instance (optional),
+[JDK 6](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (or
+higher) and [Maven 3](http://maven.apache.org/). The latest versions of both are
+recommended.
 
 Do the following:
 
-  1. Download and unpack the source archive or clone from the repository.
+  1. Download and unpack the source archive or clone from the GitHub repository.
   2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
-  3. Run in the command line from the base project directory:
-     `mvn clean package`
+  3. Run in the command line from the base project directory:  
+     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true` if you
+     don't have an Oracle instance available.
   4. Check the `target` directory for the installation files.
 
-The client-side tests are also a good source of usage examples.
+> **Notice**: The client-side tests are also a good source of usage examples.
 
 
 Authors

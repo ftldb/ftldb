@@ -46,5 +46,13 @@
                 <exclude>*.sh</exclude>
             </excludes>
         </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/site/apidocs</directory>
+            <outputDirectory>doc/java</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/site/sql-apidocs</directory>
+            <outputDirectory>doc/plsql</outputDirectory>
+        </fileSet>
     </fileSets>
 </assembly>
