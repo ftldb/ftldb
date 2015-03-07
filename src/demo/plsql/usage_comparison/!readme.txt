@@ -20,10 +20,9 @@ Demo from the main README.
 
 2. Explore the results of execution.
 
-3. Copy the Oracle JDBC driver to the `java` directory (or set proper
-classpath), edit the `orders.ftl` file (set database connection properties) and
-run in the command line:
+3. Copy the Oracle JDBC driver to the `java` directory (or set the proper
+classpath) and run in the command line (pass the proper FTL arguments):
 
-    java -cp ../../java/* ftldb.CommandLine orders.ftl 1> orders.sql
+    java -cp ../../java/* ftldb.CommandLine orders.ftl "localhost:1521/orcl" "scott" "tiger" 1> orders.sql
 
 4. See the `orders.sql` file.

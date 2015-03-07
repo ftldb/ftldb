@@ -27,6 +27,7 @@ procedure ut_process#include_args;
 procedure ut_process#java_binds;
 procedure ut_process#java_hlp_methods1;
 procedure ut_process#java_hlp_methods2;
+procedure ut_process#java_hlp_methods3;
 procedure ut_process#standard;
 procedure ut_process#sql;
 
@@ -193,6 +194,25 @@ begin
     raise_application_error(-20000, 'Result is not as expected');
   end if;
 end ut_process#java_hlp_methods2;
+
+
+procedure ut_process#java_hlp_methods3
+is
+  l_tmpl clob;
+  l_etalon clob;
+begin
+  l_tmpl := ftldb_api.process_body_to_clob(
+    '<#include "ut_ftldb_api$process%java_hlp_methods3">'
+  );
+
+  l_etalon :=
+    '  template_name = "ut_ftldb_api$process%java_hlp_methods3"' || chr(10);
+
+  if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
+    ftldb_clob_util.show(l_tmpl);
+    raise_application_error(-20000, 'Result is not as expected');
+  end if;
+end ut_process#java_hlp_methods3;
 
 
 procedure ut_process#standard

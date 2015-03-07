@@ -35,7 +35,7 @@ import java.util.List;
 public class Configurator {
 
     /** The currently supported version of FreeMarker */
-    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_22;
+    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_21;
     private static Configuration cfg;
 
 
@@ -99,7 +99,7 @@ public class Configurator {
         cfg = new Configuration(SUPPORTED_VERSION);
 
         cfg.setObjectWrapper(new DefaultObjectWrapperBuilder(SUPPORTED_VERSION).build());
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.DEBUG_HANDLER);
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         cfg.setLocalizedLookup(false);
 
         // Register shared variables.

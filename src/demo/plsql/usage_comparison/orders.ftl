@@ -17,8 +17,8 @@
 -->
 <#assign
   conn = new_connection(
-    "jdbc:oracle:thin:@//localhost:1521/orcl",
-    "scott", "tiger"
+    "jdbc:oracle:thin:@//" + template_args[0],
+    template_args[1], template_args[2]
   )
 />
 

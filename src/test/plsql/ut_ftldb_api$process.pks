@@ -223,6 +223,10 @@ $if null $then
 --%end java_hlp_methods2_res
 
 
+--%begin java_hlp_methods3
+  template_name = "${.template_name}"
+--%end java_hlp_methods3
+
 --%begin standard
 <#import "ftldb_standard_ftl" as std>
 
