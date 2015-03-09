@@ -373,9 +373,10 @@ quite secure.
 
 FreeMarker requires the following permission:
 
-  * [`java.lang.RuntimePermission "getClassLoader"`](http://docs.oracle.com/javase/8/docs/api/java/lang/RuntimePermission.html)
+  * `java.lang.RuntimePermission "getClassLoader"`
 
-Both FTLDB schema and its users must be granted this permission. The Java API
+Both FTLDB schema and its users must be granted this permission. The [Java
+API](http://docs.oracle.com/javase/8/docs/api/java/lang/RuntimePermission.html)
 reads:
 
 > This would grant an attacker permission to get the class loader for a 
