@@ -228,7 +228,7 @@ begin
       'VIEW'
     );
   rollback;
-  
+
   l_lines := ftldb_clob_util.split_into_lines(l_src);
 
   for l_i in 1..l_lines.count() loop
@@ -266,7 +266,7 @@ begin
       'FUNCTION'
     );
   rollback;
-  
+
   l_lines := ftldb_clob_util.split_into_lines(l_src);
 
   for l_i in 1..l_lines.count() loop
@@ -306,7 +306,7 @@ begin
       l_src,
       '<begin>', '<end>'
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -330,7 +330,7 @@ begin
       l_src,
       '<begin>', '<end>', true
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -356,7 +356,7 @@ begin
       l_src,
       '<begin>', '<end>', true, true, 3
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -384,7 +384,7 @@ begin
       l_src,
       '<begin>', '<end>', true, false
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -403,7 +403,7 @@ begin
       'ut_source_util$extract_sect',
       '<begin>', '<end>', true
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -436,7 +436,7 @@ begin
     ftldb_source_util.extract_noncompiled_section(
       'ut_source_util$extract_sect'
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -454,7 +454,7 @@ begin
     ftldb_source_util.extract_named_section(
       'ut_source_util$extract_sect', 'aaa', 2
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -482,7 +482,7 @@ begin
       l_src,
       '<begin>', '<end>', 'xxx'
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -510,7 +510,7 @@ begin
       l_src,
       '<begin>', '<end>', 'xxx', true
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -542,7 +542,7 @@ begin
       l_src,
       '<begin>', '<end>', 'xxx', true, true, 3
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -572,7 +572,7 @@ begin
       l_src,
       '<begin>', '<end>', 'xxx', false, false
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -616,7 +616,7 @@ begin
       l_src,
       'aaa', 'xxx' || chr(10), false, 2
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');
@@ -662,7 +662,7 @@ begin
       l_src,
       'aaa', 'xxx' || chr(10), true, 2
     );
-  
+
   if not nvl(dbms_lob.compare(l_src, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_src);
     raise_application_error(-20000, 'Output is not as expected');

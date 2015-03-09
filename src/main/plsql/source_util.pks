@@ -15,12 +15,12 @@
 --
 
 create or replace package source_util authid current_user as
-/** 
+/**
  * This package contains methods for manipulating sources stored in the data
  * dictionary. It allows to use object bodies as containers for code templates.
  * @headcom
  */
- 
+
 -- The list of object types where templates can be stored and extracted from.
 gc_supported_obj_types constant varchar2_nt := varchar2_nt(
   'FUNCTION', 'PROCEDURE', 'PACKAGE', 'VIEW', 'TYPE', 'TRIGGER', 'JAVA SOURCE'

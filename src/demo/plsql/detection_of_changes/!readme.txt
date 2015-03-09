@@ -23,7 +23,7 @@ which are needed to simulate a real system, and the generator package.
 2. Explore the `demo_dtoch_gen` package.
 
 3. Use `generate.sql` to generate utility objects for detection of changes in
-three source tables. 
+three source tables.
 
 4. Explore the result of generation and compare the new objects with their
 templates.

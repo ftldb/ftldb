@@ -141,7 +141,7 @@ begin
   demo_dtoch.process();
   commit;
   ensure_same();
-  
+
 
 end;
 /

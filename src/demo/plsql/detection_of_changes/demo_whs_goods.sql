@@ -21,7 +21,7 @@ create or replace view demo_whs_goods(
   quantity,
   unique(whs_code, whs_city, goods_code, goods_category) rely disable
 ) as
-select 
+select
   w.code whs_code, w.city whs_city,
   w.code || '-' || w.city whs_alias, -- expression returning not null values
   g.code goods_code, g.category goods_category,

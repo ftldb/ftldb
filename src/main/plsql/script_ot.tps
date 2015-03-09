@@ -20,7 +20,7 @@ create or replace type script_ot authid current_user as object (
  *
  * This type contains methods for constructing a script, filling it with
  * statements, executing, and printing it to the DBMS_OUTPUT buffer.
- * @headcom 
+ * @headcom
  */
 
 -- The collection of statements.

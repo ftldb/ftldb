@@ -26,7 +26,7 @@ prompt Generate ORDERS table.
 begin
   dbms_output.put_line('-- PURE PL/SQL OUTPUT --');
   generator.gen_orders_plsql();
-  
+
   dbms_output.put_line('-- FTLDB OUTPUT --');
   generator.gen_orders_ftldb().show();
 end;

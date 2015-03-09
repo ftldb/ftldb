@@ -25,10 +25,10 @@
 <#assign
   partitions = conn.query(
     "select " +
-      "t.region name, " + 
-      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " + 
-    "from shops t " + 
-    "group by t.region " + 
+      "t.region name, " +
+      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " +
+    "from shops t " +
+    "group by t.region " +
     "order by t.region"
   )
 />

@@ -255,13 +255,13 @@
 <#--
 -- Includes the specified template passing the specified arguments to it. This
 -- macro should be used instead of the built-in #include directive for including
--- parameterized templates that use the "template_args" shared variable inside. 
+-- parameterized templates that use the "template_args" shared variable inside.
 --
 -- @param  name            the template name
 -- @param  args            the sequence of arguments
 -- @param  ignore_missing  if true doesn't throw an exception when the template
 --                         is not found, otherwise does
--- @param  parse           if true processes the template, otherwise only prints 
+-- @param  parse           if true processes the template, otherwise only prints
 -- @param  encoding        overrides the encoding of the top-level template
 -->
 <#macro include

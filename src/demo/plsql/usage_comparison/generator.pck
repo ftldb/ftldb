@@ -29,19 +29,19 @@ create or replace package body generator as
 -- data for partitioning clause generation
 cursor cur_partitions is
   select
-    t.region name, 
-    listagg(t.shop_id, ', ') 
-      within group (order by t.shop_id) vals 
-  from shops t 
+    t.region name,
+    listagg(t.shop_id, ', ')
+      within group (order by t.shop_id) vals
+  from shops t
   group by t.region
   order by t.region;
 
 
 procedure gen_orders_plsql
 is
-  l_scr clob;  
+  l_scr clob;
 begin
-  l_scr :=   
+  l_scr :=
     'create table orders (' || chr(10) ||
     '  order_id integer not null primary key,' || chr(10) ||
     '  customer_id integer not null,' || chr(10) ||
@@ -57,19 +57,19 @@ begin
       case when cur_partitions%rowcount > 1 then ',' end || chr(10) ||
       '  partition ' || r.name || ' values (' || r.vals || ')';
   end loop;
-   
+
   l_scr := l_scr || chr(10) || ')';
 
   dbms_output.put_line(l_scr);
   dbms_output.put_line('/');
   execute immediate l_scr;
-  
+
   l_scr := 'comment on table orders is ''Orders partitioned by region.''';
 
   dbms_output.put_line(l_scr);
   dbms_output.put_line('/');
   execute immediate l_scr;
-  
+
 end;
 
 
@@ -80,15 +80,15 @@ begin
   -- data for partitioning clause generation
   open l_rc for
     select
-      t.region name, 
-      listagg(t.shop_id, ', ') 
-        within group (order by t.shop_id) vals 
-    from shops t 
+      t.region name,
+      listagg(t.shop_id, ', ')
+        within group (order by t.shop_id) vals
+    from shops t
     group by t.region
     order by t.region;
-    
+
   return l_rc;
-end; 
+end;
 
 
 $if null $then
@@ -96,8 +96,8 @@ $if null $then
 
 <#import "ftldb_sql_ftl" as sql/>
 
-<#assign partitions = sql.fetch('generator.get_partitions')/>  
-                                                                                                                                            
+<#assign partitions = sql.fetch('generator.get_partitions')/>
+
 create table orders (
   order_id integer not null primary key,
   customer_id integer not null,
@@ -108,7 +108,7 @@ create table orders (
 partition by list(shop_id) (
 <#list partitions.hash_rows as p>
   partition ${p.NAME} values (${p.VALS})<#if p_has_next>,</#if>
-</#list>  
+</#list>
 )
 </>
 

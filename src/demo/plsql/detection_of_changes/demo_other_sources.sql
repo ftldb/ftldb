@@ -33,14 +33,14 @@ create or replace view demo_other2_src(
   col1, col2, col3, col4, col5, col6, col7
 ) as
 select
-  1 key_part1, 
-  2 key_part2, 
-  date'2015-01-10' key_part3, 
-  cast(timestamp'2015-01-10 15:34:41.23' as timestamp(9)) key_part4, 
+  1 key_part1,
+  2 key_part2,
+  date'2015-01-10' key_part3,
+  cast(timestamp'2015-01-10 15:34:41.23' as timestamp(9)) key_part4,
   5 key_part5,
   --
-  sysdate col1, 
-  'a' col2, 
+  sysdate col1,
+  'a' col2,
   utl_raw.cast_to_raw('b') col3,
   cast('v' as varchar2(30)) col4,
   'g' col5,

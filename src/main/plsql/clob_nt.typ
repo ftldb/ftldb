@@ -19,6 +19,6 @@ create or replace type clob_nt
  * This type is a nested table of CLOBs.
  * @headcom
  */
-as 
+as
 table of clob
 /

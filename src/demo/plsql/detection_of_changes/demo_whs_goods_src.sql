@@ -32,7 +32,7 @@ from demo_whs_goods s
 -- We use annotations to enforce constraints that cannot be realized as native.
 -- They are used by the generator.
 comment on table demo_whs_goods_src is 'Demo source view.';
-comment on column demo_whs_goods_src.whs_alias is 
+comment on column demo_whs_goods_src.whs_alias is
   'Alias of warehouse. @mandatory';
 comment on column demo_whs_goods_src.goods_category is
   'Optional category of goods.';
