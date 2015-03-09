@@ -14,8 +14,11 @@
 -- limitations under the License.
 --
 
--- Run as a user with the following privileges: CREATE TABLE,
--- CREATE PROCEDURE, CREATE TYPE, QUOTA on the default tablespace.
+-- Run as a user with the following privileges:
+--   CREATE SESSION, CREATE TABLE, CREATE PROCEDURE, CREATE TYPE,
+--   QUOTA at least 50M on the default tablespace (needed for `loadjava`)
+-- and permissions:
+--   java.lang.RuntimePermission "getClassLoader"
 define logfile = "&1"    -- Log file name
 
 set echo off
@@ -32,7 +35,7 @@ spool &&logfile.
 
 prompt SQL*Plus script started.
 
-@setup/create_plsql_objects &&_user. public
+@@create_plsql_objects &&_user. public
 
 prompt SQL*Plus script finished.
 

@@ -29,8 +29,8 @@ super_user_pswd=$3
 ftldb_schema=$4
 demo_schema=$5
 demo_pswd=$6
-logfile="$(basename $0 .sh)_${1}_${5}.log"
-sqlfile="$(basename $0 .sh)_${1}_${5}.sql"
+logfile="!$(basename $0 .sh)_${1}_${5}.log"
+sqlfile="!$(basename $0 .sh)_${1}_${5}.sql"
 
 exit_if_failed () {
   if [ "$1" -gt 0 ]; then

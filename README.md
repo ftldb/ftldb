@@ -26,8 +26,8 @@ Table of contents
   - [Intro](#intro)
   - [Compatibility](#compatibility)
   - [Usage comparison](#usage-comparison)
-  - [Installation](#installation)
   - [Security](#security)
+  - [Installation](#installation)
   - [Demo](#demo)
   - [Building the project](#building-the-project)
   - [Authors](#authors)
@@ -274,10 +274,10 @@ Content of the `orders.ftl` file:
 <#assign
   partitions = conn.query(
     "select " +
-      "t.region name, " + 
-      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " + 
-    "from shops t " + 
-    "group by t.region " + 
+      "t.region name, " +
+      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " +
+    "from shops t " +
+    "group by t.region " +
     "order by t.region"
   )
 />
@@ -356,13 +356,44 @@ cases pure PL/SQL or Java code might be more appropriate.
 > for you.
 
 
+Security
+--------
+
+The FTLDB database user requires only several system privileges:
+
+  * `CREATE SESSION`
+  * `CREATE PROCEDURE`
+  * `CREATE TYPE`
+  * `CREATE TABLE`
+  * `QUOTA` at least 50M on the default tablespace
+
+All the objects in the FTLDB schema are created with the invoker-rights option,
+and due to this, execution privileges on them are granted to `PUBLIC`, which is
+quite secure.
+
+FreeMarker requires the following permission:
+
+  * [`java.lang.RuntimePermission "getClassLoader"`](http://docs.oracle.com/javase/8/docs/api/java/lang/RuntimePermission.html)
+
+Both FTLDB schema and its users must be granted this permission. The Java API
+reads:
+
+> This would grant an attacker permission to get the class loader for a 
+> particular class. This is dangerous because having access to a class's class
+> loader allows the attacker to load other classes available to that class
+> loader. The attacker would typically otherwise not have access to those
+> classes.
+
+Take into account the risks related to allowing this permission.
+
+
 Installation
 ------------
 
-Before installing FTLDB make sure that you have **Oracle Client** of same or
-higher version as the database (it must include `sqlplus`, `loadjava` and the
-JDBC driver). The TNS name of the target instance must be registered in your
-local `tnsnames.ora`.
+Before installing FTLDB make sure that you have Oracle Client of same or higher
+version as the database (it must include `sqlplus`, `loadjava`, JRE and the JDBC
+driver). The TNS name of the target instance must be registered in your local
+`tnsnames.ora`.
 
 > **Notice**: Oracle Client version 11.2.0.1.0 for Windows has a buggy
 > `loadjava` batch script. If the installation fails on the jar loading phase,
@@ -386,12 +417,12 @@ OS. The archive includes:
     * SQL*Plus scripts for creating objects and granting privileges
   * `*.bat` or `*.sh` scripts (depends on OS) - installers and deinstallers
 
-#### Full access
+#### DBA mode
 
 If you have DBA access to the target database, use the `dba_install` script. It
 must be run under any database superuser with the DBA privilege (e.g. `SYS` or
 `SYSTEM`). It installs FTLDB as a standalone schema with the specified name and
-password and grants all the required privileges.
+password and grants it all the required privileges and permissions.
 
 > **Warning**: If the specified schema already exists, it is dropped and
 > recreated during the installation.
@@ -416,25 +447,39 @@ On Linux (or another *nix-like OS):
 
     ./dba_install.sh orcl sys manager ftldb ftldb
 
-#### Restricted access
+In order to grant other database users the required Java permissions run the
+`dba_switch_java_permissions` script with the following parameters:
+
+  1. target instance TNS name
+  2. DBA user
+  3. DBA password
+  4. `grant` keyword (or `revoke` to revoke the permissions)
+  5. list of grantee users separated by spaces
+
+For example, on Windows you would run in the command line:
+
+    dba_switch_java_permissions.bat orcl sys manager grant hr oe sh
+
+On Linux (or another *nix-like OS):
+
+    ./dba_switch_java_permissions.sh orcl sys manager grant hr oe sh
+
+#### User mode
 
 If you don't have full access to the target database, ask the DBA to create a
-new schema with the following privileges (or grant them to an existing one):
+new schema with the required privileges and permissions (or use an existing
+one).
 
-  * `CREATE SESSION`
-  * `CREATE TABLE`
-  * `CREATE PROCEDURE`
-  * `CREATE TYPE`
-  * `QUOTA` on the default tablespace
+The DBA may simply run the `setup/create_chema.sql` script to create the schema
+and the `setup/dba_switch_java_permissions.sql` script to grant FTLDB and it
+users the required permissions.
 
-and run the `setup/grant_java_permissions.sql` script (see description inside).
-
-To install FTLDB run the `usr_install` script with the following three
-parameters:
+To install FTLDB as an ordinary user run the `usr_install` script with the
+following three parameters:
 
   1. target instance TNS name
   2. FTLDB schema name
-  3. FTLDB password 
+  3. FTLDB password
 
 For example, on Windows you would run in the command line:
 
@@ -454,24 +499,7 @@ You can change the default behavior and install FTLDB manually using scripts
 from the `setup` directory.
 
 In order to uninstall FTLDB run one of the `*_uninstall.*` scripts corresponding
-to your OS and installation type.
-
-
-Security
---------
-
-When installed with the DBA script the FTLDB user is not granted with any system
-privileges, excepting quota for the default permanent tablespace, which is
-needed only to load classes via the `loadjava` utility. All the objects in the
-FTLDB schema are created with the invoker-rights option and execution privileges
-on them are granted to `PUBLIC`. Thus, the FTLDB schema serves only as a
-container for its program units and doesn't provide its users with extra
-privileges.
-
-FreeMarker requires the `getClassLoader` Java runtime permission. By default
-this permission is granted to `PUBLIC`. If you consider this insecure, you may
-grant it only to a strict list of users working with FTLDB by changing the
-`install.sql` file in the `setup` directory.
+to your OS and installation mode.
 
 
 Demo
@@ -523,8 +551,8 @@ Do the following:
   2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
   3. Run in the command line from the base project directory:  
-     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true` if you
-     don't have an Oracle instance available.
+     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
+     if you don't have an Oracle instance available.
   4. Check the `target` directory for the installation files.
 
 > **Notice**: The client-side tests are also a good source of usage examples.

@@ -27,8 +27,8 @@ instance_tns_name=$1
 super_user=$2
 super_user_pswd=$3
 demo_schema=$4
-logfile="$(basename $0 .sh)_${1}_${4}.log"
-sqlfile="$(basename $0 .sh)_${1}_${4}.sql"
+logfile="!$(basename $0 .sh)_${1}_${4}.log"
+sqlfile="!$(basename $0 .sh)_${1}_${4}.sql"
 
 exit_if_failed () {
   if [ "$1" -gt 0 ]; then

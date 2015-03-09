@@ -26,11 +26,9 @@ set super_user=%2
 set super_user_pswd=%3
 set ftldb_schema=%4
 set ftldb_pswd=%5
-set logfile=%~n0_%1_%4.log
+set "logfile=^!%~n0_%1_%4.log"
 
-set su=%super_user:S=s%
-set su=%su:Y=y%
-if "%su%" == "sys" set "sys_option=as sysdba"
+if /i "%super_user%" == "sys" set "sys_option=as sysdba"
 
 echo -------------------------------------------
 echo ------------ INSTALLING FTLDB -------------

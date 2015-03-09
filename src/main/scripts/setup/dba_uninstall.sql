@@ -36,8 +36,6 @@ prompt Drop &&user. schema.
 drop user &&user. cascade
 /
 
-prompt Caution: "getClassLoader" Java runtime permission has not been revoked!
-
 prompt SQL*Plus script finished.
 
 spool off

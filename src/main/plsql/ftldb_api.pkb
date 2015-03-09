@@ -127,6 +127,6 @@ begin
 exception
   when others then
     dbms_session.modify_package_state(dbms_session.reinitialize);
-    raise;
+    raise_application_error(-20000, 'FTLDB initialization failed', true);
 end ftldb_api;
 /

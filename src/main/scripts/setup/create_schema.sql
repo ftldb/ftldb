@@ -47,7 +47,11 @@ prompt Create &&schema. schema.
 create user &&schema.
 identified by "&&pswd."
 default tablespace &&default_tablespace.
-quota unlimited on &&default_tablespace.
+quota 50M on &&default_tablespace.
+/
+
+prompt Grant system privileges to &&schema..
+grant create session, create table, create procedure, create type to &&schema.
 /
 
 undefine schema

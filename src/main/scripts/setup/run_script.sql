@@ -14,8 +14,8 @@
 -- limitations under the License.
 --
 
--- Run as a user that has FTLDB installed in their schema.
-define logfile = "&1"    -- Log file name
+define sqlfile = "&1"    -- SQL file name
+define logfile = "&2"    -- Log file name
 
 set echo off
 set verify off
@@ -31,27 +31,7 @@ spool &&logfile.
 
 prompt SQL*Plus script started.
 
-prompt Drop FTLDB objects.
-drop package sql_ftl
-/
-drop package standard_ftl
-/
-drop package ftldb_api
-/
-drop package ftldb_wrapper
-/
-drop package source_util
-/
-drop package clob_util
-/
-drop type script_ot
-/
-drop type clob_nt
-/
-drop type varchar2_nt
-/
-drop type number_nt
-/
+@&&sqlfile.
 
 prompt SQL*Plus script finished.
 

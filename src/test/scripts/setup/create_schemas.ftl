@@ -56,6 +56,14 @@ link, create sequence
 to ${schema}
 /
 
+prompt Grant Java permissions to ${schema?upper_case} schema.
+begin
+  dbms_java.grant_permission(
+    upper('${schema}'), 'SYS:java.lang.RuntimePermission', 'getClassLoader', ''
+  );
+end;
+/
+
 </#macro>
 
 <@create_schema demo_schema "&&demo_pswd."/>

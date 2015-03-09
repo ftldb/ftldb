@@ -28,8 +28,8 @@ set super_user_pswd=%3
 set ftldb_schema=%4
 set demo_schema=%5
 set demo_pswd=%6
-set logfile=%~n0_%1_%5.log
-set sqlfile=%~n0_%1_%5.sql
+set "logfile=^!%~n0_%1_%5.log"
+set "sqlfile=^!%~n0_%1_%5.sql"
 
 echo -------------------------------------------
 echo ---------- INSTALLING FTLDB DEMO ----------

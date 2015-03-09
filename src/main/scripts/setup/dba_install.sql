@@ -33,11 +33,11 @@ spool &&logfile.
 
 prompt SQL*Plus script started.
 
-@setup/create_schema &&user. &&user_pswd.
+@@create_schema &&user. &&user_pswd.
 
-@setup/grant_java_permissions public
+@@switch_java_permissions grant &&user.
 
-@setup/create_plsql_objects &&user. public
+@@create_plsql_objects &&user. public
 
 prompt SQL*Plus script finished.
 

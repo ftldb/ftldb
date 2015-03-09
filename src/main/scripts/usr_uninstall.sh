@@ -26,7 +26,7 @@ fi
 instance_tns_name=$1
 ftldb_schema=$2
 ftldb_pswd=$3
-logfile="$(basename $0 .sh)_${1}_${2}.log"
+logfile="!$(basename $0 .sh)_${1}_${2}.log"
 
 exit_if_failed () {
   if [ "$1" -gt 0 ]; then

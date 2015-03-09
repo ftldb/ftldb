@@ -27,9 +27,9 @@ instance_tns_name=$1
 super_user=$2
 super_user_pswd=$3
 ftldb_schema=$4
-logfile="$(basename $0 .sh)_${1}_${4}.log"
+logfile="!$(basename $0 .sh)_${1}_${4}.log"
 
-if su=${super_user//S/s} && su=${su//Y/y} && [ "$su" = "sys" ]; then 
+if [ "$(echo ${super_user} | tr 'A-Z' 'a-z')" = "sys" ]; then
   sys_option="as sysdba"
 fi
 

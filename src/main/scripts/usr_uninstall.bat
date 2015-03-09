@@ -22,7 +22,7 @@ if "%~3" == "" goto :usage
 set instance_tns_name=%1
 set ftldb_schema=%2
 set ftldb_pswd=%3
-set logfile=%~n0_%1_%2.log
+set "logfile=^!%~n0_%1_%2.log"
 
 echo -------------------------------------------
 echo ----------- DEINSTALLING FTLDB ------------
