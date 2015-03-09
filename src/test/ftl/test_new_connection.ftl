@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 Open connection.
 <#import "dbconn.config.ftl" as conf>
 <#assign conn = conf.new_conn()/>
@@ -28,4 +28,4 @@ ${result}
 
 Close connection.
 <#assign void = conn.close()/>
--- ${.template_name} END --
+-- ${template_name()} END --

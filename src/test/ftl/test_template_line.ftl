@@ -15,9 +15,9 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 line 19
 line 20
 line 21
 line ${template_line()}
--- ${.template_name} END --
+-- ${template_name()} END --

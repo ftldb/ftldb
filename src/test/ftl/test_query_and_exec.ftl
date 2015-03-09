@@ -15,18 +15,18 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 Open connection.
 <#import "dbconn.config.ftl" as conf>
 <#assign conn = conf.new_conn()/>
 
 Get DB Version.
-<#assign 
-  result = 
+<#assign
+  result =
   conn.exec(
     "begin\n" +
-    "  :1 := dbms_db_version.version;\n" + 
-    "  :2 := dbms_db_version.release;\n" + 
+    "  :1 := dbms_db_version.version;\n" +
+    "  :2 := dbms_db_version.release;\n" +
     "end;",
     {"1" : 1},
     {"1" : "NUMERIC", "2" : "NUMERIC"}
@@ -114,5 +114,4 @@ Print result:
 
 Close connection.
 <#assign void = conn.close()/>
--- ${.template_name} END --
-  
+-- ${template_name()} END --

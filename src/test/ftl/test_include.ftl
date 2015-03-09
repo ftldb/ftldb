@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 Include another template:
 <#include "test_included.ftl">
--- ${.template_name} END --
+-- ${template_name()} END --

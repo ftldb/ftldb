@@ -15,8 +15,8 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 Get variable "v" from the global context.
 <#assign v = global_context.get("v")>
 Content of V: [<#list v as i>"${i}"<#if i_has_next>, </#if></#list>]
--- ${.template_name} END --
+-- ${template_name()} END --

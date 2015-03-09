@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 Passed arguments:
 <#list template_args as arg>
   arg[${arg_index}] = "${arg}"
@@ -23,4 +23,4 @@ Passed arguments:
 
 Save them to the global context variable "v".
 <#assign void = global_context.set("v", template_args)>
--- ${.template_name} END --
+-- ${template_name()} END --

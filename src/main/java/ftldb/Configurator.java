@@ -17,8 +17,7 @@ package ftldb;
 
 
 import freemarker.cache.*;
-import freemarker.core.Environment;
-import freemarker.core._CoreAPI;
+import freemarker.core.EnvironmentInternalsAccessor;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.*;
 
@@ -35,7 +34,7 @@ import java.util.List;
 public class Configurator {
 
     /** The currently supported version of FreeMarker */
-    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_21;
+    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_22;
     private static Configuration cfg;
 
 
@@ -107,6 +106,7 @@ public class Configurator {
 
         // Register shared methods.
         registerStaticSharedMethod();
+        registerTemplateNameSharedMethod();
         registerTemplateLineSharedMethod();
         registerDBConnectionSharedMethods();
     }
@@ -132,13 +132,23 @@ public class Configurator {
     }
 
 
+    // This method accesses the internal FreeMarker API.
+    private static void registerTemplateNameSharedMethod() {
+        cfg.setSharedVariable("template_name", new TemplateMethodModelEx() {
+            public Object exec(List args) throws TemplateModelException {
+                if (args.size() != 0) throw new TemplateModelException("No arguments needed");
+                return EnvironmentInternalsAccessor.getCurrentTemplate().getName();
+            }
+        });
+    }
+
+
+    // This method accesses the internal FreeMarker API.
     private static void registerTemplateLineSharedMethod() {
         cfg.setSharedVariable("template_line", new TemplateMethodModelEx() {
             public Object exec(List args) throws TemplateModelException {
                 if (args.size() != 0) throw new TemplateModelException("No arguments needed");
-                return new Integer(
-                        _CoreAPI.getInstructionStackSnapshot(Environment.getCurrentEnvironment())[0].getBeginLine()
-                );
+                return new Integer(EnvironmentInternalsAccessor.getInstructionStackSnapshot()[0].getBeginLine());
             }
         });
     }

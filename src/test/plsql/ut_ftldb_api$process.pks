@@ -224,7 +224,7 @@ $if null $then
 
 
 --%begin java_hlp_methods3
-  template_name = "${.template_name}"
+  template_name = "${template_name()}"
 --%end java_hlp_methods3
 
 --%begin standard

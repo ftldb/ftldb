@@ -15,15 +15,15 @@
     limitations under the License.
 
 -->
--- ${.template_name} START --
+-- ${template_name()} START --
 Open connection.
 <#import "dbconn.config.ftl" as conf>
 <#assign conn = conf.new_conn()/>
 
 Execute query.
-<#assign 
+<#assign
   result = conn.query(
-    "select a.*, 'column1' col1, 'column2' col_2 from dual a where :1 = :2", 
+    "select a.*, 'column1' col1, 'column2' col_2 from dual a where :1 = :2",
     ["bnd1", "bnd2"]
   )
 />
@@ -42,4 +42,4 @@ Print colMeta:
 
 Close connection.
 <#assign void = conn.close()/>
--- ${.template_name} END --
+-- ${template_name()} END --

@@ -218,7 +218,7 @@ $if null $then
         [a_selectable?upper_case]
       ).seq_rows[0][0]
   />
-  comment on table ${a_snap_tab} is 'Snapshots. ${l_src_comments} @generated ${.template_name}'
+  comment on table ${a_snap_tab} is 'Snapshots. ${l_src_comments} @generated ${template_name()}'
   </>
   <#list l_cols_info as r>
     <#if r.COMMENTS??>
@@ -276,8 +276,8 @@ end;
 
 $if null $then
 --%begin gen_err_log_table_ftl
-  <#assign a_err_log_tab = template_args[0]/>  
-  <#assign a_selectable = template_args[1]/>  
+  <#assign a_err_log_tab = template_args[0]/>
+  <#assign a_selectable = template_args[1]/>
 
   <#import "ftldb_standard_ftl" as std>
 
@@ -309,7 +309,7 @@ $if null $then
     )
     </>
     comment on table ${a_err_log_tab?lower_case} is
-      'Error logging table for ${a_selectable?lower_case}. @generated ${.template_name}'
+      'Error logging table for ${a_selectable?lower_case}. @generated ${template_name()}'
     </>
   </@std.indent>
 --%end gen_err_log_table_ftl
@@ -338,10 +338,10 @@ end;
 
 $if null $then
 --%begin gen_diff_view_ftl
-  <#assign a_diff_view = template_args[0]/>  
-  <#assign a_selectable = template_args[1]/>  
-  <#assign a_snap = template_args[2]/>  
-  
+  <#assign a_diff_view = template_args[0]/>
+  <#assign a_selectable = template_args[1]/>
+  <#assign a_snap = template_args[2]/>
+
   <#import "ftldb_standard_ftl" as std>
   <#import "demo_dtoch_gen%local_ftl_macros" as lm>
 
@@ -410,7 +410,7 @@ where
   )
 </>
 comment on table ${a_diff_view} is
-  'Detector of changes for ${a_selectable}. @generated ${.template_name}'
+  'Detector of changes for ${a_selectable}. @generated ${template_name()}'
 </>
 --%end gen_diff_view_ftl
 $end
@@ -453,7 +453,7 @@ $if null $then
 create or replace package demo_dtoch is
 
 /**
- * @generated ${.template_name}
+ * @generated ${template_name()}
  */
 
 procedure process;
