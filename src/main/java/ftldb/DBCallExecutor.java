@@ -78,7 +78,7 @@ public class DBCallExecutor {
                 Object o = e.getValue();
                 // JDBC can't work with java.util.Date directly
                 if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
-                cs.setObject(index++, o);
+                cs.setObject(index, o);
             }
 
             for (Iterator it = outBinds.entrySet().iterator(); it.hasNext(); ) {

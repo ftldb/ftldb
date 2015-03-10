@@ -54,8 +54,9 @@ public class SQLTypeHelper {
      *
      * @param typeName the constant name (fully specified, if not from {@link Types})
      * @return the corresponding Integer value
+     * @throws Exception if a constant with the given name is not found, not accessible, not of int type or is null
      */
-    public static Integer getIntValue(String typeName) {
+    public static Integer getIntValue(String typeName) throws Exception {
         Integer ret = (Integer) encoder.get(typeName);
         if (ret == null) {
             ret = extractConstant(typeName);
@@ -65,21 +66,18 @@ public class SQLTypeHelper {
     }
 
 
-    private static Integer extractConstant(String typeName) {
+    private static Integer extractConstant(String typeName) throws Exception {
         int lastDotPos = typeName.lastIndexOf(".");
-        if (lastDotPos < 1) throw new RuntimeException("Type name is neither from " + Types.class.getName() +
-                " nor fully specified: " + typeName);
+        if (lastDotPos < 1) {
+            throw new IllegalArgumentException("Type constant is not member of " + Types.class.getName() +
+                    " and its name is not fully specified: " + typeName);
+        }
 
         String className = typeName.substring(0, lastDotPos);
         String fieldName = typeName.substring(lastDotPos + 1);
 
-        Integer val;
-        try {
-            Class cls = Class.forName(className);
-            val = (Integer) cls.getField(fieldName).get(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Class cls = Class.forName(className);
+        Integer val = (Integer) cls.getField(fieldName).get(null);
 
         if (val == null) throw new NullPointerException(typeName);
         return val;
