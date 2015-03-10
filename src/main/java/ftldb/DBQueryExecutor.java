@@ -68,18 +68,18 @@ public class DBQueryExecutor {
         if (binds == null) binds = Collections.EMPTY_LIST;
 
         PreparedStatement ps = connection.prepareStatement(query);
-        if (binds != null && !binds.isEmpty()) {
-            int index = 1;
-            for (Iterator it = binds.iterator(); it.hasNext(); ) {
-                Object o = it.next();
-                // JDBC can't work with java.util.Date directly
-                if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
-                ps.setObject(index++, o);
-            }
-        }
-        ResultSet rs = ps.executeQuery();
-
         try {
+            if (binds != null && !binds.isEmpty()) {
+                int index = 1;
+                for (Iterator it = binds.iterator(); it.hasNext(); ) {
+                    Object o = it.next();
+                    // JDBC can't work with java.util.Date directly
+                    if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
+                    ps.setObject(index++, o);
+                }
+            }
+            ResultSet rs = ps.executeQuery();
+
             return processResultSet(rs);
         } finally {
             ps.close();
@@ -95,14 +95,14 @@ public class DBQueryExecutor {
      * @throws SQLException if a database access error occurs
      */
     public static QueryResult processResultSet(ResultSet rs) throws SQLException {
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int colCount = rsmd.getColumnCount();
-        List colMetaList = new ArrayList(colCount);
-        for (int i = 1; i <= colCount; i++) {
-            ColumnMetaData cmd = new ColumnMetaData(rsmd, i);
-            colMetaList.add(cmd);
-        }
         try {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int colCount = rsmd.getColumnCount();
+            List colMetaList = new ArrayList(colCount);
+            for (int i = 1; i <= colCount; i++) {
+                ColumnMetaData cmd = new ColumnMetaData(rsmd, i);
+                colMetaList.add(cmd);
+            }
             return new QueryResult(colMetaList, rs);
         } finally {
             rs.close();

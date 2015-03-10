@@ -59,9 +59,7 @@ public class SQLTypeHelper {
         Integer ret = (Integer) encoder.get(typeName);
         if (ret == null) {
             ret = extractConstant(typeName);
-            if (ret != null) {
-                encoder.put(typeName, ret);
-            }
+            encoder.put(typeName, ret);
         }
         return ret;
     }
@@ -69,16 +67,22 @@ public class SQLTypeHelper {
 
     private static Integer extractConstant(String typeName) {
         int lastDotPos = typeName.lastIndexOf(".");
-        if (lastDotPos < 1) return null;
+        if (lastDotPos < 1) throw new RuntimeException("Type name is neither from " + Types.class.getName() +
+                " nor fully specified: " + typeName);
+
         String className = typeName.substring(0, lastDotPos);
         String fieldName = typeName.substring(lastDotPos + 1);
 
+        Integer val;
         try {
             Class cls = Class.forName(className);
-            return (Integer) cls.getField(fieldName).get(null);
+            val = (Integer) cls.getField(fieldName).get(null);
         } catch (Exception e) {
-            return null;
+            throw new RuntimeException(e);
         }
+
+        if (val == null) throw new NullPointerException(typeName);
+        return val;
     }
 
 

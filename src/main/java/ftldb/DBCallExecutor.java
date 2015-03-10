@@ -64,79 +64,87 @@ public class DBCallExecutor {
 
         CallableStatement cs = connection.prepareCall(call);
 
-        for (Iterator it = inBinds.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry e = (Map.Entry) it.next();
+        try {
+            for (Iterator it = inBinds.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry e = (Map.Entry) it.next();
 
-            int index;
-            try {
-                index = Integer.parseInt(e.getKey().toString());
-            } catch (NumberFormatException ex) {
-                throw new SQLException("Wrong in bind variable index: expected int, got String", ex);
+                int index;
+                try {
+                    index = Integer.parseInt(e.getKey().toString());
+                } catch (NumberFormatException ex) {
+                    throw new SQLException("Wrong in bind variable index: expected int, got String", ex);
+                }
+
+                Object o = e.getValue();
+                // JDBC can't work with java.util.Date directly
+                if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
+                cs.setObject(index++, o);
             }
 
-            Object o = e.getValue();
-            // JDBC can't work with java.util.Date directly
-            if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
-            cs.setObject(index++, o);
+            for (Iterator it = outBinds.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry e = (Map.Entry) it.next();
+
+                int index;
+                try {
+                    index = Integer.parseInt(e.getKey().toString());
+                } catch (NumberFormatException ex) {
+                    throw new SQLException("Wrong out bind variable index: expected int, got String", ex);
+                }
+
+                Object o = e.getValue();
+                String typeName;
+
+                if (o instanceof String) {
+                    typeName = (String) o;
+                } else {
+                    throw new SQLException("Unable to register type of out bind variable #" + index + ": " + o);
+                }
+
+                String sqlTypeName;
+                String usrTypeName;
+                int delimIndex = typeName.indexOf(":");
+
+                if ( delimIndex == -1) {
+                    sqlTypeName = typeName;
+                    usrTypeName = null;
+                } else {
+                    sqlTypeName = typeName.substring(0, delimIndex);
+                    usrTypeName = typeName.substring(delimIndex + 1);
+                }
+
+                Integer sqlType;
+                try {
+                    sqlType = SQLTypeHelper.getIntValue(sqlTypeName);
+                } catch (Exception ex) {
+                    throw new SQLException("Unknown SQL type of out bind variable #" + index + ": " + sqlTypeName, ex);
+                }
+
+                if (usrTypeName == null || "".equals(usrTypeName.trim())) {
+                    cs.registerOutParameter(index, sqlType.intValue());
+                } else {
+                    cs.registerOutParameter(index, sqlType.intValue(), usrTypeName);
+                }
+
+            }
+
+            cs.execute();
+
+            Map ret = new HashMap(outBinds.size());
+            for (Iterator it = outBinds.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry e = (Map.Entry) it.next();
+                int index = Integer.parseInt(e.getKey().toString());
+                Object retBind = cs.getObject(index);
+                if (retBind instanceof ResultSet) {
+                    retBind = DBQueryExecutor.processResultSet((ResultSet) retBind);
+                }
+                ret.put(String.valueOf(index), retBind);
+            }
+            return ret;
+
+        } finally {
+            cs.close();
         }
 
-        for (Iterator it = outBinds.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry e = (Map.Entry) it.next();
-
-            int index;
-            try {
-                index = Integer.parseInt(e.getKey().toString());
-            } catch (NumberFormatException ex) {
-                throw new SQLException("Wrong out bind variable index: expected int, got String", ex);
-            }
-
-            Object o = e.getValue();
-            String typeName;
-
-            if (o instanceof String) {
-                typeName = (String) o;
-            } else {
-                throw new SQLException("Unable to register type of out bind variable #" + index + ": " + o);
-            }
-
-            String sqlTypeName;
-            String usrTypeName;
-            int delimIndex = typeName.indexOf(":");
-
-            if ( delimIndex == -1) {
-                sqlTypeName = typeName;
-                usrTypeName = null;
-            } else {
-                sqlTypeName = typeName.substring(0, delimIndex);
-                usrTypeName = typeName.substring(delimIndex + 1);
-            }
-
-            Integer sqlType = SQLTypeHelper.getIntValue(sqlTypeName);
-            if (sqlType == null) {
-                throw new SQLException("Unknown SQL type of out bind variable #" + index + ": " + sqlTypeName);
-            }
-
-            if (usrTypeName == null || "".equals(usrTypeName.trim())) {
-                cs.registerOutParameter(index, sqlType.intValue());
-            } else {
-                cs.registerOutParameter(index, sqlType.intValue(), usrTypeName);
-            }
-
-        }
-
-        cs.execute();
-
-        Map ret = new HashMap(outBinds.size());
-        for (Iterator it = outBinds.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry e = (Map.Entry) it.next();
-            int index = Integer.parseInt(e.getKey().toString());
-            Object retBind = cs.getObject(index);
-            if (retBind instanceof ResultSet) {
-                retBind = DBQueryExecutor.processResultSet((ResultSet) retBind);
-            }
-            ret.put(String.valueOf(index), retBind);
-        }
-        return ret;
     }
 
 }
