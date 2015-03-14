@@ -16,5 +16,5 @@
 
 -->
 <#function new_conn>
-<#return new_connection("jdbc:oracle:thin:@//localhost:1521/orcl", "scott", "tiger")/>
+<#return new_connection("jdbc:oracle:thin:@//localhost:1521/orcl11", "scott", "tiger")/>
 </#function>
