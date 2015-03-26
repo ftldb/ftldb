@@ -27,6 +27,7 @@ instance_tns_name=$1
 ftldb_schema=$2
 ftldb_pswd=$3
 logfile="!$(basename $0 .sh)_${1}_${2}.log"
+jarfile="!missing_${1}_${2}.jar"
 
 exit_if_failed () {
   if [ "$1" -gt 0 ]; then
@@ -51,11 +52,28 @@ sqlplus -L $ftldb_schema/$ftldb_pswd@$instance_tns_name \
 
 exit_if_failed $?
 
+# Determine Oracle version.
+ora_release="$(sqlplus -S -L $ftldb_schema/$ftldb_pswd@$instance_tns_name @setup/get_oracle_release)"
+
+if [ "${ora_release:0:1}" = "1" ]; then
+  if [ "${ora_release:0:2}" = "10" ]; then
+    missing_option="unresolvedok"
+    missing_message="ignore missing classes"
+  else
+    missing_option="genmissingjar setup/$jarfile"
+    missing_message="generate missing classes and save to setup/$jarfile"
+  fi
+else
+  echo Warning! Unknown or unsupported Oracle version: $ora_release.
+  missing_option="unresolvedok"
+  missing_message="ignore missing classes"
+fi
+
 echo
-echo Load freemarker.jar classes into database.
+echo Load freemarker.jar classes into database, $missing_message.
 loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
+  -resolve -$missing_option \
   -grant public \
-  -resolve -unresolvedok \
   -verbose -stdout \
   java/freemarker.jar \
   1>> setup/$logfile
@@ -65,8 +83,8 @@ exit_if_failed $?
 echo
 echo Load ftldb.jar classes into database.
 loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
-  -grant public \
   -resolve \
+  -grant public \
   -verbose -stdout \
   java/ftldb.jar \
   1>> setup/$logfile

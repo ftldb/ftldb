@@ -579,5 +579,4 @@ Sponsors
 --------
 
 The first FTLDB prototype was written by the authors during their work at
-[CUSTIS](http://custis.ru). Its infrastructure is still used for testing and
-continuous integration.
+[CUSTIS](http://custis.ru).
