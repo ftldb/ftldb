@@ -471,7 +471,7 @@ If you don't have full access to the target database, ask the DBA to create a
 new schema with the required privileges and permissions (or use an existing
 one).
 
-The DBA may simply run the `setup/create_chema.sql` script to create the schema
+The DBA may simply run the `setup/create_schema.sql` script to create the schema
 and the `setup/dba_switch_java_permissions.sql` script to grant FTLDB and it
 users the required permissions.
 

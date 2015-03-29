@@ -68,7 +68,7 @@
 -- function when the expression or the function are incompatible with the pure
 -- SQL (e.g. for accessing a package variable or passing/returning a boolean).
 -- In contrast to Native Dynamic SQL you can call functions that have boolean
--- arguments; the sys.diutil package is used for bool2int/int2bool convertion.
+-- arguments; the sys.diutil package is used for bool2int/int2bool conversion.
 --
 -- @param  typ   the returning type, which is a constant from java.sql.Types or
 --               oracle.jdbc.OracleTypes (in the latter case specified with the
