@@ -567,6 +567,8 @@ The project is created and maintained by:
   * [Victor Osolovskiy](http://github.com/vosolovskiy)
   * [Sergey Navrotskiy](http://github.com/sns777)
 
+You can connect with the authors via [email](mailto:ftldb@googlegroups.com).
+
 
 License
 -------
