@@ -400,8 +400,9 @@ driver). The TNS name of the target instance must be registered in your local
 > `loadjava` batch script. If the installation fails on the jar loading phase,
 > upgrade the client to a higher version.
 
-To install FTLDB download and unpack the release archive corresponding to your
-OS. The archive includes:
+To install FTLDB download and unpack the
+[release archive](https://github.com/ftldb/ftldb/releases) corresponding to
+your OS. The archive includes:
 
   * `doc` directory
     * Java & PL/SQL API documentation
