@@ -36,4 +36,4 @@ templates.
 return to point 2.
 
 8. Run `!uninstall.sql` to remove all the directly installed objects (not
-generated) of and return to point 1.
+generated) and return to point 1.
