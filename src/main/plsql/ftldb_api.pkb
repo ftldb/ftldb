@@ -123,7 +123,6 @@ end process_body;
 
 begin
   init();
-  dbms_java.set_output(1000000);
 exception
   when others then
     dbms_session.modify_package_state(dbms_session.reinitialize);

@@ -22,37 +22,37 @@ import java.util.Map;
 
 /**
  * A helper class for storing FTL variables and passing them between different templates. Can be accessed in FTL as
- * a shared variable {@code global_context}.
+ * a shared variable {@code shared_hash}.
  */
-public class TemplateGlobalContext {
+public class TemplateSharedHash {
 
     private final Map storage = new HashMap();
 
 
     /**
-     * Saves the specified parameter value into the storage.
+     * Saves the specified key value into the storage.
      *
-     * @param parameter the parameter name
-     * @param value the parameter value
+     * @param key the key name
+     * @param value the key value
      */
-    public void set(String parameter, Object value) {
-        storage.put(parameter, value);
+    public void set(String key, Object value) {
+        storage.put(key, value);
     }
 
 
     /**
-     * Returns the previously set parameter from the storage. If the parameter is not set, returns null.
+     * Returns the previously set key from the storage. If the key is not set, returns null.
      *
-     * @param parameter the parameter name
-     * @return stored parameter value
+     * @param key the key name
+     * @return stored key value
      */
-    public Object get(String parameter) {
-        return storage.get(parameter);
+    public Object get(String key) {
+        return storage.get(key);
     }
 
 
     /**
-     * Returns the whole context as a {@link java.util.Map}.
+     * Returns the whole storage as a {@link java.util.Map}.
      *
      * @return the inner storage
      */
@@ -62,12 +62,12 @@ public class TemplateGlobalContext {
 
 
     /**
-     * Drops the specified parameter from the storage, if presented.
+     * Drops the specified key from the storage, if presented.
      *
-     * @param parameter the parameter name
+     * @param key the key name
      */
-    public void clear(String parameter) {
-        storage.remove(parameter);
+    public void clear(String key) {
+        storage.remove(key);
     }
 
 

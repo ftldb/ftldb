@@ -16,7 +16,11 @@
 
 -->
 -- ${template_name()} START --
-Get variable "v" from the global context.
-<#assign v = global_context.get("v")>
-Content of V: [<#list v as i>"${i}"<#if i_has_next>, </#if></#list>]
+Passed arguments:
+<#list template_args as arg>
+  arg[${arg_index}] = "${arg}"
+</#list>
+
+Save them to the shared hash as the key "v".
+<#assign void = shared_hash.set("v", template_args)>
 -- ${template_name()} END --

@@ -31,6 +31,7 @@ procedure ut_process#java_hlp_methods3;
 procedure ut_process#standard;
 procedure ut_process#sql;
 
+function ut_process#sql#fetch(in_cnt number) return sys_refcursor;
 
 end ut_ftldb_api;
 /
@@ -253,6 +254,16 @@ begin
     raise_application_error(-20000, 'Result is not as expected');
   end if;
 end ut_process#sql;
+
+
+function ut_process#sql#fetch(in_cnt number) return sys_refcursor
+is
+  l_rc sys_refcursor;
+begin
+  open l_rc for
+    select rownum from dual connect by rownum <= in_cnt;
+  return l_rc;
+end;
 
 
 end ut_ftldb_api;

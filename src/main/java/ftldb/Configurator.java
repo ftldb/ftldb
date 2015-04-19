@@ -65,23 +65,29 @@ public class Configurator {
      *
      * <p>Available shared variables and methods are:
      * <ul>
-     *     <li>{@code global_context} is an instance of {@link TemplateGlobalContext}
-     *     <li>{@code static(String)} returns the static model of a class, which allows to call any of its static
-     *         methods
+     *     <li>{@code shared_hash} is an instance of {@link TemplateSharedHash}
+     *     <li>{@code static(String className)} returns the static model of a class named {@code className}, which
+     *         allows to call any of its static methods
+     *     <li>{@code template_name()} returns the name of the current template
      *     <li>{@code template_line()} returns the current line in a template
-     *     <li>{@code new_connection(String, String, String)} opens and returns a new connection to a database with
-     *         the specified url, name and password
+     *     <li>{@code new_connection(String url, String user, String password)} opens and returns a new connection to
+     *         a database with the specified {@code url}, {@code name} and {@code password}
      *     <li>{@code new_connection()} opens and returns a new connection to a database with "jdbc:default:connection"
      *         url
      *     <li>{@code default_connection()} returns the default connection set for the configuration
-     *     <li>{@code set_default_connection(DBConnection)} overrides the default connection
+     *     <li>{@code set_default_connection(DBConnection conn)} overrides the default connection with {@code conn}
+     *     <li>{@code shell_exec(String cmd)} executes the given shell command and returns a hash with two array
+     *         elements: {@code "stdout"} and {@code "stderr"}, containing lines which are fetched from the shell output
+     *     <li>{@code shell_exec(String cmd, String encoding)} the same as previous with the specified {@code encoding}
+     *     <li>{@code shell_exec(String[] cmdArray, String encoding)} the same as previous with the command passed as
+     *         an array
      * </ul>
      *
      * <p>Usage examples in FTL:
      * <pre>
      * {@code
-     * <#assign void = global_context.set("a", 2)/>
-     * a = ${global_context.get("a")}
+     * <#assign void = shared_hash.set("a", 2)/>
+     * a = ${shared_hash.get("a")}
      *
      * <#assign sqr2 = static("java.lang.Math").sqrt(2)/>
      *
@@ -91,6 +97,11 @@ public class Configurator {
      * <#assign ext_conn = new_connection("jdbc:oracle:thin@//localhost:1521/orcl", "scott", "tiger")/>
      * <#assign void = set_default_connection(ext_conn)/>
      * <#assign def_conn = default_connection()/>
+     *
+     * <#assign lines = shell_exec("ls -1").stdout/>
+     * <#list lines as line>
+     * ${line}
+     * </#list>
      * }
      * </pre>
      */
@@ -102,21 +113,22 @@ public class Configurator {
         cfg.setLocalizedLookup(false);
 
         // Register shared variables.
-        registerGlobalContextSharedVariable();
+        registerSharedHash();
 
         // Register shared methods.
         registerStaticSharedMethod();
         registerTemplateNameSharedMethod();
         registerTemplateLineSharedMethod();
         registerDBConnectionSharedMethods();
+        registerShellExecuteSharedMethod();
     }
 
 
-    private static void registerGlobalContextSharedVariable() {
+    private static void registerSharedHash() {
         try {
-            cfg.setSharedVariable("global_context", new TemplateGlobalContext());
+            cfg.setSharedVariable("shared_hash", new TemplateSharedHash());
         } catch (TemplateModelException e) {
-            throw new RuntimeException("Unable to set global_context", e);
+            throw new RuntimeException("Unable to set shared_hash", e);
         }
     }
 
@@ -151,6 +163,11 @@ public class Configurator {
                 return new Integer(EnvironmentInternalsAccessor.getInstructionStackSnapshot()[0].getBeginLine());
             }
         });
+    }
+
+
+    private static void registerShellExecuteSharedMethod() {
+        cfg.setSharedVariable("shell_exec", ShellCommandExecutor.getMethodShellExecute());
     }
 
 

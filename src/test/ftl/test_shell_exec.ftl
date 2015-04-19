@@ -16,11 +16,32 @@
 
 -->
 -- ${template_name()} START --
-Passed arguments:
-<#list template_args as arg>
-  arg[${arg_index}] = "${arg}"
+<#assign res = shell_exec("java -version")/>
+run "java -version":
+<#list res.stderr as line>
+${line}
 </#list>
 
-Save them to the global context variable "v".
-<#assign void = global_context.set("v", template_args)>
+<#assign res = shell_exec(["java", "-version"])/>
+run "java -version":
+<#list res.stderr as line>
+${line}
+</#list>
+
+<#assign res = shell_exec("java -version", "UTF-8")/>
+run "java -version" with explicit encoding:
+<#list res.stderr as line>
+${line}
+</#list>
+
+<#assign os = static("java.lang.System").getProperty("os.name")/>
+<#if os?lower_case?contains("win")>
+  <#assign res = shell_exec("cmd /c dir /b")/>
+<#else/>
+  <#assign res = shell_exec("ls -1")/>
+</#if>
+list current dir files:
+<#list res.stdout as line>
+${line}
+</#list>
 -- ${template_name()} END --

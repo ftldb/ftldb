@@ -206,13 +206,13 @@ $if null $then
 
 
 --%begin java_hlp_methods2_beg
-  <#assign void = global_context.set("xxx", 123)>
+  <#assign void = shared_hash.set("xxx", 123)>
 
 --%end java_hlp_methods2_beg
 
 
 --%begin java_hlp_methods2_end
-  ${global_context.get("xxx")}
+  ${shared_hash.get("xxx")}
 
 --%end java_hlp_methods2_end
 
@@ -405,6 +405,9 @@ column4, column5
   <#assign res = sql.collect([1,3,5,7], 'sys.odcinumberlist')/>
   ${std.to_list(res.getArray())}
 
+  <#assign res = sql.fetch("ut_ftldb_api.ut_process#sql#fetch", "3")/>
+  ${std.to_list(res.col_seq[0])}
+
 --%end sql
 
 
@@ -422,6 +425,8 @@ column4, column5
   2, 4, 6, 8
 
   1, 3, 5, 7
+
+  1, 2, 3
 
 --%end sql_res
 

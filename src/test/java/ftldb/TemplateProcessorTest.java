@@ -56,9 +56,9 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testGlobalContext() throws Exception {
+    public void testSharedHash() throws Exception {
         CommandLine.main(new String[]{
-                "test_global_context1.ftl", "x", "y", "z", "!", "test_global_context2.ftl"
+                "test_shared_hash1.ftl", "x", "y", "z", "!", "test_shared_hash2.ftl"
         });
     }
 
@@ -102,5 +102,11 @@ public class TemplateProcessorTest {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_col_sets.ftl");
     }
+
+    @Test
+    public void testShellExec() throws Exception {
+        process("test_shell_exec.ftl");
+    }
+
 
 }
