@@ -118,7 +118,7 @@ public class ShellCommandExecutor {
             try {
                 reader.close();
             } catch (IOException e2) {
-                e.addSuppressed(e2);
+                throw (IOException) e2.initCause(e);
             }
             throw e;
         }
