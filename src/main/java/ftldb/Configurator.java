@@ -34,7 +34,7 @@ import java.util.List;
 public class Configurator {
 
     /** The currently supported version of FreeMarker */
-    public final static Version SUPPORTED_VERSION = Configuration.VERSION_2_3_22;
+    public final static freemarker.template.Version SUPPORTED_FM_VERSION = Configuration.VERSION_2_3_22;
     private static Configuration cfg;
 
 
@@ -106,9 +106,9 @@ public class Configurator {
      * </pre>
      */
     public static synchronized void newConfiguration() {
-        cfg = new Configuration(SUPPORTED_VERSION);
+        cfg = new Configuration(SUPPORTED_FM_VERSION);
 
-        cfg.setObjectWrapper(new DefaultObjectWrapperBuilder(SUPPORTED_VERSION).build());
+        cfg.setObjectWrapper(new DefaultObjectWrapperBuilder(SUPPORTED_FM_VERSION).build());
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         cfg.setLocalizedLookup(false);
 

@@ -67,6 +67,8 @@ public class CommandLine {
 
         if (args.length < 1) {
             System.err.println(
+                    "FTLDB v" + Version.getStringValue() + ", " +
+                            "based on FreeMarker v" + Configurator.SUPPORTED_FM_VERSION + ".\n" +
                     "Usage: " + CommandLine.class.getName() +
                             " ftlFile1 arg1 ... argN [! ftlFile2 arg1 ... argN [! ftlFileN ...]]"
             );

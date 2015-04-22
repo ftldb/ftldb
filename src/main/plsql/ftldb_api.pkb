@@ -121,6 +121,20 @@ begin
 end process_body;
 
 
+function get_version return varchar2
+is
+begin
+  return ftldb_wrapper.get_version();
+end get_version;
+
+
+function get_version_number return integer
+is
+begin
+  return ftldb_wrapper.get_version_number();
+end get_version_number;
+
+
 begin
   init();
 exception

@@ -104,5 +104,21 @@ function process_body(
 ) return script_ot;
 
 
+/**
+ * Returns the FTLDB version as a string.
+ *
+ * @return FTLDB version
+ */
+function get_version return varchar2;
+
+
+/**
+ * Returns the FTLDB version as a comparable integer.
+ *
+ * @return FTLDB version
+ */
+function get_version_number return integer;
+
+
 end ftldb_api;
 /

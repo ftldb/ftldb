@@ -108,5 +108,4 @@ public class TemplateProcessorTest {
         process("test_shell_exec.ftl");
     }
 
-
 }
