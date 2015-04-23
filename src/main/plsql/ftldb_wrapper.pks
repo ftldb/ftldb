@@ -61,12 +61,12 @@ language java name 'ftldb.oracle.DBTemplateProcessor.setArguments(java.sql.Array
 
 function get_version return varchar2
 is
-language java name 'ftldb.Version.getStringValue() return java.lang.String';
+language java name 'ftldb.Configurator.getVersionString() return java.lang.String';
 
 
 function get_version_number return number
 is
-language java name 'ftldb.Version.getIntValue() return int';
+language java name 'ftldb.Configurator.getVersionNumber() return int';
 
 
 end ftldb_wrapper;

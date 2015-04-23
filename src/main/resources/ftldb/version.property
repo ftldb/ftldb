@@ -1,0 +1,3 @@
+# FTLDB version number
+version=${project.version}
+

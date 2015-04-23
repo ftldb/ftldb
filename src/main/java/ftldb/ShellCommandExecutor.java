@@ -34,7 +34,7 @@ public class ShellCommandExecutor {
     /**
      * Implements a {@link TemplateMethodModelEx} FTL method interface. Creates a method named {@code shell_exec},
      * which 1st argument - the command - is mandatory, and the 2nd argument - the output encoding - is optional.
-     * The command may be passed either as a whole string ("ls -l") or as an array (["ls", "-l"]). The default encoding
+     * The command may be passed either as a whole string ("ls -1") or as an array (["ls", "-1"]). The default encoding
      * is UTF-8.
      *
      * @return an FTL method for executing a shell command

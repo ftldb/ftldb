@@ -23,8 +23,7 @@ public class VersionTest {
 
     @Test
     public void printVersion() throws Exception {
-        System.out.println("String version: " + Version.getStringValue());
-        System.out.println("Number version: " + Version.getIntValue());
+        System.out.println("FTLDB version: " + Configurator.getVersion());
     }
 
 }

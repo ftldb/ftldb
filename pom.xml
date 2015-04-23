@@ -66,28 +66,23 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <file>${version.template.file}</file>
-                    <outputFile>${version.file}</outputFile>
-                    <regex>false</regex>
-                    <token>$project.version$</token>
-                    <value>${project.version}</value>
-                </configuration>
-            </plugin>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>ftldb/version.property</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>ftldb/version.property</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
 
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -139,7 +134,6 @@
                     <header>src/main/resources/META-INF/LICENSE</header>
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
-                        <java.template>SLASHSTAR_STYLE</java.template>
                         <sql>DOUBLEDASHES_STYLE</sql>
                         <pck>DOUBLEDASHES_STYLE</pck>
                         <pks>DOUBLEDASHES_STYLE</pks>

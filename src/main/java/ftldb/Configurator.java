@@ -22,10 +22,12 @@ import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -33,8 +35,89 @@ import java.util.List;
  */
 public class Configurator {
 
-    /** The currently supported version of FreeMarker */
-    public final static freemarker.template.Version SUPPORTED_FM_VERSION = Configuration.VERSION_2_3_22;
+
+    private static final String VERSION_PROPERTY_PATH = "ftldb/version.property";
+    private static final String VERSION_PROPERTY_NAME = "version";
+    private static final Version VERSION;
+
+
+    static {
+        try {
+            Properties vp = new Properties();
+            InputStream ins = Configurator.class.getClassLoader().getResourceAsStream(VERSION_PROPERTY_PATH);
+            if (ins == null) {
+                throw new RuntimeException("FTLDB version file is missing: " + VERSION_PROPERTY_PATH);
+            } else {
+                try {
+                    vp.load(ins);
+                } finally {
+                    ins.close();
+                }
+
+                String versionString = vp.getProperty(VERSION_PROPERTY_NAME);
+                if (versionString == null) {
+                    throw new RuntimeException(
+                            "FTLDB version file is corrupt: \"" + VERSION_PROPERTY_NAME + "\" property is missing."
+                    );
+                }
+
+                VERSION = new Version(versionString);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load and parse " + VERSION_PROPERTY_PATH, e);
+        }
+    }
+
+
+    /**
+     * Returns FTLDB version as a {@link Version} object.
+     *
+     * @return FTLDB version
+     */
+    public static Version getVersion() {
+        return VERSION;
+    }
+
+
+    /**
+     * Returns FTLDB version as a string.
+     *
+     * <p>This method is a part of FTLDB API for PL/SQL.
+     *
+     * @return FTLDB version
+     */
+    public static String getVersionString() {
+        return VERSION.toString();
+    }
+
+
+    /**
+     * Returns FTLDB version as a comparable integer.
+     *
+     * <p>This method is a part of FTLDB API for PL/SQL.
+     *
+     * @return FTLDB version
+     */
+    public static int getVersionNumber() {
+        return VERSION.intValue();
+    }
+
+
+    // The currently supported version of FreeMarker
+    private final static Version SUPPORTED_FM_VERSION = Configuration.VERSION_2_3_22;
+
+
+    /**
+     * Returns supported FreeMarker version as a {@link Version} object. It may be lower than the actual version of the
+     * used FreeMarker jar library.
+     *
+     * @return FreeMarker version
+     */
+    public static Version getFMVersion() {
+        return SUPPORTED_FM_VERSION;
+    }
+
+
     private static Configuration cfg;
 
 
