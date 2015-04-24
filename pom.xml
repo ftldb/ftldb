@@ -11,8 +11,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.template.file>src/main/templates/ftldb/Version.java.template</version.template.file>
-        <version.file>src/main/java/ftldb/Version.java</version.file>
     </properties>
 
     <name>FTLDB</name>
@@ -114,13 +112,12 @@
                     <archive>
                         <addMavenDescriptor>false</addMavenDescriptor>
                         <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <mainClass>ftldb.CommandLine</mainClass>
-                            <addDefaultImplementationEntries/>
-                            <addDefaultSpecificationEntries/>
                         </manifest>
                         <manifestEntries>
-                            <Built-By>vosolovskiy</Built-By>
                             <Class-Path>freemarker.jar</Class-Path>
+                            <Built-By>${user.name}</Built-By>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -150,6 +147,7 @@
                     </includes>
                     <excludes>
                         <exclude>src/main/resources/**</exclude>
+                        <exclude>src/assembly/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -235,11 +233,11 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>assembly-install-win.xml</descriptor>
-                                <descriptor>assembly-install-linux.xml</descriptor>
-                                <descriptor>assembly-demo-win.xml</descriptor>
-                                <descriptor>assembly-demo-linux.xml</descriptor>
-                                <descriptor>assembly-source.xml</descriptor>
+                                <descriptor>src/assembly/install-win.xml</descriptor>
+                                <descriptor>src/assembly/install-linux.xml</descriptor>
+                                <descriptor>src/assembly/demo-win.xml</descriptor>
+                                <descriptor>src/assembly/demo-linux.xml</descriptor>
+                                <descriptor>src/assembly/source.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -253,8 +251,8 @@
                             <finalName>ci</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
-                                <descriptor>assembly-install-ci.xml</descriptor>
-                                <descriptor>assembly-demo-ci.xml</descriptor>
+                                <descriptor>src/assembly/install-ci.xml</descriptor>
+                                <descriptor>src/assembly/demo-ci.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
