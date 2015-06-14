@@ -7,7 +7,7 @@
 
     <groupId>ftldb</groupId>
     <artifactId>ftldb</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.3.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -84,7 +84,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
                 <configuration>
                     <source>1.4</source>
                     <target>1.4</target>
@@ -106,7 +106,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
+                <version>2.6</version>
                 <configuration>
                     <finalName>${project.artifactId}</finalName>
                     <archive>
@@ -126,7 +126,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>2.8</version>
+                <version>2.11</version>
                 <configuration>
                     <header>src/main/resources/META-INF/LICENSE</header>
                     <mapping>
@@ -163,7 +163,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.1</version>
+                <version>2.10.3</version>
                 <configuration>
                     <javaApiLinks>
                         <property>
@@ -196,7 +196,7 @@
                 <version>3.0.13</version>
                 <configuration>
                     <namesCase>mixed</namesCase>
-                    <applicationTitle>${project.name}</applicationTitle>
+                    <applicationTitle>${project.name} ${project.version} PL/SQL API</applicationTitle>
                     <fileSets>
                         <fileSet>
                             <directory>src/main/plsql</directory>
@@ -223,7 +223,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>2.5.5</version>
                 <executions>
                     <execution>
                         <id>assembly-prod</id>
@@ -266,7 +266,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.1</version>
+                <version>2.10.3</version>
             </plugin>
 
             <plugin>
