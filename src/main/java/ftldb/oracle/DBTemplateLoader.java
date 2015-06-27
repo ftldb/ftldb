@@ -35,7 +35,7 @@ import java.sql.*;
  * }
  * </pre>
  *
- * <p>where the specification of the {@code default_template_loader} function in the {@code ftld_api} package is:
+ * <p>where the specification of the {@code default_template_loader} function in the {@code ftldb_api} package is:
  * <pre>
  * {@code
  * function default_template_loader(in_templ_name in varchar2) return clob;

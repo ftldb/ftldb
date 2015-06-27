@@ -88,7 +88,7 @@ begin
 end;
 /
 
-prompt Grant EXECUTE privilege on PL/SQL objects to &&grantee..
+prompt Grant execute privilege on PL/SQL objects to &&grantee..
 /*
   It's absolutely safe to grant these privileges to PUBLIC due to
   the invoker-rights security approach.

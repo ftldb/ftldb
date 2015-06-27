@@ -57,34 +57,55 @@ ora_release="$(sqlplus -S -L $ftldb_schema/$ftldb_pswd@$instance_tns_name @setup
 
 if [ "${ora_release:0:1}" = "1" ]; then
   if [ "${ora_release:0:2}" = "10" ]; then
-    missing_option="unresolvedok"
-    missing_message="ignore missing classes"
+    ora_11_or_higher="false"
   else
-    missing_option="genmissingjar setup/$jarfile"
-    missing_message="generate missing classes and save to setup/$jarfile"
+    ora_11_or_higher="true"
   fi
 else
   echo Warning! Unknown or unsupported Oracle version: $ora_release.
-  missing_option="unresolvedok"
-  missing_message="ignore missing classes"
+  ora_11_or_higher="false"
+fi
+
+if [ "$ora_11_or_higher" = "true" ]; then
+
+  echo
+  echo Load freemarker.jar classes into database, generate missing classes \(setup/$jarfile\).
+  loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
+    -genmissingjar setup/$jarfile \
+    -verbose -stdout \
+    java/freemarker.jar \
+    1>> setup/$logfile
+
+  exit_if_failed $?
+
+  echo
+  echo Resolve freemarker.jar classes, grant execute privilege to public.
+  loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
+    -resolveonly -grant public \
+    -verbose -stdout \
+    java/freemarker.jar \
+    1>> setup/$logfile
+
+  exit_if_failed $?
+
+else
+
+  echo
+  echo Load and resolve freemarker.jar classes into database, ignore missing classes, grant execute privilege to public.
+  loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
+    -resolve -unresolvedok -grant public \
+    -verbose -stdout \
+    java/freemarker.jar \
+    1>> setup/$logfile
+
+  exit_if_failed $?
+
 fi
 
 echo
-echo Load freemarker.jar classes into database, $missing_message.
+echo Load and resolve ftldb.jar classes into database, grant execute privilege to public.
 loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
-  -resolve -$missing_option \
-  -grant public \
-  -verbose -stdout \
-  java/freemarker.jar \
-  1>> setup/$logfile
-
-exit_if_failed $?
-
-echo
-echo Load ftldb.jar classes into database.
-loadjava -user $ftldb_schema/$ftldb_pswd@$instance_tns_name \
-  -resolve \
-  -grant public \
+  -resolve -grant public \
   -verbose -stdout \
   java/ftldb.jar \
   1>> setup/$logfile

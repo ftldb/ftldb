@@ -86,7 +86,7 @@ public class DBConnectionFactory {
             public Object exec(List args) throws TemplateModelException {
 
                 if (args.size() != 0) {
-                    throw new TemplateModelException("Wrong number of arguments: expected 0 or 3, got " + args.size());
+                    throw new TemplateModelException("Wrong number of arguments: expected 0, got " + args.size());
                 }
 
                 return getDefaultDBConnection();

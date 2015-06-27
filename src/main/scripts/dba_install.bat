@@ -46,38 +46,59 @@ if errorlevel 1 goto :failure
 
 rem Determine Oracle version.
 set "ora_release_cmd=sqlplus -S -L %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% @setup/get_oracle_release"
-for /f %%i in ('%ora_release_cmd%') do set "ora_release=%%i" 
+for /f %%i in ('%ora_release_cmd%') do set "ora_release=%%i"
 
 if "%ora_release:~0,1%" == "1" (
   if "%ora_release:~0,2%" == "10" (
-    set missing_option=unresolvedok
-    set "missing_message=ignore missing classes"
+    set ora_11_or_higher=false
   ) else (
-    set "missing_option=genmissingjar setup/%jarfile%"
-    set "missing_message=generate missing classes and save to setup\%jarfile%"
+    set ora_11_or_higher=true
   )
 ) else (
   echo Warning! Unknown or unsupported Oracle version: %ora_release%.
-  set missing_option=unresolvedok
-  set "missing_message=ignore missing classes"
+  set ora_11_or_higher=false
+)
+
+if "%ora_11_or_higher%" == "true" (
+
+  echo.
+  echo Load freemarker.jar classes into database, generate missing classes ^(setup\%jarfile%^).
+  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
+    -genmissingjar setup/%jarfile% ^
+    -verbose -stdout ^
+    java/freemarker.jar ^
+    1>> setup\%logfile%
+
+  if errorlevel 1 goto :failure
+
+  echo.
+  echo Resolve freemarker.jar classes, grant execute privilege to public.
+  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
+    -resolveonly -grant public ^
+    -verbose -stdout ^
+    java/freemarker.jar ^
+    1>> setup\%logfile%
+
+  if errorlevel 1 goto :failure
+
+) else (
+
+  echo.
+  echo Load and resolve freemarker.jar classes into database, ignore missing classes, grant execute privilege to public.
+  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
+    -resolve -unresolvedok -grant public ^
+    -verbose -stdout ^
+    java/freemarker.jar ^
+    1>> setup\%logfile%
+
+  if errorlevel 1 goto :failure
+
 )
 
 echo.
-echo Load freemarker.jar classes into database, %missing_message%. 
+echo Load and resolve ftldb.jar classes into database, grant execute privilege to public.
 call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
-  -resolve -%missing_option% ^
-  -grant public ^
-  -verbose -stdout ^
-  java/freemarker.jar ^
-  1>> setup\%logfile%
-
-if errorlevel 1 goto :failure
-
-echo.
-echo Load ftldb.jar classes into database.
-call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
-  -resolve ^
-  -grant public ^
+  -resolve -grant public ^
   -verbose -stdout ^
   java/ftldb.jar ^
   1>> setup\%logfile%
