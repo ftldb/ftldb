@@ -33,7 +33,7 @@
 <#function select expr args...>
   <#local
     sql_statement = 'select ' + expr +
-      args?has_content?string('('?right_pad(args?size*3 - 1, ' ?,') + ')', '') +
+      args?has_content?then('('?right_pad(args?size*3 - 1, ' ?,') + ')', '') +
       ' from dual'
   />
   <#local res = default_connection().query(sql_statement, args).seq_rows/>
@@ -55,7 +55,7 @@
 <#function collect seq typ>
   <#local
     sql_statement = 'select ' + typ + '(' +
-      seq?has_content?string(''?right_pad(seq?size*3 - 2, '?, '), '') +
+      seq?has_content?then(''?right_pad(seq?size*3 - 2, '?, '), '') +
       ') from dual'
   />
   <#return default_connection().query(sql_statement, seq).seq_rows[0][0]/>
@@ -83,28 +83,28 @@
   <#list args as arg>
     <#local
       callable_statement = callable_statement +
-        (arg_index == 0)?string('(', '') +
-        arg?is_boolean?string('sys.diutil.int_to_bool(?)', '?') +
-        arg_has_next?string(', ', ')')
+        (arg?index == 0)?then('(', '') +
+        arg?is_boolean?then('sys.diutil.int_to_bool(?)', '?') +
+        arg?has_next?then(', ', ')')
     />
   </#list>
   <#local
     callable_statement = '{? = call ' +
-      is_bool_ret?string('sys.diutil.bool_to_int(', '') + callable_statement +
-      is_bool_ret?string(')', '') + '}'
+      is_bool_ret?then('sys.diutil.bool_to_int(', '') + callable_statement +
+      is_bool_ret?then(')', '') + '}'
   />
   <#local binds = {}/>
   <#list args as arg>
     <#if arg?is_boolean>
-      <#local val = arg?string('1', '0')?number/>
+      <#local val = arg?then(1, 0)/>
     <#else/>
       <#local val = arg/>
     </#if>
-    <#local binds = binds + {(arg_index + 2)?c : val}/>
+    <#local binds = binds + {(arg?index + 2)?c : val}/>
   </#list>
   <#local
     res = default_connection().exec(
-      callable_statement, binds, {'1' : is_bool_ret?string("NUMERIC", typ)}
+      callable_statement, binds, {'1' : is_bool_ret?then('NUMERIC', typ)}
     )
   />
   <#if res['1']??>
@@ -130,7 +130,7 @@
 <#function fetch cursor_func args...>
   <#local ftl_call = 'eval("oracle.jdbc.OracleTypes.CURSOR", cursor_func'/>
   <#list args as arg>
-    <#local ftl_call = ftl_call + ', args[' + arg_index?c + ']'/>
+    <#local ftl_call = ftl_call + ', args[' + arg?index?c + ']'/>
   </#list>
   <#local ftl_call = ftl_call + ')'/>
   <#return ftl_call?eval/>

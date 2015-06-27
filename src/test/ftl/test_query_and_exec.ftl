@@ -72,7 +72,7 @@ How vales are returned:
   string = ${res.hash_rows[0].STR}
   boolean returned as int? = ${res.hash_rows[0].BOOL?is_number?c}
   boolean = ${res.hash_rows[0].BOOL?c}
-  udt = [<#list res.hash_rows[0].UDT.getArray() as i>${i}<#if i_has_next>, </#if></#list>]
+  udt = [<#list res.hash_rows[0].UDT.getArray() as i>${i}<#sep>, </#list>]
 
 Create UDT2 instance.
 <#assign udt2 = conn.query("select sys.odcivarchar2list('a', 'b', 'c') from dual").seq_rows[0][0]>
@@ -105,10 +105,10 @@ Print result:
   number = ${res["5"]}
   string = ${res["6"]}
   date = ${res["7"]?string["dd.MM.yyyy"]}
-  udt2 = [<#list res["8"].getArray() as i>'${i}'<#if i_has_next>, </#if></#list>]
+  udt2 = [<#list res["8"].getArray() as i>'${i}'<#sep>, </#list>]
   cursor = {
     <#list res["9"].hash_rows as r>
-    row_${r_index+1}: "DT" = ${r.DT}
+    row_${r?index+1}: "DT" = ${r.DT}
     </#list>
   }
 

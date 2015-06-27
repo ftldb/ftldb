@@ -25,54 +25,13 @@
 
 
 <#--
--- Implements the "inline if" operator. The evaluation is greedy. If the result
--- is a string, it is recommended to use the boolean built-in method "?string".
+-- Overrides the default TAB_SIZE with a new value.
 --
--- @param  condition  the condition to be checked
--- @param  when_true  the expression to be evaluated and returned if the
---                    condition is true
--- @param  otherwise  the expression to be evaluated and returned if the
---                    condition is false
--- @return            the result of the evaluation
+-- @param  size  the new tab size
 -->
-<#function iif condition when_true otherwise>
-  <#if condition>
-    <#return when_true/>
-  <#else/>
-    <#return otherwise/>
-  </#if>
-</#function>
-
-
-<#--
--- Implements the DECODE operator. The evaluation is greedy.
---
--- @param  expr    the expression to be compared with the searches
--- @param  search  the first search
--- @param  result  the result returned if the expression is equal to the first
---                 search
--- @param  tail    the optional tail of searches and results:
---                 (search, result)* [, default]
--- @return         the result of the evaluation
--->
-<#function decode expr search result tail...>
-  <#if expr == search>
-    <#return result/>
-  <#else/>
-    <#if (tail?size >= 2)>
-      <#list 0..((tail?size/2)?floor - 1) as i>
-        <#if expr == tail[i*2]>
-          <#return tail[i*2 + 1]/>
-        </#if>
-      </#list>
-    </#if>
-    <#if tail?size%2 == 1>
-      <#return tail[tail?size - 1]/>
-    <#else/>
-      <#-- return null -->
-    </#if>
-  </#if>
-</#function>
+<#macro set_tab_size size>
+  <#assign TAB_SIZE = size/>
+</#macro>
 
 
 <#--
@@ -152,7 +111,7 @@
   <#local lst = ''/>
   <#list seq as it>
     <#local
-      lst = lst + format?replace(token, it) + it_has_next?string(delim, '')
+      lst = lst + format?replace(token, it) + it?has_next?then(delim, '')
     />
   </#list>
   <#return lst/>
@@ -177,17 +136,17 @@
   <#local indent_width = (rshift - lshift) + (rtab - ltab)*TAB_SIZE/>
   <#local content><#nested/></#local>
   <#list content?split('\n') as it>
-    <#if it_has_next || (it?trim != '')>
+    <#if it?has_next || (it?trim != '')>
       <#if (indent_width >= 0)>
         <#local
            output = output + ''?right_pad(indent_width) + it +
-             it_has_next?string('\n', '')
+             it?has_next?then('\n', '')
         />
       <#else/>
         <#local
            output = output +
              it?replace('^ {1,' + (-indent_width)?c + '}', '', 'r') +
-             it_has_next?string('\n', '')
+             it?has_next?then('\n', '')
         />
       </#if>
     </#if>
@@ -231,19 +190,19 @@
   <#local
     indent = ''?right_pad(
       greatest(
-        iif(keep_indent, content?matches('^ *')[0]?length, 0) +
+        keep_indent?then(content?matches('^ *')[0]?length, 0) +
           (rshift - lshift) + (rtab - ltab)*TAB_SIZE,
         0
       )
     )
   />
   <#list content?trim?split(split_ptrn, 'ri') as it>
-    <#local str = it + iif(it_has_next || trailing_delim, delim_rt, '')/>
+    <#local str = it + (it?has_next || trailing_delim)?then(delim_rt, '')/>
     <#if (len == 0) || ((str + delim_ws)?length <= max_len - len)>
-      <#local str = iif(it_index == 0, indent, delim_ws) + str/>
+      <#local str = (it?index == 0)?then(indent, delim_ws) + str/>
       <#local len = len + str?length/>
     <#else>
-      <#local str = '\n' + iif(keep_indent, indent, '') + str/>
+      <#local str = '\n' + keep_indent?then(indent, '') + str/>
       <#local len = str?length - 1/>
     </#if>
     <#local output = output + str/>
@@ -287,3 +246,59 @@
     />
   </#if>
 </#macro>
+
+
+<#--
+-- Implements the "inline if" (aka ternary) operator. The evaluation is greedy.
+--
+-- @deprecated  Since FreeMarker v2.3.23 replaced by '?then' boolean built-in
+--              method with lazy evaluation.
+--
+-- @param  condition  the condition to be checked
+-- @param  when_true  the expression to be evaluated and returned if the
+--                    condition is true
+-- @param  otherwise  the expression to be evaluated and returned if the
+--                    condition is false
+-- @return            the result of the evaluation
+-->
+<#function iif condition when_true otherwise>
+  <#if condition>
+    <#return when_true/>
+  <#else/>
+    <#return otherwise/>
+  </#if>
+</#function>
+
+
+<#--
+-- Implements the DECODE (aka switch) operator. The evaluation is greedy.
+--
+-- @deprecated  Since FreeMarker v2.3.23 replaced by '?switch' built-in method
+--              with lazy evaluation.
+--
+-- @param  expr    the expression to be compared with the searches
+-- @param  search  the first search
+-- @param  result  the result returned if the expression is equal to the first
+--                 search
+-- @param  tail    the optional tail of searches and results:
+--                 (search, result)* [, default]
+-- @return         the result of the evaluation
+-->
+<#function decode expr search result tail...>
+  <#if expr == search>
+    <#return result/>
+  <#else/>
+    <#if (tail?size >= 2)>
+      <#list 0..((tail?size/2)?floor - 1) as i>
+        <#if expr == tail[i*2]>
+          <#return tail[i*2 + 1]/>
+        </#if>
+      </#list>
+    </#if>
+    <#if tail?size%2 == 1>
+      <#return tail[tail?size - 1]/>
+    <#else/>
+      <#-- return null -->
+    </#if>
+  </#if>
+</#function>

@@ -34,9 +34,9 @@ ${result}
 
 Print columns in their order using .col_seq method:
 <#list result.col_seq as col_arr>
-  Column ${col_arr_index+1}:
+  Column ${col_arr?index+1}:
   <#list col_arr as value>
-	  row ${value_index+1}: ${value}
+	  row ${value?index+1}: ${value}
   </#list>
 </#list>
 
@@ -44,12 +44,12 @@ Print the second column, then the first by their names using .col_hash method:
 <#assign col_hash = result.col_hash/>
   COL2:
   <#list col_hash.COL2 as value>
-    row ${value_index+1}: ${value}
+    row ${value?index+1}: ${value}
   </#list>
 
   COL1:
   <#list col_hash.COL2 as value>
-    row ${value_index+1}: ${value}
+    row ${value?index+1}: ${value}
   </#list>
 
 Close connection.

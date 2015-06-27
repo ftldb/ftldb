@@ -18,7 +18,7 @@
 -- ${template_name()} START --
 Passed arguments:
 <#list template_args as arg>
-  arg[${arg_index}] = "${arg}"
+  arg[${arg?index}] = "${arg}"
 </#list>
 
 Save them to the shared hash as the key "v".

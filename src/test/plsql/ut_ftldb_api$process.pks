@@ -22,7 +22,7 @@ $if null $then
 --%begin args
   arg_num = ${template_args?size}
   <#list template_args as arg>
-  arg_${arg_index} = ${arg}
+  arg_${arg?index} = ${arg}
   </#list>
 --%end args
 
@@ -73,7 +73,7 @@ $if null $then
   string = ${res.hash_rows[0].STR}
   boolean returned as int? = ${res.hash_rows[0].BOOL?is_number?c}
   boolean = ${res.hash_rows[0].BOOL?c}
-  udt = [<#list res.hash_rows[0].UDT.getArray() as i>${i}<#if i_has_next>, </#if></#list>]
+  udt = [<#list res.hash_rows[0].UDT.getArray() as i>${i}<#sep>, </#list>]
 
 
   <#assign udt2 = conn.query("select sys.odcivarchar2list('a', 'b', 'c') from dual").seq_rows[0][0]>
@@ -101,7 +101,7 @@ $if null $then
   number = ${res["5"]}
   string = ${res["6"]}
   date = ${res["7"]?string["dd.MM.yyyy"]}
-  udt2 = [<#list res["8"].getArray() as i>'${i}'<#if i_has_next>, </#if></#list>]
+  udt2 = [<#list res["8"].getArray() as i>'${i}'<#sep>, </#list>]
 
 --%end java_binds
 
@@ -230,12 +230,6 @@ $if null $then
 --%begin standard
 <#import "ftldb_standard_ftl" as std>
 
-<#assign a = std.iif(2 > 1, 'true', 'false')>
-<#assign b = std.iif(2 < 1, 'true', 'false')>
-<#assign c = std.decode(a, 'x', 0, 'false', -1, 'true', 1)>
-<#assign d = std.decode(b, 'x', 0, 2)>
-${a} ${b} ${c?c} ${d?c}
-
 <#assign a = std.least(5, 3, 7, 9)>
 <#assign b = std.greatest(5, 3, 17, 9)>
 <#assign c = std.ltrim('     x  ')>
@@ -245,13 +239,14 @@ ${a?c} ${b?c} "${c}" "${d}"
 <#assign a = std.to_list(["col1", "col2", "col3"], 't.# = v.#', ' and ', '#')>
 "${a}"
 
-<@std.indent ltab=2>
+<@std.set_tab_size 3/>
+<@std.indent ltab=1>
 line1
   line2
     line3
       line4
 </@std.indent>
-
+<@std.set_tab_size 2/>
 
 <@std.indent rshift=2>
 line1
@@ -325,17 +320,14 @@ line1
 --%end standard
 
 --%begin standard_res
-true false 1 2
-
 3 17 "x  " "     x"
 
 "t.col1 = v.col1 and t.col2 = v.col2 and t.col3 = v.col3"
 
 line1
 line2
-line3
-  line4
-
+ line3
+   line4
 
   line1
     line2

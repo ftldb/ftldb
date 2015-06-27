@@ -188,7 +188,7 @@ $if null $then
       <@std.indent ltab = 2>
         <#list l_cols_info as r>
           ${r.COLUMN_NAME?lower_case}<#rt/>
-          <#lt/> ${std.iif(r.NULLABLE = 'N', 'not null', 'null')},
+          <#lt/> ${(r.NULLABLE == 'N')?then('not null', 'null')},
         </#list>
       </@std.indent>
       <#local
@@ -395,7 +395,7 @@ from
         <#else/>
           o.${l_cn} = n.${l_cn}<#rt/>
         </#if>
-        <#if cr_has_next><#lt/> and</#if>
+        <#sep><#lt/> and</#sep>
       </#list>
     </@std.indent>
 where

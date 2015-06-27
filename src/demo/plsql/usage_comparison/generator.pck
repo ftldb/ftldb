@@ -107,7 +107,7 @@ create table orders (
 )
 partition by list(shop_id) (
 <#list partitions.hash_rows as p>
-  partition ${p.NAME} values (${p.VALS})<#if p_has_next>,</#if>
+  partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
 </>
