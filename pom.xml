@@ -68,13 +68,13 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <exclude>ftldb/version.property</exclude>
+                    <exclude>ftldb/version.properties</exclude>
                 </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>ftldb/version.property</include>
+                    <include>ftldb/version.properties</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>

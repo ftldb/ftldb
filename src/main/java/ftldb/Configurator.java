@@ -36,7 +36,7 @@ import java.util.Properties;
 public class Configurator {
 
 
-    private static final String VERSION_PROPERTY_PATH = "ftldb/version.property";
+    private static final String VERSION_PROPERTY_PATH = "ftldb/version.properties";
     private static final String VERSION_PROPERTY_NAME = "version";
     private static final Version VERSION;
 
@@ -104,7 +104,7 @@ public class Configurator {
 
 
     // The currently supported version of FreeMarker
-    private final static Version SUPPORTED_FM_VERSION = Configuration.VERSION_2_3_22;
+    private final static Version SUPPORTED_FM_VERSION = Configuration.VERSION_2_3_23;
 
 
     /**
