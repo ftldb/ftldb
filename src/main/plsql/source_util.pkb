@@ -293,7 +293,7 @@ is
     'where' || chr(10) ||
     '  s.owner = :owner and' || chr(10) ||
     '  s.name = :name and' || chr(10) ||
-    '  (s.type = :type or s.type  = :type || '' BODY'')' || chr(10) ||
+    '  s.type in (:type, :type || '' BODY'')' || chr(10) ||
     'order by s.type, s.line';
   c_eol constant varchar2(1) :=
     case when in_type = 'JAVA SOURCE' then chr(10) end;

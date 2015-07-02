@@ -292,7 +292,7 @@ public class Configurator {
 
     /**
      * Creates a new {@code DBTemplateLoader} instance using the database's inner JDBC connection and sets it as
-     * the template loader for the current configuration. The template caching is not used.
+     * the template loader for the current configuration. Template caching is not used.
      *
      * <p>This method is a part of FTLDB API for PL/SQL.
      *
@@ -308,7 +308,7 @@ public class Configurator {
 
     /**
      * Creates a new {@link FileTemplateLoader} instance and sets it as the template loader for the current
-     * configuration. The template caching is not used.
+     * configuration. {@link SoftCacheStorage} is used for template caching.
      */
     public static void setDefaultFileTemplateLoader() {
         FileTemplateLoader fileTemplateLoader;
