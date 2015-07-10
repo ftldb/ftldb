@@ -17,6 +17,7 @@ package ftldb;
 
 
 import freemarker.cache.*;
+import freemarker.core.Environment;
 import freemarker.core.EnvironmentInternalsAccessor;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.*;
@@ -38,35 +39,7 @@ public class Configurator {
 
     private static final String VERSION_PROPERTY_PATH = "ftldb/version.properties";
     private static final String VERSION_PROPERTY_NAME = "version";
-    private static final Version VERSION;
-
-
-    static {
-        try {
-            Properties vp = new Properties();
-            InputStream ins = Configurator.class.getClassLoader().getResourceAsStream(VERSION_PROPERTY_PATH);
-            if (ins == null) {
-                throw new RuntimeException("FTLDB version file is missing: " + VERSION_PROPERTY_PATH);
-            } else {
-                try {
-                    vp.load(ins);
-                } finally {
-                    ins.close();
-                }
-
-                String versionString = vp.getProperty(VERSION_PROPERTY_NAME);
-                if (versionString == null) {
-                    throw new RuntimeException(
-                            "FTLDB version file is corrupt: \"" + VERSION_PROPERTY_NAME + "\" property is missing."
-                    );
-                }
-
-                VERSION = new Version(versionString);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load and parse " + VERSION_PROPERTY_PATH, e);
-        }
-    }
+    private static Version VERSION;
 
 
     /**
@@ -75,6 +48,33 @@ public class Configurator {
      * @return FTLDB version
      */
     public static Version getVersion() {
+        if (VERSION == null) {
+            try {
+                Properties vp = new Properties();
+                InputStream ins = Configurator.class.getClassLoader().getResourceAsStream(VERSION_PROPERTY_PATH);
+                if (ins == null) {
+                    throw new RuntimeException("FTLDB version file is missing: " + VERSION_PROPERTY_PATH);
+                } else {
+                    try {
+                        vp.load(ins);
+                    } finally {
+                        ins.close();
+                    }
+
+                    String versionString = vp.getProperty(VERSION_PROPERTY_NAME);
+                    if (versionString == null) {
+                        throw new RuntimeException(
+                                "FTLDB version file is corrupt: \"" + VERSION_PROPERTY_NAME + "\" property is missing."
+                        );
+                    }
+
+                    VERSION = new Version(versionString);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load and parse " + VERSION_PROPERTY_PATH, e);
+            }
+        }
+
         return VERSION;
     }
 
@@ -87,7 +87,7 @@ public class Configurator {
      * @return FTLDB version
      */
     public static String getVersionString() {
-        return VERSION.toString();
+        return getVersion().toString();
     }
 
 
@@ -99,7 +99,7 @@ public class Configurator {
      * @return FTLDB version
      */
     public static int getVersionNumber() {
-        return VERSION.intValue();
+        return getVersion().intValue();
     }
 
 
@@ -227,12 +227,11 @@ public class Configurator {
     }
 
 
-    // This method accesses the internal FreeMarker API.
     private static void registerTemplateNameSharedMethod() {
         cfg.setSharedVariable("template_name", new TemplateMethodModelEx() {
             public Object exec(List args) throws TemplateModelException {
                 if (args.size() != 0) throw new TemplateModelException("No arguments needed");
-                return EnvironmentInternalsAccessor.getCurrentTemplate().getName();
+                return Environment.getCurrentEnvironment().getCurrentTemplate().getName();
             }
         });
     }
