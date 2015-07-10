@@ -37,7 +37,7 @@ Access some metadata:
 
 Print colMeta:
 <#list result.col_meta_seq as currCol>
-  ${currCol.name} ${currCol.typeName}<#if currCol_has_next>,</#if>
+  ${currCol.name} ${currCol.typeName}<#sep>,</#sep>
 </#list>
 
 Close connection.

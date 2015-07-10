@@ -231,7 +231,7 @@ create table orders (
 )
 partition by list(shop_id) (
 <#list partitions.hash_rows as p>
-  partition ${p.NAME} values (${p.VALS})<#if p_has_next>,</#if>
+  partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
 </>
@@ -291,7 +291,7 @@ create table orders (
 )
 partition by list(shop_id) (
 <#list partitions.hash_rows as p>
-  partition ${p.NAME} values (${p.VALS})<#if p_has_next>,</#if>
+  partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
 /
@@ -379,7 +379,7 @@ Both FTLDB schema and its users must be granted this permission. The [Java
 API](http://docs.oracle.com/javase/8/docs/api/java/lang/RuntimePermission.html)
 reads:
 
-> This would grant an attacker permission to get the class loader for a 
+> This would grant an attacker permission to get the class loader for a
 > particular class. This is dangerous because having access to a class's class
 > loader allows the attacker to load other classes available to that class
 > loader. The attacker would typically otherwise not have access to those
@@ -552,8 +552,8 @@ Do the following:
   1. Download and unpack the source archive or clone from the GitHub repository.
   2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
-  3. Run in the command line from the base project directory:  
-     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
+  3. Run in the command line from the base project directory:
+     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`
      if you don't have an Oracle instance available.
   4. Check the `target` directory for the installation files.
 

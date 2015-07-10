@@ -48,7 +48,7 @@ public class DBTemplateLoaderFactory {
             dbTemplateLoader = new ftldb.oracle.DBTemplateLoader(connection, call);
         // May be in future...
         //} else if (dbName.equals("PostgreSQL")) {
-        //    dbTemplateLoader = new ftldb.postgresql.DBTemplateLoader(conn, call);
+        //    dbTemplateLoader = new ftldb.postgresql.DBTemplateLoader(connection, call);
         } else {
             throw new RuntimeException("No corresponding DBTemplateLoader class provided for " + dbName + " database");
         }

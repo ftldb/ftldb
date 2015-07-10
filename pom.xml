@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.22</version>
+            <version>2.3.23</version>
         </dependency>
 
         <dependency>
@@ -68,13 +68,13 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <exclude>ftldb/version.property</exclude>
+                    <exclude>ftldb/version.properties</exclude>
                 </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>ftldb/version.property</include>
+                    <include>ftldb/version.properties</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>

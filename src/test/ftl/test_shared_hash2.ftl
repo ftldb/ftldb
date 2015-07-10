@@ -18,5 +18,5 @@
 -- ${template_name()} START --
 Get key "v" from the shared hash.
 <#assign v = shared_hash.get("v")>
-Content of V: [<#list v as i>"${i}"<#if i_has_next>, </#if></#list>]
+Content of V: [<#list v as i>"${i}"<#sep>, </#list>]
 -- ${template_name()} END --

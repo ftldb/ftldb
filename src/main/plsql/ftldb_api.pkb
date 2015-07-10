@@ -32,18 +32,40 @@ begin
 end get_this_schema;
 
 
-function default_template_loader(in_templ_name in varchar2) return clob
+/**
+ * Splits the full template name into a container name and a section name.
+ */
+procedure split_templ_name(
+  in_templ_name in varchar2,
+  out_container_name out varchar2,
+  out_section_name out varchar2
+)
 is
 begin
+  if in_templ_name like '%\%%' escape '\' then
+    out_container_name := regexp_replace(in_templ_name, '%[^%@]+');
+    out_section_name :=
+      regexp_replace(in_templ_name, '^([^%]+%?)([^%@]*)(@[^@]+)?$', '\2');
+  else
+    out_container_name := in_templ_name;
+    out_section_name := null;
+  end if;
+end split_templ_name;
+
+
+function default_template_loader(in_templ_name in varchar2) return clob
+is
+  l_container_name varchar2(200);
+  l_section_name varchar2(30);
+begin
+  split_templ_name(in_templ_name, l_container_name, l_section_name);
+
   return
     case
-      when in_templ_name like '%\%%' escape '\' then
-        source_util.extract_named_section(
-          regexp_replace(in_templ_name, '%[^%@]+'),
-          regexp_replace(in_templ_name, '^([^%]+%?)([^%@]*)(@[^@]+)?$', '\2')
-        )
+      when l_section_name is null then
+        source_util.extract_noncompiled_section(l_container_name)
       else
-        source_util.extract_noncompiled_section(in_templ_name)
+        source_util.extract_named_section(l_container_name, l_section_name)
     end;
 exception
   when

@@ -16,29 +16,12 @@
 package freemarker.core;
 
 
-import freemarker.template.Template;
-
-
 /**
  * This class accesses the internals of {@link Environment} that are non-public.
  *
  * @deprecated Should be reviewed on future FreeMarker releases.
  */
 public class EnvironmentInternalsAccessor {
-
-    /**
-     * Returns the current {@link Template} that we are "lexically" inside at moment. This template will change when
-     * entering an {@code #include} or calling a macro or function in another template, or returning to yet another
-     * template with {@code #nested}.
-     *
-     * @return the current template
-     *
-     * @see Environment#getCurrentTemplate()
-     */
-    public static Template getCurrentTemplate() {
-        return Environment.getCurrentEnvironment().getCurrentTemplate();
-    }
-
 
     /**
      * Returns the snapshot of the FTL stack trace.

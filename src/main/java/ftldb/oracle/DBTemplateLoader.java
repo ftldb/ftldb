@@ -45,7 +45,7 @@ import java.sql.*;
  * <p>but the default loader may be redefined with another function.
  *
  * <p>This class does not have a proper {@link StatefulTemplateLoader#getLastModified(Object)} implementation. So the
- * configuration is recommended to be set with no template caching.
+ * configuration must be set with no template caching.
  */
 public class DBTemplateLoader implements StatefulTemplateLoader {
 
@@ -114,7 +114,7 @@ public class DBTemplateLoader implements StatefulTemplateLoader {
      * Actually does nothing.
      *
      * @param o the object storing the template source as a {@link Clob}
-     * @return constant {@code -1L} (always reload templates)
+     * @return constant {@code -1L}
      */
     public long getLastModified(Object o) {
         return -1L;
