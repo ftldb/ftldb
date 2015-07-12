@@ -22,30 +22,66 @@ create or replace package ftldb_api authid current_user as
 
 
 /**
- * Loads the template by its name.
- *
- * Resolves the template's name into an Oracle object, extracts a section from
- * its source and returns it as a template's body. If the name matches
- * [OWNER.]OBJNAME[@DBLINK] pattern, then the sought section is non-compiled.
- * If it matches [OWNER.]OBJNAME%SECNAME[@DBLINK] pattern, then the sought
- * section is named.
+ * Default template resolver. Resolves a template by its name. If resolution
+ * fails, returns null values.
  *
  * @param  in_templ_name  the template's name
- * @return                the loaded template
+ * @param  out_owner      the referenced object's owner
+ * @param  out_name       the referenced object's name
+ * @param  out_sec_name   the referenced section's name
+ * @param  out_dblink     the referenced object's dblink
+ * @param  out_type       the referenced object's type
  */
-function default_template_loader(in_templ_name in varchar2) return clob;
+procedure default_template_resolver(
+  in_templ_name in varchar2,
+  out_owner out varchar2,
+  out_name out varchar2,
+  out_sec_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
+);
 
 
 /**
- * Initializes a new configuration for the FreeMarker engine. Sets the loader
- * for FTL templates from the database.
+ * Default template loader. Loads a template from its container object.
  *
- * @param  in_templ_loader  the stored PL/SQL function that is called by
- *                          ftldb.oracle.DBTemplateLoader class in order to get
- *                          a template from the database by its name; if not
- *                          set then {@link default_template_loader} is used
+ * @param  in_owner     the container object's owner
+ * @param  in_name      the container object's name
+ * @param  in_sec_name  the container section's name
+ * @param  in_dblink    the container object's dblink
+ * @param  in_type      the container object's type
+ * @param  out_body     the loaded template as a CLOB
  */
-procedure init(in_templ_loader in varchar2 := null);
+procedure default_template_loader(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_sec_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
+  out_body out clob
+);
+
+
+/**
+ * Initializes a new configuration for the FreeMarker engine. Sets a resolver
+ * and a loader for FTL templates.
+ *
+ * @param  in_templ_resolver  the stored PL/SQL procedure that is called by
+ *                            ftldb.oracle.DBTemplateLoader class in order to
+ *                            resolve a template's name and find its container
+ *                            object
+ * @param  in_templ_loader    the stored PL/SQL procedure that is called by
+ *                            ftldb.oracle.DBTemplateLoader class in order to
+ *                            load a template from a database object
+ */
+procedure init(in_templ_resolver in varchar2, in_templ_loader in varchar2);
+
+
+/**
+ * Initializes a new configuration for the FreeMarker engine. Sets the default
+ * resolver and loader.
+ */
+procedure init;
 
 
 /**

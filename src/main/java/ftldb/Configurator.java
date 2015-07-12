@@ -290,18 +290,42 @@ public class Configurator {
 
 
     /**
-     * Creates a new {@code DBTemplateLoader} instance using the database's inner JDBC connection and sets it as
-     * the template loader for the current configuration. Template caching is not used.
+     * Creates a new {@code DBTemplateLoader} instance using the specified database connection and sets it as
+     * a template loader for the current configuration.
+     *
+     * @param conn an opened connection to the database
+     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateCheckerCall a call to the database that gets a template's timestamp
+     * @param templateLoaderCall a call to the database that returns a template's source
+     * @throws SQLException if a database access error occurs
+     */
+    public static void setDBTemplateLoader(
+            Connection conn, String templateResolverCall, String templateCheckerCall, String templateLoaderCall
+    ) throws SQLException {
+        StatefulTemplateLoader templateLoader = DBTemplateLoaderFactory.newDBTemplateLoader(
+                conn, templateResolverCall, templateCheckerCall, templateLoaderCall
+        );
+        CacheStorage cacheStorage = new NullCacheStorage(); //TODO CacheStorageFactory
+        Configurator.setTemplateLoader(templateLoader, cacheStorage);
+    }
+
+
+    /**
+     * Creates a new {@code DBTemplateLoader} instance using the database's inner connection and sets it as
+     * a template loader for the current configuration.
      *
      * <p>This method is a part of FTLDB API for PL/SQL.
      *
-     * @param call a proper call to the database that returns a template source
+     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateCheckerCall a call to the database that gets a template's timestamp
+     * @param templateLoaderCall a call to the database that returns a template's source
      * @throws SQLException if a database access error occurs
      */
-    public static void setDBTemplateLoader(String call) throws SQLException {
-        Connection conn = DriverManager.getConnection("jdbc:default:connection");
-        StatefulTemplateLoader templateLoader = DBTemplateLoaderFactory.newDBTemplateLoader(conn, call);
-        Configurator.setTemplateLoader(templateLoader, new NullCacheStorage());
+    public static void setDBTemplateLoader(
+            String templateResolverCall, String templateCheckerCall, String templateLoaderCall
+    ) throws SQLException {
+        Connection defaultConn = DriverManager.getConnection("jdbc:default:connection");
+        setDBTemplateLoader(defaultConn, templateResolverCall, templateCheckerCall, templateLoaderCall);
     }
 
 

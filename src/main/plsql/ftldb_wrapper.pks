@@ -26,9 +26,12 @@ is
 language java name 'ftldb.Configurator.newConfiguration()';
 
 
-procedure set_db_template_loader(in_templ_loader_call in varchar2)
+procedure set_db_template_loader(
+  in_templ_resolver_call in varchar2,
+  in_templ_checker_call in varchar2,
+  in_templ_loader_call in varchar2)
 is
-language java name 'ftldb.Configurator.setDBTemplateLoader(java.lang.String)';
+language java name 'ftldb.Configurator.setDBTemplateLoader(java.lang.String, java.lang.String, java.lang.String)';
 
 
 procedure set_configuration_setting(

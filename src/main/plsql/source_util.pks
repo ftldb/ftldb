@@ -87,22 +87,42 @@ function long2clob(
  * supported context values (from most to least possible) and tries to resolve
  * the specified name with them. Also works correctly with remote names.
  *
- * @param  in_name         the name to be resolved (case-sensitive when quoted)
- * @param  out_obj_owner   the referenced object's owner
- * @param  out_obj_name    the referenced object's name
- * @param  out_obj_dblink  the referenced object's dblink
- * @param  out_obj_type    the referenced object's type
+ * @param  in_ora_name  the name to be resolved (case-sensitive when quoted)
+ * @param  out_owner    the referenced object's owner
+ * @param  out_name     the referenced object's name
+ * @param  out_dblink   the referenced object's dblink
+ * @param  out_type     the referenced object's type
  *
  * @throws  e_invalid_argument   if the name doesn't match the pattern:
  *                               [SCHEMA.]NAME[@DBLINK]
  * @throws  e_name_not_resolved  if the name cannot be resolved
  */
-procedure resolve_name(
-  in_name in varchar2,
-  out_obj_owner out varchar2,
-  out_obj_name out varchar2,
-  out_obj_dblink out varchar2,
-  out_obj_type out varchar2
+procedure resolve_ora_name(
+  in_ora_name in varchar2,
+  out_owner out varchar2,
+  out_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
+);
+
+
+/**
+ * Resolves the specified template name.
+ *
+ * @param  in_templ_name  the name to be resolved (case-sensitive when quoted)
+ * @param  out_owner      the referenced object's owner
+ * @param  out_name       the referenced object's name
+ * @param  out_sec_name   the referenced section's name
+ * @param  out_dblink     the referenced object's dblink
+ * @param  out_type       the referenced object's type
+ */
+procedure resolve_templ_name(
+  in_templ_name in varchar2,
+  out_owner out varchar2,
+  out_name out varchar2,
+  out_sec_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
 );
 
 
@@ -160,7 +180,39 @@ function extract_section_from_clob(
  * Extracts a section bounded between the specified regular expressions from
  * the specified object's source.
  *
- * @param  in_container_name   the container's name (case-sensitive)
+ * @param  in_owner            the object's owner (case-sensitive)
+ * @param  in_name             the objects's name (case-sensitive)
+ * @param  in_dblink           the object's name (case-insensitive)
+ * @param  in_type             the object's name (case-insensitive)
+ * @param  in_start_pattern    the starting boundary regexp pattern
+ * @param  in_end_pattern      the ending boundary regexp pattern
+ * @param  in_keep_boundaries  if true includes boundaries in the result
+ * @param  in_lazy_search      if true does the lazy search
+ * @param  in_occurrence       the occurrence of the sought pattern
+ * @return                     the sought section as a CLOB
+ *
+ * @throws  e_invalid_argument   if the occurrence is not equal to 1 for the
+ *                               greedy search
+ * @throws  e_section_not_found  if the section is not found
+ */
+function extract_section_from_obj_src(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
+  in_start_ptrn in varchar2,
+  in_end_ptrn in varchar2,
+  in_keep_boundaries in boolean := false,
+  in_lazy_search in boolean := false,
+  in_occurrence in positiven := 1
+) return clob;
+
+
+/**
+ * Extracts a section bounded between the specified regular expressions from
+ * the specified container's source.
+ *
+ * @param  in_container_name   the container's name (case-sensitive if quoted)
  * @param  in_start_pattern    the starting boundary regexp pattern
  * @param  in_end_pattern      the ending boundary regexp pattern
  * @param  in_keep_boundaries  if true includes boundaries in the result
@@ -192,7 +244,33 @@ function extract_section_from_obj_src(
  * </pre>
  * The syntax is case- and space-insensitive. The search is greedy.
  *
- * @param  in_container_name  the container's name (case-sensitive)
+ * @param  in_owner   the object's owner (case-sensitive)
+ * @param  in_name    the objects's name (case-sensitive)
+ * @param  in_dblink  the object's name (case-insensitive)
+ * @param  in_type    the object's name (case-insensitive)
+ * @return            the sought section without boundaries as a CLOB
+ *
+ * @throws  e_section_not_found  if the section is not found
+ */
+function extract_noncompiled_section(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2
+) return clob;
+
+
+/**
+ * Extracts a non-compiled section bounded between two conditional compilation
+ * directives from the specified container's source. Example:
+ * <pre>
+ *   $if null $then
+ *   the sought section
+ *   $end
+ * </pre>
+ * The syntax is case- and space-insensitive. The search is greedy.
+ *
+ * @param  in_container_name  the container's name (case-sensitive if quoted)
  * @return                    the sought section without boundaries as a CLOB
  *
  * @throws  e_section_not_found  if the section is not found
@@ -212,7 +290,37 @@ function extract_noncompiled_section(
  * </pre>
  * The syntax is case- and space-insensitive. The search is lazy.
  *
- * @param  in_container_name  the container's name (case-sensitive)
+ * @param  in_owner         the object's owner (case-sensitive)
+ * @param  in_name          the objects's name (case-sensitive)
+ * @param  in_dblink        the object's name (case-insensitive)
+ * @param  in_type          the object's name (case-insensitive)
+ * @param  in_section_name  the section's name (case-insensitive)
+ * @param  in_occurrence    the occurrence of the sought section
+ * @return                  the sought section without boundaries as a CLOB
+ *
+ * @throws  e_section_not_found  if the section is not found
+ */
+function extract_named_section(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
+  in_section_name in varchar2,
+  in_occurrence in positiven := 1
+) return clob;
+
+
+/**
+ * Extracts a named section bounded between two special comments from the
+ * specified container's source. Example:
+ * <pre>
+ *   --%begin <b>in_section_name</b>
+ *   the sought section
+ *   --%end <b>in_section_name</b>
+ * </pre>
+ * The syntax is case- and space-insensitive. The search is lazy.
+ *
+ * @param  in_container_name  the container's name (case-sensitive if quoted)
  * @param  in_section_name    the section's name (case-insensitive)
  * @param  in_occurrence      the occurrence of the sought section
  * @return                    the sought section without boundaries as a CLOB

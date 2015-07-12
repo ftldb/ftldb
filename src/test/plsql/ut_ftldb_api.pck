@@ -38,6 +38,27 @@ end ut_ftldb_api;
 create or replace package body ut_ftldb_api is
 
 
+function default_template_loader(in_templ_name varchar2) return clob
+is
+  l_owner varchar2(30);
+  l_name varchar2(30);
+  l_sec_name varchar2(30);
+  l_dblink varchar2(128);
+  l_type varchar2(30);
+  l_src clob;
+begin
+  ftldb_api.default_template_resolver(
+    in_templ_name,
+    l_owner, l_name, l_sec_name, l_dblink, l_type
+  );
+  ftldb_api.default_template_loader(
+    l_owner, l_name, l_sec_name, l_dblink, l_type,
+    l_src
+  );
+  return l_src;
+end default_template_loader;
+
+
 procedure ut_dflt_templ_loader#proc
 is
   l_tmpl clob;
@@ -52,9 +73,7 @@ begin
   </#if>
   $end
 
-  l_tmpl := ftldb_api.default_template_loader(
-    'ut_ftldb_api'
-  );
+  l_tmpl := default_template_loader('ut_ftldb_api');
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_tmpl);
@@ -79,7 +98,7 @@ begin
   --%end ut_dflt_templ_loader#sect
   */
 
-  l_tmpl := ftldb_api.default_template_loader(
+  l_tmpl := default_template_loader(
     'ut_ftldb_api%ut_dflt_templ_loader#sect'
   );
 
@@ -99,7 +118,7 @@ begin
     'ut_ftldb_api$process%args', ftldb_varchar2_nt('x', 'y', 'z')
   );
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%args_res'
   );
 
@@ -120,7 +139,7 @@ begin
     '<@std.include "ut_ftldb_api$process%args", ["x", "y", "z"]/>'
   );
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%args_res'
   );
 
@@ -140,7 +159,7 @@ begin
     'ut_ftldb_api$process%java_binds'
   );
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%java_binds_res' ||
     case when dbms_db_version.version < 11 then '_ora10' end
   );
@@ -161,7 +180,7 @@ begin
     'ut_ftldb_api$process%java_hlp_methods1'
   );
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%java_hlp_methods1_res'
   );
 
@@ -186,7 +205,7 @@ begin
   );
 
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%java_hlp_methods2_res'
   );
 
@@ -225,7 +244,7 @@ begin
     'ut_ftldb_api$process%standard'
   );
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%standard_res'
   );
 
@@ -245,7 +264,7 @@ begin
     'ut_ftldb_api$process%sql'
   );
 
-  l_etalon := ftldb_api.default_template_loader(
+  l_etalon := default_template_loader(
     'ut_ftldb_api$process%sql_res'
   );
 
@@ -263,7 +282,7 @@ begin
   open l_rc for
     select rownum from dual connect by rownum <= in_cnt;
   return l_rc;
-end;
+end ut_process#sql#fetch;
 
 
 end ut_ftldb_api;

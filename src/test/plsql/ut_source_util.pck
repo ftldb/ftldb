@@ -22,10 +22,10 @@ create or replace package ut_source_util as
 
 procedure ut_long2clob;
 
-procedure ut_resolve_name#own_object;
-procedure ut_resolve_name#others_object;
-procedure ut_resolve_name#dblink_object;
-procedure ut_resolve_name#dblink_oth_obj;
+procedure ut_resolve_ora_name#own_object;
+procedure ut_resolve_ora_name#others_obj;
+procedure ut_resolve_ora_name#dblink_obj;
+procedure ut_resolve_ora_name#dbl_oth_ob;
 
 procedure ut_get_obj_source#view;
 procedure ut_get_obj_source#func;
@@ -90,7 +90,7 @@ begin
 end ut_long2clob;
 
 
-procedure ut_resolve_name#own_object
+procedure ut_resolve_ora_name#own_object
 is
   c_name constant varchar2(190) := lower($$plsql_unit);
   l_obj_owner varchar2(30);
@@ -98,7 +98,7 @@ is
   l_obj_dblink varchar2(128);
   l_obj_type varchar2(30);
 begin
-  ftldb_source_util.resolve_name(
+  ftldb_source_util.resolve_ora_name(
     c_name,
     l_obj_owner, l_obj_name, l_obj_dblink, l_obj_type
   );
@@ -116,10 +116,10 @@ begin
     dbms_output.put_line('obj_type=' || l_obj_type);
     raise_application_error(-20000, 'Resolved attributes are not as expected');
   end if;
-end ut_resolve_name#own_object;
+end ut_resolve_ora_name#own_object;
 
 
-procedure ut_resolve_name#others_object
+procedure ut_resolve_ora_name#others_obj
 is
   c_name constant varchar2(190) :=
     sys_context('userenv', 'current_schema') || '_ext1.testfunc';
@@ -128,7 +128,7 @@ is
   l_obj_dblink varchar2(128);
   l_obj_type varchar2(30);
 begin
-  ftldb_source_util.resolve_name(
+  ftldb_source_util.resolve_ora_name(
     c_name,
     l_obj_owner, l_obj_name, l_obj_dblink, l_obj_type
   );
@@ -146,10 +146,10 @@ begin
     dbms_output.put_line('obj_type=' || l_obj_type);
     raise_application_error(-20000, 'Resolved attributes are not as expected');
   end if;
-end ut_resolve_name#others_object;
+end ut_resolve_ora_name#others_obj;
 
 
-procedure ut_resolve_name#dblink_object
+procedure ut_resolve_ora_name#dblink_obj
 is
   c_name constant varchar2(190) :=
     'testfunc' || '@' || sys_context('userenv', 'current_schema') || '$ext1';
@@ -158,7 +158,7 @@ is
   l_obj_dblink varchar2(128);
   l_obj_type varchar2(30);
 begin
-  ftldb_source_util.resolve_name(
+  ftldb_source_util.resolve_ora_name(
     c_name,
     l_obj_owner, l_obj_name, l_obj_dblink, l_obj_type
   );
@@ -178,10 +178,10 @@ begin
     dbms_output.put_line('obj_type=' || l_obj_type);
     raise_application_error(-20000, 'Resolved attributes are not as expected');
   end if;
-end ut_resolve_name#dblink_object;
+end ut_resolve_ora_name#dblink_obj;
 
 
-procedure ut_resolve_name#dblink_oth_obj
+procedure ut_resolve_ora_name#dbl_oth_ob
 is
   c_name constant varchar2(190) :=
     sys_context('userenv', 'current_schema') || '_ext2.testview' || '@' ||
@@ -191,7 +191,7 @@ is
   l_obj_dblink varchar2(128);
   l_obj_type varchar2(30);
 begin
-  ftldb_source_util.resolve_name(
+  ftldb_source_util.resolve_ora_name(
     c_name,
     l_obj_owner, l_obj_name, l_obj_dblink, l_obj_type
   );
@@ -211,7 +211,7 @@ begin
     dbms_output.put_line('obj_type=' || l_obj_type);
     raise_application_error(-20000, 'Resolved attributes are not as expected');
   end if;
-end ut_resolve_name#dblink_oth_obj;
+end ut_resolve_ora_name#dbl_oth_ob;
 
 
 procedure ut_get_obj_source#view

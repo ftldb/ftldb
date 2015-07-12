@@ -32,10 +32,10 @@ prompt Run UT_SOURCE_UTIL tests.
 begin
   ut_source_util.ut_long2clob();
 
-  ut_source_util.ut_resolve_name#own_object();
-  ut_source_util.ut_resolve_name#others_object();
-  ut_source_util.ut_resolve_name#dblink_object();
-  ut_source_util.ut_resolve_name#dblink_oth_obj();
+  ut_source_util.ut_resolve_ora_name#own_object();
+  ut_source_util.ut_resolve_ora_name#others_obj();
+  ut_source_util.ut_resolve_ora_name#dblink_obj();
+  ut_source_util.ut_resolve_ora_name#dbl_oth_ob();
 
   ut_source_util.ut_get_obj_source#view();
   ut_source_util.ut_get_obj_source#func();

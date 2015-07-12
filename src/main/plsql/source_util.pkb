@@ -140,7 +140,33 @@ begin
 end a;
 
 
-function try_to_resolve_name_in_loop(
+/**
+ * Returns Oracle object's full name and type.
+ */
+function full_name(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2
+) return varchar2
+is
+begin
+  return
+    case
+      when in_owner = upper(in_owner) then in_owner
+      else '"' || in_owner || '"'
+    end ||
+    '.' ||
+    case
+      when in_name = upper(in_name) then in_name
+      else '"' || in_name || '"'
+    end ||
+    a(in_dblink) ||
+    ' (' || in_type || ')';
+end full_name;
+
+
+function try_to_resolve_ora_name(
   in_local_name in varchar2,
   in_dblink in varchar2,
   out_owner out varchar2,
@@ -156,7 +182,7 @@ is
   pragma exception_init(e_object_not_exist, -6564);
 
   -- Supported values for the context flag (from most to least possible).
-  c_supported_context_values constant number_nt :=
+  c_supported_ctx_values constant number_nt :=
     number_nt(
       1 /*function, procedure, package*/, 2 /*view*/, 7 /*type*/,
       3 /*trigger*/, 4 /*java source*/
@@ -170,7 +196,7 @@ is
     out_name := in_name;
   end resolved;
 
-  function try_to_resolve_name_by_context(in_context number) return boolean
+  function try_to_resolve_ora_name_by_ctx(in_context number) return boolean
   is
     l_part1 varchar2(30);
     l_part2 varchar2(30);
@@ -204,29 +230,29 @@ is
     end case;
 
     return true;
-  end try_to_resolve_name_by_context;
+  end try_to_resolve_ora_name_by_ctx;
 
 begin
-  l_i := c_supported_context_values.first();
+  l_i := c_supported_ctx_values.first();
   while l_i is not null loop
     begin
-      return try_to_resolve_name_by_context(c_supported_context_values(l_i));
+      return try_to_resolve_ora_name_by_ctx(c_supported_ctx_values(l_i));
     exception
       when e_incompatible_context or e_object_not_exist then
-        l_i := c_supported_context_values.next(l_i);
+        l_i := c_supported_ctx_values.next(l_i);
     end;
   end loop;
 
   return false;
-end try_to_resolve_name_in_loop;
+end try_to_resolve_ora_name;
 
 
-procedure resolve_name(
-  in_name in varchar2,
-  out_obj_owner out varchar2,
-  out_obj_name out varchar2,
-  out_obj_dblink out varchar2,
-  out_obj_type out varchar2
+procedure resolve_ora_name(
+  in_ora_name in varchar2,
+  out_owner out varchar2,
+  out_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
 )
 is
   -- Regexp for the [SCHEMA.]NAME[@DBLINK] pattern.
@@ -236,30 +262,66 @@ is
   l_dblink varchar2(128);
 begin
   -- Validate the name.
-  if not nvl(regexp_like(in_name, c_full_name_ptrn), false) then
+  if not nvl(regexp_like(in_ora_name, c_full_name_ptrn), false) then
     raise_application_error(
       gc_invalid_argument_num,
-      'name ' || in_name || ' does not match [SCHEMA.]NAME[@DBLINK] pattern'
+      'name ' || in_ora_name || ' does not match [SCHEMA.]NAME[@DBLINK] pattern'
     );
   end if;
 
   -- Split the name into two parts.
-  l_local_name := regexp_replace(in_name, c_full_name_ptrn, '\1');
-  l_dblink := regexp_replace(in_name, c_full_name_ptrn, '\4');
+  l_local_name := regexp_replace(in_ora_name, c_full_name_ptrn, '\1');
+  l_dblink := regexp_replace(in_ora_name, c_full_name_ptrn, '\4');
 
   if
     -- Try to resolve name with the Oracle native resolver.
-    not try_to_resolve_name_in_loop(
-      l_local_name, l_dblink,
-      out_obj_owner, out_obj_name, out_obj_dblink, out_obj_type
+    not try_to_resolve_ora_name(
+      l_local_name, l_dblink, out_owner, out_name, out_dblink, out_type
     )
   then
     raise_application_error(
       gc_name_not_resolved_num,
-      utl_lms.format_message(gc_name_not_resolved_msg, in_name)
+      utl_lms.format_message(gc_name_not_resolved_msg, in_ora_name)
     );
   end if;
-end resolve_name;
+end resolve_ora_name;
+
+
+/**
+ * Splits the full template name into a container name and a section name.
+ */
+procedure split_templ_name(
+  in_templ_name in varchar2,
+  out_container_name out varchar2,
+  out_section_name out varchar2
+)
+is
+begin
+  if in_templ_name like '%\%%' escape '\' then
+    out_container_name := regexp_replace(in_templ_name, '%[^%@]+');
+    out_section_name :=
+      regexp_replace(in_templ_name, '^([^%]+%?)([^%@]*)(@[^@]+)?$', '\2');
+  else
+    out_container_name := in_templ_name;
+    out_section_name := null;
+  end if;
+end split_templ_name;
+
+
+procedure resolve_templ_name(
+  in_templ_name in varchar2,
+  out_owner out varchar2,
+  out_name out varchar2,
+  out_sec_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
+)
+is
+  l_container_name varchar2(200);
+begin
+  split_templ_name(in_templ_name, l_container_name, out_sec_name);
+  resolve_ora_name(l_container_name, out_owner, out_name, out_dblink, out_type);
+end resolve_templ_name;
 
 
 function get_view_source(
@@ -419,7 +481,10 @@ end extract_section_from_clob;
 
 
 function extract_section_from_obj_src(
-  in_container_name in varchar2,
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
   in_start_ptrn in varchar2,
   in_end_ptrn in varchar2,
   in_keep_boundaries in boolean := false,
@@ -427,17 +492,10 @@ function extract_section_from_obj_src(
   in_occurrence in positiven := 1
 ) return clob
 is
-  l_obj_owner varchar2(30);
-  l_obj_name varchar2(30);
-  l_obj_dblink varchar2(128);
-  l_obj_type varchar2(30);
 begin
-  resolve_name(
-    in_container_name, l_obj_owner, l_obj_name, l_obj_dblink, l_obj_type
-  );
   return
     extract_section_from_clob(
-      get_obj_source(l_obj_owner, l_obj_name, l_obj_dblink, l_obj_type),
+      get_obj_source(in_owner, in_name, in_dblink, in_type),
       in_start_ptrn, in_end_ptrn, in_keep_boundaries,
       in_lazy_search, in_occurrence
     );
@@ -447,26 +505,73 @@ exception
       gc_section_not_found_num,
       utl_lms.format_message(
         gc_section_not_found_msg, in_occurrence,
-        in_start_ptrn, in_end_ptrn, in_container_name
+        in_start_ptrn, in_end_ptrn,
+        full_name(in_owner, in_name, in_dblink, in_type)
       )
     );
 end extract_section_from_obj_src;
 
 
-function extract_noncompiled_section(in_container_name in varchar2) return clob
+function extract_section_from_obj_src(
+  in_container_name in varchar2,
+  in_start_ptrn in varchar2,
+  in_end_ptrn in varchar2,
+  in_keep_boundaries in boolean := false,
+  in_lazy_search in boolean := false,
+  in_occurrence in positiven := 1
+) return clob
+is
+  l_owner varchar2(30);
+  l_name varchar2(30);
+  l_dblink varchar2(128);
+  l_type varchar2(30);
+begin
+  resolve_ora_name(in_container_name, l_owner, l_name, l_dblink, l_type);
+
+  return
+    extract_section_from_obj_src(
+      l_owner, l_name, l_dblink, l_type,
+      in_start_ptrn, in_end_ptrn, in_keep_boundaries,
+      in_lazy_search, in_occurrence
+    );
+end extract_section_from_obj_src;
+
+
+function extract_noncompiled_section(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2
+) return clob
 is
 begin
   return
     extract_section_from_obj_src(
-      in_container_name, gc_noncmp_section_start_ptrn,
-      gc_noncmp_section_end_ptrn
+      in_owner, in_name, in_dblink, in_type,
+      gc_noncmp_section_start_ptrn, gc_noncmp_section_end_ptrn
     );
 exception
   when e_section_not_found then
     raise_application_error(
       gc_section_not_found_num,
-      utl_lms.format_message(gc_ncmp_section_not_found_msg, in_container_name)
+      utl_lms.format_message(
+        gc_ncmp_section_not_found_msg,
+        full_name(in_owner, in_name, in_dblink, in_type)
+      )
     );
+end extract_noncompiled_section;
+
+
+function extract_noncompiled_section(in_container_name in varchar2) return clob
+is
+  l_owner varchar2(30);
+  l_name varchar2(30);
+  l_dblink varchar2(128);
+  l_type varchar2(30);
+begin
+  resolve_ora_name(in_container_name, l_owner, l_name, l_dblink, l_type);
+
+  return extract_noncompiled_section(l_owner, l_name, l_dblink, l_type);
 end extract_noncompiled_section;
 
 
@@ -483,11 +588,14 @@ begin
     );
   end if;
   return replace(in_section_name, '$', '\$');
-end;
+end escape_section_name;
 
 
 function extract_named_section(
-  in_container_name in varchar2,
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
   in_section_name in varchar2,
   in_occurrence in positiven := 1
 ) return clob
@@ -496,7 +604,7 @@ is
 begin
   return
     extract_section_from_obj_src(
-      in_container_name,
+       in_owner, in_name, in_dblink, in_type,
       replace(gc_named_section_start_ptrn, '%name%', c_section_name),
       replace(gc_named_section_end_ptrn, '%name%', c_section_name),
       false, true, in_occurrence
@@ -507,8 +615,28 @@ exception
       gc_section_not_found_num,
       utl_lms.format_message(
         gc_named_section_not_found_msg, in_occurrence,
-        in_section_name, in_container_name
+        in_section_name, full_name(in_owner, in_name, in_dblink, in_type)
       )
+    );
+end extract_named_section;
+
+
+function extract_named_section(
+  in_container_name in varchar2,
+  in_section_name in varchar2,
+  in_occurrence in positiven := 1
+) return clob
+is
+  l_owner varchar2(30);
+  l_name varchar2(30);
+  l_dblink varchar2(128);
+  l_type varchar2(30);
+begin
+  resolve_ora_name(in_container_name, l_owner, l_name, l_dblink, l_type);
+
+  return
+    extract_named_section(
+      l_owner, l_name, l_dblink, l_type, in_section_name, in_occurrence
     );
 end extract_named_section;
 

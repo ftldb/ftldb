@@ -21,36 +21,40 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * This class implements a {@link StatefulTemplateLoader} factory that creates loaders from different databases.
+ * This class implements a {@link StatefulTemplateLoader} factory that creates loaders for different databases.
  * Only Oracle DBMS is supported by now. Support of other databases is possible in future.
  */
 public class DBTemplateLoaderFactory {
 
     /**
      * Returns an instance of {@link StatefulTemplateLoader} that is able to load templates from a database using
-     * the specified connection and call.
-     * @param connection the connection to a database where templates are stored
-     * @param call the call to a database which extracts templates
+     * the specified connection and calls.
+     * @param conn a connection to a database where templates are stored
+     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateCheckerCall a call to the database that gets a template's timestamp
+     * @param templateLoaderCall a call to the database that returns a template's source
      * @return a template loader instance
      */
-    public static StatefulTemplateLoader newDBTemplateLoader(Connection connection, String call) {
+    public static StatefulTemplateLoader newDBTemplateLoader(
+            Connection conn, String templateResolverCall, String templateCheckerCall, String templateLoaderCall
+    ) {
 
         StatefulTemplateLoader dbTemplateLoader;
         String dbName;
 
         try {
-            dbName = connection.getMetaData().getDatabaseProductName();
+            dbName = conn.getMetaData().getDatabaseProductName();
         } catch (SQLException e) {
             throw new RuntimeException("Unable to determine database product name", e);
         }
 
         if (dbName.equals("Oracle")) {
-            dbTemplateLoader = new ftldb.oracle.DBTemplateLoader(connection, call);
-        // May be in future...
-        //} else if (dbName.equals("PostgreSQL")) {
-        //    dbTemplateLoader = new ftldb.postgresql.DBTemplateLoader(connection, call);
+            dbTemplateLoader = new ftldb.oracle.DBTemplateLoader(
+                    conn, templateResolverCall, templateCheckerCall, templateLoaderCall
+            );
         } else {
-            throw new RuntimeException("No corresponding DBTemplateLoader class provided for " + dbName + " database");
+            throw new RuntimeException("No corresponding DBTemplateLoader implementation provided for " +
+                    dbName + " database");
         }
 
         return dbTemplateLoader;

@@ -32,61 +32,68 @@ begin
 end get_this_schema;
 
 
-/**
- * Splits the full template name into a container name and a section name.
- */
-procedure split_templ_name(
+procedure default_template_resolver(
   in_templ_name in varchar2,
-  out_container_name out varchar2,
-  out_section_name out varchar2
+  out_owner out varchar2,
+  out_name out varchar2,
+  out_sec_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
 )
 is
 begin
-  if in_templ_name like '%\%%' escape '\' then
-    out_container_name := regexp_replace(in_templ_name, '%[^%@]+');
-    out_section_name :=
-      regexp_replace(in_templ_name, '^([^%]+%?)([^%@]*)(@[^@]+)?$', '\2');
-  else
-    out_container_name := in_templ_name;
-    out_section_name := null;
-  end if;
-end split_templ_name;
-
-
-function default_template_loader(in_templ_name in varchar2) return clob
-is
-  l_container_name varchar2(200);
-  l_section_name varchar2(30);
-begin
-  split_templ_name(in_templ_name, l_container_name, l_section_name);
-
-  return
-    case
-      when l_section_name is null then
-        source_util.extract_noncompiled_section(l_container_name)
-      else
-        source_util.extract_named_section(l_container_name, l_section_name)
-    end;
+  source_util.resolve_templ_name(
+    in_templ_name, out_owner, out_name, out_sec_name, out_dblink, out_type
+  );
 exception
-  when
-    source_util.e_name_not_resolved or source_util.e_source_not_found or
-    source_util.e_section_not_found
-  then
-    return null;
+  -- freemarker.cache.TemplateLoader needs null-object in order to process
+  -- the "template not found" error correctly
+  when source_util.e_name_not_resolved then null;
+end default_template_resolver;
+
+
+procedure default_template_loader(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_sec_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
+  out_body out clob
+)
+is
+begin
+  out_body :=
+    case
+      when in_sec_name is null then
+        source_util.extract_noncompiled_section(
+          in_owner, in_name, in_dblink, in_type
+        )
+      else
+        source_util.extract_named_section(
+          in_owner, in_name, in_dblink, in_type, in_sec_name
+        )
+    end;
 end default_template_loader;
 
 
-procedure init(in_templ_loader in varchar2 := null)
+procedure init(in_templ_resolver in varchar2, in_templ_loader in varchar2)
 is
 begin
   ftldb_wrapper.new_configuration();
   ftldb_wrapper.set_db_template_loader(
-    '{? = call ' ||
-      coalesce(
-        in_templ_loader,
-        get_this_schema() || '.' || $$plsql_unit || '.default_template_loader'
-      ) ||
-      '(?)}'
+    '{call ' || in_templ_resolver || '(?, ?, ?, ?, ?, ?)}',
+    null,  --timestamp checking is not supported yet
+    '{call ' || in_templ_loader || '(?, ?, ?, ?, ?, ?)}'
+  );
+end init;
+
+
+procedure init
+is
+begin
+ init(
+    get_this_schema() || '.' || $$plsql_unit || '.default_template_resolver',
+    get_this_schema() || '.' || $$plsql_unit || '.default_template_loader'
   );
 end init;
 
