@@ -21,17 +21,17 @@
 
 
 <#-- The default TAB size (the number of spaces) -->
-<#assign TAB_SIZE = 2/>
+<#assign DEFAULT_TAB_SIZE = 2/>
 
 
 <#--
--- Overrides the default TAB_SIZE with a new value.
+-- Returns the actual TAB size redefined by the global TAB_SIZE variable.
 --
--- @param  size  the new tab size
+-- @return  the actual TAB size
 -->
-<#macro set_tab_size size>
-  <#assign TAB_SIZE = size/>
-</#macro>
+<#function tab_size>
+  <#return .globals.TAB_SIZE!DEFAULT_TAB_SIZE/>
+</#function>
 
 
 <#--
@@ -131,7 +131,7 @@
   rtab = 0
 >
   <#local output = ''/>
-  <#local indent_width = (rshift - lshift) + (rtab - ltab)*TAB_SIZE/>
+  <#local indent_width = (rshift - lshift) + (rtab - ltab)*tab_size()/>
   <#local content><#nested/></#local>
   <#list content?split('\n') as it>
     <#if it?has_next || (it?trim != '')>
@@ -189,7 +189,7 @@
     indent = ''?right_pad(
       greatest(
         keep_indent?then(content?matches('^ *')[0]?length, 0) +
-          (rshift - lshift) + (rtab - ltab)*TAB_SIZE,
+          (rshift - lshift) + (rtab - ltab)*tab_size(),
         0
       )
     )

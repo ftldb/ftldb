@@ -239,14 +239,14 @@ ${a?c} ${b?c} "${c}" "${d}"
 <#assign a = std.to_list(["col1", "col2", "col3"], 't.# = v.#', ' and ', '#')>
 "${a}"
 
-<@std.set_tab_size 3/>
+<#global TAB_SIZE = 3/>
 <@std.indent ltab=1>
 line1
   line2
     line3
       line4
 </@std.indent>
-<@std.set_tab_size 2/>
+<#global TAB_SIZE = 2/>
 
 <@std.indent rshift=2>
 line1
