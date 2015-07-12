@@ -110,9 +110,7 @@
 >
   <#local lst = ''/>
   <#list seq as it>
-    <#local
-      lst = lst + format?replace(token, it) + it?has_next?then(delim, '')
-    />
+    <#local lst += format?replace(token, it) + it?has_next?then(delim, '')/>
   </#list>
   <#return lst/>
 </#function>
@@ -139,12 +137,12 @@
     <#if it?has_next || (it?trim != '')>
       <#if (indent_width >= 0)>
         <#local
-           output = output + ''?right_pad(indent_width) + it +
+           output += ''?right_pad(indent_width) + it +
              it?has_next?then('\n', '')
         />
       <#else/>
         <#local
-           output = output +
+           output +=
              it?replace('^ {1,' + (-indent_width)?c + '}', '', 'r') +
              it?has_next?then('\n', '')
         />
@@ -200,12 +198,12 @@
     <#local str = it + (it?has_next || trailing_delim)?then(delim_rt, '')/>
     <#if (len == 0) || ((str + delim_ws)?length <= max_len - len)>
       <#local str = (it?index == 0)?then(indent, delim_ws) + str/>
-      <#local len = len + str?length/>
+      <#local len += str?length/>
     <#else>
       <#local str = '\n' + keep_indent?then(indent, '') + str/>
       <#local len = str?length - 1/>
     </#if>
-    <#local output = output + str/>
+    <#local output += str/>
   </#list>
   <#lt/>${output}
 </#macro>

@@ -552,8 +552,8 @@ Do the following:
   1. Download and unpack the source archive or clone from the GitHub repository.
   2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
-  3. Run in the command line from the base project directory:
-     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`
+  3. Run in the command line from the base project directory:  
+     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
      if you don't have an Oracle instance available.
   4. Check the `target` directory for the installation files.
 

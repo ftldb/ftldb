@@ -82,7 +82,7 @@
   <#local callable_statement = expr/>
   <#list args as arg>
     <#local
-      callable_statement = callable_statement +
+      callable_statement +=
         (arg?index == 0)?then('(', '') +
         arg?is_boolean?then('sys.diutil.int_to_bool(?)', '?') +
         arg?has_next?then(', ', ')')
@@ -100,7 +100,7 @@
     <#else/>
       <#local val = arg/>
     </#if>
-    <#local binds = binds + {(arg?index + 2)?c : val}/>
+    <#local binds += {(arg?index + 2)?c : val}/>
   </#list>
   <#local
     res = default_connection().exec(
@@ -130,9 +130,9 @@
 <#function fetch cursor_func args...>
   <#local ftl_call = 'eval("oracle.jdbc.OracleTypes.CURSOR", cursor_func'/>
   <#list args as arg>
-    <#local ftl_call = ftl_call + ', args[' + arg?index?c + ']'/>
+    <#local ftl_call += ', args[' + arg?index?c + ']'/>
   </#list>
-  <#local ftl_call = ftl_call + ')'/>
+  <#local ftl_call += ')'/>
   <#return ftl_call?eval/>
 </#function>
 
@@ -151,7 +151,7 @@
   <#local seq = []/>
   <#list row_set as row>
     <#if row[column]??>
-      <#local seq = seq + [row[column]]/>
+      <#local seq += [row[column]]/>
     </#if>
   </#list>
   <#return seq/>
