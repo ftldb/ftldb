@@ -268,7 +268,7 @@ public class DBTemplateLoader implements StatefulTemplateLoader {
     /**
      * This class represents a template's container description.
      */
-    public static class DBTemplateContainer {
+    public static final class DBTemplateContainer {
         final String name;
 
         final String owner;
@@ -297,26 +297,16 @@ public class DBTemplateLoader implements StatefulTemplateLoader {
         public boolean equals(Object o) {
             if (this == o)
                 return true;
-            if (o == null)
-                return false;
-            if (this.getClass() != o.getClass())
+            if (!(o instanceof DBTemplateContainer))
                 return false;
 
             DBTemplateContainer other = (DBTemplateContainer) o;
-            return this.owner.equals(other.owner) && this.object.equals(other.object) &&
-                    this.section.equals(other.section) && this.dblink.equals(other.dblink) &&
-                    this.type.equals(other.type);
+            return owner.equals(other.owner) && object.equals(other.object) && section.equals(other.section) &&
+                    dblink.equals(other.dblink) && type.equals(other.type);
         }
 
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + owner.hashCode();
-            result = prime * result + object.hashCode();
-            result = prime * result + section.hashCode();
-            result = prime * result + dblink.hashCode();
-            result = prime * result + type.hashCode();
-            return result;
+            return owner.hashCode() ^ object.hashCode() ^ section.hashCode() ^ dblink.hashCode() ^ type.hashCode();
         }
 
     }
