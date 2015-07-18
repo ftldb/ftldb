@@ -63,6 +63,26 @@ procedure default_template_loader(
 
 
 /**
+ * Default template checker. Checks a template for its last modification time.
+ *
+ * @param  in_owner     the container object's owner
+ * @param  in_name      the container object's name
+ * @param  in_sec_name  the container section's name
+ * @param  in_dblink    the container object's dblink
+ * @param  in_type      the container object's type
+ * @param  out_millis   the container object's milliseconds since Unix Epoch
+ */
+procedure default_template_checker(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_sec_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2,
+  out_millis out integer
+);
+
+
+/**
  * Returns the default configuration XML.
  *
  * Uses 'ftldb.oracle.DatabaseTemplateLoader' class as a template loader with

@@ -331,6 +331,66 @@ begin
 end resolve_templ_name;
 
 
+function get_obj_timestamp(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2
+) return timestamp
+is
+  c_type constant varchar2(30) := upper(in_type);
+  -- ALL_OBJECTS returns the TIMESTAMP column as a string
+  c_all_objects_query constant varchar2(32767) :=
+    'select' || chr(10) ||
+    '  max(to_timestamp(o.timestamp, ''yyyy-mm-dd:hh24:mi:ss''))' || chr(10) ||
+    'from all_objects%dblink% o' || chr(10) ||
+    'where' || chr(10) ||
+    '  o.owner = :owner and' || chr(10) ||
+    '  o.object_name = :name and' || chr(10) ||
+    '  o.object_type in (:type, :type || '' BODY'')' || chr(10) ||
+    'group by null';
+  l_timestamp timestamp;
+begin
+  -- Check the input argument values.
+  case
+    when in_owner is null then
+      raise_application_error(
+        gc_invalid_argument_num, 'object owner is not specified'
+      );
+    when in_name is null then
+      raise_application_error(
+        gc_invalid_argument_num, 'object name is not specified'
+      );
+    when c_type is null then
+      raise_application_error(
+        gc_invalid_argument_num, 'object type is not specified'
+      );
+    when not c_type member of gc_supported_obj_types then
+      raise_application_error(
+        gc_invalid_argument_num,
+        'object type ' || c_type || ' is not supported'
+      );
+    else null;
+  end case;
+
+  execute immediate
+    replace(c_all_objects_query, '%dblink%', a(in_dblink))
+  into l_timestamp
+  using in_owner, in_name, c_type, c_type;
+
+  return l_timestamp;
+exception
+  when no_data_found then
+    raise_application_error(
+      gc_object_not_found_num,
+      utl_lms.format_message(
+        gc_object_not_found_msg,
+        get_full_name(in_owner, in_name, in_dblink), c_type
+      )
+    );
+end get_obj_timestamp;
+
+
 function get_view_source(
   in_owner in varchar2,
   in_name in varchar2,
@@ -431,7 +491,7 @@ exception
       gc_source_not_found_num,
       utl_lms.format_message(
         gc_source_not_found_msg,
-        in_owner || '.' || in_name || a(in_dblink), c_type
+        get_full_name(in_owner, in_name, in_dblink), c_type
       )
     );
 end get_obj_source;

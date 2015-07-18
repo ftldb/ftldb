@@ -38,17 +38,24 @@ gc_name_not_resolved_num constant number := -20101;
 gc_name_not_resolved_msg constant varchar2(2000) :=
   'name %s cannot be resolved';
 
+-- The exception raised when an object is not found.
+e_object_not_found exception;
+pragma exception_init(e_object_not_found, -20102);
+gc_object_not_found_num constant number := -20102;
+gc_object_not_found_msg constant varchar2(2000) :=
+  'object %s of type %s is not found';
+
 -- The exception raised when a source for an object is not found.
 e_source_not_found exception;
-pragma exception_init(e_source_not_found, -20102);
-gc_source_not_found_num constant number := -20102;
+pragma exception_init(e_source_not_found, -20103);
+gc_source_not_found_num constant number := -20103;
 gc_source_not_found_msg constant varchar2(2000) :=
   'source for object %s of type %s is not found';
 
 -- The exception raised when a section in a container is not found.
 e_section_not_found exception;
-pragma exception_init(e_section_not_found, -20103);
-gc_section_not_found_num constant number := -20103;
+pragma exception_init(e_section_not_found, -20104);
+gc_section_not_found_num constant number := -20104;
 gc_section_not_found_msg constant varchar2(2000) :=
   '%d occurrence of section bounded between regular expressions "%s" and ' ||
   '"%s" is not found in container %s';
@@ -157,6 +164,28 @@ function get_full_name(
 
 
 /**
+ * Returns the specified object's last modification time.
+ *
+ * @param  in_owner   the object's owner (case-sensitive)
+ * @param  in_name    the object's name (case-sensitive)
+ * @param  in_dblink  the object's dblink (case-insensitive)
+ * @param  in_type    the object's type (case-insensitive)
+ * @return            the object's last modification time
+ *
+ * @throws  e_invalid_argument  if the object's owner, name or type is not
+ *                              specified or the type is not supported
+ * @throws  e_object_not_found  if the object is not found in the data
+ *                              dictionary
+ */
+function get_obj_timestamp(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2
+) return timestamp;
+
+
+/**
  * Extracts the specified object's source from the data dictionary. This method
  * is an analog of DBMS_METADATA.GET_DDL, but doesn't need SELECT_CATALOG_ROLE
  * to access objects in different schemas.
@@ -168,7 +197,7 @@ function get_full_name(
  * @return            the object's source as a CLOB
  *
  * @throws  e_invalid_argument  if the object's owner, name or type is not
- *                              specified, or the type is not supported
+ *                              specified or the type is not supported
  * @throws  e_source_not_found  if the source is not found in the data
  *                              dictionary
  */

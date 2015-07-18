@@ -76,6 +76,39 @@ begin
 end default_template_loader;
 
 
+/**
+ * Converts Oracle timestamp to milliseconds since Unix Epoch.
+ */
+function timestamp2millis(in_timestamp timestamp) return integer
+is
+  l_interval interval day(9) to second(3) :=
+    sys_extract_utc(in_timestamp) - timestamp '1970-01-01 00:00:00';
+begin
+  return 1000 * (
+    extract(day from l_interval) * 86400 +
+    extract(hour from l_interval) * 3600 +
+    extract(minute from l_interval) * 60 +
+    extract(second from l_interval)
+  );
+end timestamp2millis;
+
+
+procedure default_template_checker(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_sec_name in varchar2, --not used
+  in_dblink in varchar2,
+  in_type in varchar2,
+  out_millis out integer
+)
+is
+begin
+  out_millis := timestamp2millis(
+    source_util.get_obj_timestamp(in_owner, in_name, in_dblink, in_type)
+  );
+end default_template_checker;
+
+
 function default_config_xml return xmltype
 is
   l_pkg_name varchar2(70) :=
@@ -86,7 +119,7 @@ is
   l_loader_call varchar2(4000) :=
     '{call ' || l_pkg_name || '.default_template_loader(?, ?, ?, ?, ?, ?)}';
   l_checker_call varchar2(4000) :=
-    '';
+    '{call ' || l_pkg_name || '.default_template_checker(?, ?, ?, ?, ?, ?)}';
 
   l_config varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
@@ -100,7 +133,10 @@ is
           </object>
         </void>
         <void property="cacheStorage">
-          <object class="freemarker.cache.NullCacheStorage"/>
+          <object class="freemarker.cache.MruCacheStorage">
+            <int>20</int>
+            <int>200</int>
+          </object>
         </void>
       </object>
     </java>';

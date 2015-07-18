@@ -123,7 +123,9 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         this.connection = connection;
         this.templateResolverCall = templateResolverCall;
         this.templateLoaderCall = templateLoaderCall;
-        this.templateCheckerCall = templateCheckerCall.trim().equals("") ? null : templateCheckerCall;
+        this.templateCheckerCall = (templateCheckerCall == null || "".equals(templateCheckerCall.trim()))
+                                    ? null
+                                    : templateCheckerCall;
     }
 
 
@@ -139,6 +141,18 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
             throws SQLException {
         this(DriverManager.getConnection("jdbc:default:connection"),
                 templateResolverCall, templateLoaderCall, templateCheckerCall);
+    }
+
+
+    /**
+     * Creates an instance of {@link StatefulTemplateLoader} for working in a database via the default driver's
+     * connection with disabled template timestamp checking.
+     *
+     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateLoaderCall a call to the database that returns a template's source
+     */
+    public DatabaseTemplateLoader(String templateResolverCall, String templateLoaderCall) throws SQLException {
+        this(templateResolverCall, templateLoaderCall, null);
     }
 
 
