@@ -16,11 +16,10 @@
 package ftldb;
 
 
-import freemarker.core.Environment;
-import freemarker.template.Configuration;
 import freemarker.template.SimpleHash;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import freemarker.template.TemplateModelException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -28,42 +27,92 @@ import java.io.Writer;
 
 
 /**
- * This class processes templates within the previously set configuration.
+ * This class contains convenience methods for processing templates within the previously set configuration.
  */
 public class TemplateProcessor {
 
+
     /**
-     * Processes the template specified by name.
+     * Processes a template specified by its name.
      *
-     * @param templateName the template name
+     * @param templateName the template's name
      * @param dest the output destination
      * @throws IOException if a file access error occurs
      * @throws TemplateException if a template processing error occurs
      */
     public static void process(String templateName, Writer dest) throws IOException, TemplateException {
-        Configuration cfg = Configurator.getConfiguration();
-        if (templateName == null) {
-            throw new TemplateException("Template name is not specified", Environment.getCurrentEnvironment());
-        }
-        SimpleHash root = new SimpleHash(cfg.getObjectWrapper());
-        Template temp = cfg.getTemplate(templateName);
-        temp.process(root, dest);
+        process(getTemplate(templateName), dest);
     }
 
 
     /**
-     * Processes the specified template.
+     * Processes a template represented as a {@link Reader} stream.
      *
-     * @param templateBody the template source
+     * @param templateBody the template's source
      * @param dest the output destination
      * @throws IOException if a file access error occurs
      * @throws TemplateException if a template processing error occurs
      */
-    public static void processBody(Reader templateBody, Writer dest) throws IOException, TemplateException {
-        Configuration cfg = Configurator.getConfiguration();
-        SimpleHash root = new SimpleHash(cfg.getObjectWrapper());
-        Template temp = new Template(null, templateBody, cfg);
-        temp.process(root, dest);
+    public static void process(Reader templateBody, Writer dest) throws IOException, TemplateException {
+        process(getTemplate(templateBody), dest);
     }
+
+
+    /**
+     * Adds the specified array to the current configuration as a sequence named {@code template_args}.
+     *
+     * @param templateArgs an array of template arguments
+     * @throws TemplateModelException if a configuration error occurs
+     */
+    public static void setArguments(String[] templateArgs) throws TemplateModelException {
+        Configurator.getConfiguration().setSharedVariable("template_args", templateArgs);
+    }
+
+
+    /**
+     * Processes a template represented as a {@link Template} instance.
+     *
+     * @param template a template object
+     * @param dest the output destination
+     * @throws IOException if a file access error occurs
+     * @throws TemplateException if a template processing error occurs
+     */
+    protected static void process(Template template, Writer dest) throws IOException, TemplateException {
+        SimpleHash root = new SimpleHash(Configurator.getConfiguration().getObjectWrapper());
+        template.process(root, dest);
+    }
+
+
+    /**
+     * Loads a template by its name and returns it as a {@link Template} instance .
+     *
+     * @param templateName the template's name
+     * @return the template itself
+     * @throws IOException if a file access error occurs
+     * @throws TemplateException if a template processing error occurs
+     */
+    protected static Template getTemplate(String templateName) throws IOException, TemplateException {
+        if (templateName == null || "".equals(templateName.trim())) {
+            throw new IllegalArgumentException("Template name is not specified");
+        }
+        return Configurator.getConfiguration().getTemplate(templateName);
+    }
+
+
+    /**
+     * Wraps a template represented as a {@link Reader} stream into a {@link Template} instance.
+     *
+     * @param templateBody the template's source
+     * @return the template itself
+     * @throws IOException if a file access error occurs
+     * @throws TemplateException if a template processing error occurs
+     */
+    protected static Template getTemplate(Reader templateBody) throws IOException, TemplateException {
+        if (templateBody == null) {
+            throw new IllegalArgumentException("Template body is null");
+        }
+        return new Template(null, templateBody, Configurator.getConfiguration());
+    }
+
 
 }

@@ -16,6 +16,8 @@
 package ftldb;
 
 
+import freemarker.cache.FileTemplateLoader;
+import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 
 import java.io.IOException;
@@ -31,6 +33,51 @@ import java.util.List;
  * The result of processing FTL templates is directed to {@link System#out}.
  */
 public class CommandLine {
+
+
+    /**
+     * The main entry point. Processes each listed template in left-to-right order, passing its arguments as a sequence
+     * named {@code template_args}. Templates (with their arguments) are delimited by a '!' sign.
+     *
+     * @param args the full list of arguments
+     * @throws IOException if a file access error occurs
+     * @throws TemplateException if a template processing error occurs
+     */
+    public static void main(String[] args) throws IOException, TemplateException {
+
+        if (args.length < 1) {
+            System.err.println(
+                    "FTLDB v" + Configurator.getVersion() + ", "
+                            + "based on FreeMarker v" + Configuration.getVersion() + ".\n"
+                    + "Usage: " + CommandLine.class.getName()
+                            + " ftlFile1 arg1 ... argN [! ftlFile2 arg1 ... argN [! ftlFileN ...]]"
+            );
+        }
+
+        Configuration cfg = new DefaultConfiguration();
+        cfg.setTemplateLoader(new FileTemplateLoader());
+        Configurator.setConfiguration(cfg);
+
+        Writer out = new OutputStreamWriter(System.out);
+
+        List calls = getFtlCalls(args);
+        for (Iterator cmdIt = calls.iterator(); cmdIt.hasNext(); ) {
+            List call = (List) cmdIt.next();
+            if (call.size() == 0) continue;
+
+            String templateName = (String) call.get(0);
+            if ("".equals(templateName.trim())) {
+                throw new RuntimeException("Empty template file name in call: " + call);
+            }
+
+            String[] templateArgs = (String[]) call.subList(1, call.size()).toArray(new String[call.size() - 1]);
+
+            TemplateProcessor.setArguments(templateArgs);
+            TemplateProcessor.process(templateName, out);
+        }
+
+    }
+
 
     private static final String FTL_CALL_DELIM = "!";
 
@@ -54,46 +101,5 @@ public class CommandLine {
         return ret;
     }
 
-
-    /**
-     * The main entry point. Processes each listed template in left-to-right order, passing its arguments as a sequence
-     * named {@code template_args}. Templates (with their arguments) are delimited by a '!' sign.
-     *
-     * @param args the full list of arguments
-     * @throws IOException if a file access error occurs
-     * @throws TemplateException if a template processing error occurs
-     */
-    public static void main(String[] args) throws IOException, TemplateException {
-
-        if (args.length < 1) {
-            System.err.println(
-                    "FTLDB v" + Configurator.getVersion() + ", " +
-                            "based on FreeMarker v" + Configurator.getFMVersion() + ".\n" +
-                    "Usage: " + CommandLine.class.getName() +
-                            " ftlFile1 arg1 ... argN [! ftlFile2 arg1 ... argN [! ftlFileN ...]]"
-            );
-        }
-
-        Configurator.newConfiguration();
-        Configurator.setDefaultFileTemplateLoader();
-        Writer out = new OutputStreamWriter(System.out);
-
-        List calls = getFtlCalls(args);
-        for (Iterator cmdIt = calls.iterator(); cmdIt.hasNext(); ) {
-            List call = (List) cmdIt.next();
-            if (call.size() == 0) continue;
-
-            String templateName = (String) call.get(0);
-            if ("".equals(templateName.trim())) {
-                throw new RuntimeException("Empty template file name in call: " + call);
-            }
-
-            String[] templateArgs = (String[]) call.subList(1, call.size()).toArray(new String[call.size() - 1]);
-
-            Configurator.getConfiguration().setSharedVariable("template_args", templateArgs);
-            TemplateProcessor.process(templateName, out);
-        }
-
-    }
 
 }

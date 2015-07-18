@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ftldb;
+package ftldb.ext.sql;
 
 
 import java.sql.*;
@@ -26,7 +26,8 @@ import java.util.Date;
  * careful while working with very large queries. Columns are got with {@link ResultSet#getObject(int)} and saved as is,
  * preserving their types.
  */
-public class DBQueryExecutor {
+public class QueryExecutor {
+
 
     private final Connection connection;
 
@@ -36,7 +37,7 @@ public class DBQueryExecutor {
      *
      * @param connection the connection to a database
      */
-    public DBQueryExecutor(Connection connection) {
+    public QueryExecutor(Connection connection) {
         this.connection = connection;
     }
 
@@ -45,7 +46,7 @@ public class DBQueryExecutor {
      * Executes the specified query.
      *
      * @param query the SQL query statement
-     * @return the result set wrapped in {@link QueryResult}
+     * @return the result set wrapped in {@link ftldb.ext.sql.QueryExecutor.QueryResult}
      * @throws SQLException if a database access error occurs
      */
     public QueryResult executeQuery(String query) throws SQLException {
@@ -58,7 +59,7 @@ public class DBQueryExecutor {
      *
      * @param query the SQL query statement
      * @param binds the list of bind variable values
-     * @return the result set wrapped in {@link QueryResult}
+     * @return the result set wrapped in {@link ftldb.ext.sql.QueryExecutor.QueryResult}
      * @throws SQLException if a database access error occurs
      */
     public QueryResult executeQuery(String query, List binds) throws SQLException {
@@ -74,7 +75,7 @@ public class DBQueryExecutor {
                 for (Iterator it = binds.iterator(); it.hasNext(); ) {
                     Object o = it.next();
                     // JDBC can't work with java.util.Date directly
-                    if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
+                    if (o instanceof Date) o = TypeHelper.toSQLDate((Date) o);
                     ps.setObject(index++, o);
                 }
             }
@@ -88,7 +89,7 @@ public class DBQueryExecutor {
 
 
     /**
-     * Wraps the specified result set in an instance of {@link QueryResult}.
+     * Wraps the specified result set in an instance of {@link ftldb.ext.sql.QueryExecutor.QueryResult}.
      *
      * @param rs the result set
      * @return the result set and its column metadata wrapped as a single object
@@ -116,20 +117,22 @@ public class DBQueryExecutor {
      * <p>The result set itself is stored internally as a 2-dimensional array and can be represented in FTL in four
      * different ways as:
      * <ul>
-     *     <li>a sequence of rows, each represented as:
+     *     <li>a sequence of rows, each represented as:</li>
      *     <ul>
-     *         <li>a sequence of columns - see {@link QueryResult#getSeqRows};
-     *         <li>a hash of columns - see {@link QueryResult#getHashRows};
+     *         <li>a sequence of columns - see {@link ftldb.ext.sql.QueryExecutor.QueryResult#getSeqRows};</li>
+     *         <li>a hash of columns - see {@link ftldb.ext.sql.QueryExecutor.QueryResult#getHashRows};</li>
      *     </ul>
-     *     <li>a sequence of columns, each presented as a sequence of rows - see {@link QueryResult#getColSeq};
-     *     <li>a hash of columns, each presented as a sequence of rows - see {@link QueryResult#getColHash};
+     *     <li>a sequence of columns, each presented as a sequence of rows - see
+     *         {@link ftldb.ext.sql.QueryExecutor.QueryResult#getColSeq};</li>
+     *     <li>a hash of columns, each presented as a sequence of rows - see
+     *         {@link ftldb.ext.sql.QueryExecutor.QueryResult#getColHash};</li>
      * </ul>
      *
      * <p>where 'sequence' and 'hash' are inner FTL types, analogues of {@link List} and {@link Map}. Rows and columns
      * in a sequence are accessed by their indices starting from 0, e.g. {@code rows[3]}. Columns in a hash are
      * accessed by their names (case-sensitive), e.g. {@code columns["NAME"]} or {@code columns.ID}.
      *
-     * <p>The assymmetry in method naming is intentional. Getting the result set with the first two methods you get
+     * <p>The asymmetry in method naming is intentional. Getting the result set with the first two methods you get
      * a sequence of either {@code seqRow} or {@code hashRow} objects. The plural form just means 'sequence'.
      *
      * <p>Getting the result set with the rest two methods you get a collection of columns: either a sequence or a hash,
@@ -166,8 +169,8 @@ public class DBQueryExecutor {
 
 
         /**
-         * Returns the column metadata for a result set as a sequence of {@link ColumnMetaData} accessed by the column
-         * index, starting from 0.
+         * Returns the column metadata for a result set as a sequence of {@link ftldb.ext.sql.QueryExecutor
+         * .ColumnMetaData} accessed by the column index, starting from 0.
          *
          * @return the column metadata array
          */
@@ -187,8 +190,8 @@ public class DBQueryExecutor {
 
 
         /**
-         * Returns the column metadata for a result set as a hash of {@link ColumnMetaData} accessed by the column name
-         * (case-sensitive).
+         * Returns the column metadata for a result set as a hash of {@link ftldb.ext.sql.QueryExecutor.ColumnMetaData}
+         * accessed by the column name (case-sensitive).
          *
          * @return the column metadata map
          */
@@ -437,14 +440,8 @@ public class DBQueryExecutor {
          * @return column description
          */
         public String toString() {
-            return
-                    "index=" + index +
-                            "  name=" + name +
-                            ", typeName=" + typeName +
-                            ", precision=" + precision +
-                            ", scale=" + scale +
-                            ", nullable=" + nullable
-                    ;
+            return  "index=" + index + ", name=" + name + ", typeName=" + typeName + ", precision=" + precision
+                    + ", scale=" + scale + ", nullable=" + nullable;
         }
 
     }

@@ -23,13 +23,19 @@ ${line}
 </#list>
 
 <#assign res = shell_exec(["java", "-version"])/>
-run "java -version":
+run "java -version" as an array of parameters:
 <#list res.stderr as line>
 ${line}
 </#list>
 
 <#assign res = shell_exec("java -version", "UTF-8")/>
 run "java -version" with explicit encoding:
+<#list res.stderr as line>
+${line}
+</#list>
+
+<#assign res = shell_exec(["java", "-version"], "UTF-8")/>
+run "java -version" as an array of parameters with explicit encoding:
 <#list res.stderr as line>
 ${line}
 </#list>

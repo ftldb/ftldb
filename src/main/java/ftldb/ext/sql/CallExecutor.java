@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ftldb;
+package ftldb.ext.sql;
 
 
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.Date;
 
 
 /**
  * This class is a database callable statement executor.
  */
-public class DBCallExecutor {
+public class CallExecutor {
+
 
     private final Connection connection;
 
@@ -34,7 +37,7 @@ public class DBCallExecutor {
      *
      * @param connection the connection to a database
      */
-    public DBCallExecutor(Connection connection) {
+    public CallExecutor(Connection connection) {
         this.connection = connection;
     }
 
@@ -77,7 +80,7 @@ public class DBCallExecutor {
 
                 Object o = e.getValue();
                 // JDBC can't work with java.util.Date directly
-                if (o instanceof Date) o = SQLTypeHelper.toSQLDate((Date) o);
+                if (o instanceof Date) o = TypeHelper.toSQLDate((Date) o);
                 cs.setObject(index, o);
             }
 
@@ -114,7 +117,7 @@ public class DBCallExecutor {
 
                 Integer sqlType;
                 try {
-                    sqlType = SQLTypeHelper.getIntValue(sqlTypeName);
+                    sqlType = TypeHelper.getIntValue(sqlTypeName);
                 } catch (Exception ex) {
                     throw new SQLException("Unknown SQL type of out bind variable #" + index + ": " + sqlTypeName, ex);
                 }
@@ -135,7 +138,7 @@ public class DBCallExecutor {
                 int index = Integer.parseInt(e.getKey().toString());
                 Object retBind = cs.getObject(index);
                 if (retBind instanceof ResultSet) {
-                    retBind = DBQueryExecutor.processResultSet((ResultSet) retBind);
+                    retBind = QueryExecutor.processResultSet((ResultSet) retBind);
                 }
                 ret.put(String.valueOf(index), retBind);
             }
@@ -146,5 +149,6 @@ public class DBCallExecutor {
         }
 
     }
+
 
 }

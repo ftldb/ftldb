@@ -76,25 +76,76 @@ begin
 end default_template_loader;
 
 
-procedure init(in_templ_resolver in varchar2, in_templ_loader in varchar2)
+function default_config_xml return xmltype
 is
+  l_pkg_name varchar2(70) :=
+    '"' || get_this_schema() || '"."' || $$plsql_unit || '"';
+
+  l_resolver_call varchar2(4000) :=
+    '{call ' || l_pkg_name || '.default_template_resolver(?, ?, ?, ?, ?, ?)}';
+  l_loader_call varchar2(4000) :=
+    '{call ' || l_pkg_name || '.default_template_loader(?, ?, ?, ?, ?, ?)}';
+  l_checker_call varchar2(4000) :=
+    '';
+
+  l_config varchar2(32767) :=
+    '<?xml version="1.0" encoding="UTF-8"?>
+    <java version="1.0" class="java.beans.XMLDecoder">
+      <object class="ftldb.DefaultConfiguration">
+        <void property="templateLoader">
+          <object class="ftldb.oracle.DatabaseTemplateLoader">
+            <string>' || utl_i18n.escape_reference(l_resolver_call) || '</string>
+            <string>' || utl_i18n.escape_reference(l_loader_call) || '</string>
+            <string>' || utl_i18n.escape_reference(l_checker_call) || '</string>
+          </object>
+        </void>
+        <void property="cacheStorage">
+          <object class="freemarker.cache.NullCacheStorage"/>
+        </void>
+      </object>
+    </java>';
 begin
-  ftldb_wrapper.new_configuration();
-  ftldb_wrapper.set_db_template_loader(
-    '{call ' || in_templ_resolver || '(?, ?, ?, ?, ?, ?)}',
-    null,  --timestamp checking is not supported yet
-    '{call ' || in_templ_loader || '(?, ?, ?, ?, ?, ?)}'
+  return xmltype(l_config);
+end default_config_xml;
+
+
+function get_config_func_name return varchar2
+is
+  l_owner varchar2(30);
+  l_name varchar2(30);
+  l_dblink varchar2(128);
+  l_type varchar2(30);
+  l_default_config_func_name varchar2(70) :=
+    '"' || get_this_schema() || '"."' || $$plsql_unit || '"' ||
+    '.default_config_xml';
+begin
+  source_util.resolve_ora_name(
+    'ftldb_config_xml', l_owner, l_name, l_dblink, l_type
   );
+  if l_type != 'FUNCTION' then
+    return l_default_config_func_name;
+  end if;
+  return source_util.get_full_name(l_owner, l_name, l_dblink);
+exception
+  when source_util.e_name_not_resolved then
+    return l_default_config_func_name;
+end get_config_func_name;
+
+
+procedure init(in_config_func_name in varchar2)
+is
+  l_config_xml xmltype;
+begin
+  execute immediate 'call ' || in_config_func_name || '() into :1'
+    using out l_config_xml;
+  ftldb_wrapper.set_configuration(l_config_xml.getclobval());
 end init;
 
 
 procedure init
 is
 begin
- init(
-    get_this_schema() || '.' || $$plsql_unit || '.default_template_resolver',
-    get_this_schema() || '.' || $$plsql_unit || '.default_template_loader'
-  );
+  init(get_config_func_name());
 end init;
 
 
@@ -103,9 +154,11 @@ function process_to_clob(
   in_templ_args in varchar2_nt := varchar2_nt()
 ) return clob
 is
+  l_result clob := clob_util.create_temporary();
 begin
   ftldb_wrapper.set_arguments(in_templ_args);
-  return ftldb_wrapper.process(in_templ_name);
+  ftldb_wrapper.process(in_templ_name, l_result);
+  return l_result;
 end process_to_clob;
 
 
@@ -114,9 +167,11 @@ function process_body_to_clob(
   in_templ_args in varchar2_nt := varchar2_nt()
 ) return clob
 is
+  l_result clob := clob_util.create_temporary();
 begin
   ftldb_wrapper.set_arguments(in_templ_args);
-  return ftldb_wrapper.process_body(in_templ_body);
+  ftldb_wrapper.process_body(in_templ_body, l_result);
+  return l_result;
 end process_body_to_clob;
 
 

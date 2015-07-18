@@ -140,14 +140,10 @@ begin
 end a;
 
 
-/**
- * Returns Oracle object's full name and type.
- */
-function full_name(
+function get_full_name(
   in_owner in varchar2,
   in_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2
+  in_dblink in varchar2
 ) return varchar2
 is
 begin
@@ -161,9 +157,20 @@ begin
       when in_name = upper(in_name) then in_name
       else '"' || in_name || '"'
     end ||
-    a(in_dblink) ||
-    ' (' || in_type || ')';
-end full_name;
+    a(in_dblink);
+end get_full_name;
+
+
+function get_full_name(
+  in_owner in varchar2,
+  in_name in varchar2,
+  in_dblink in varchar2,
+  in_type in varchar2
+) return varchar2
+is
+begin
+  return get_full_name(in_owner, in_name, in_dblink) || ' (' || in_type || ')';
+end get_full_name;
 
 
 function try_to_resolve_ora_name(
@@ -506,7 +513,7 @@ exception
       utl_lms.format_message(
         gc_section_not_found_msg, in_occurrence,
         in_start_ptrn, in_end_ptrn,
-        full_name(in_owner, in_name, in_dblink, in_type)
+        get_full_name(in_owner, in_name, in_dblink, in_type)
       )
     );
 end extract_section_from_obj_src;
@@ -556,7 +563,7 @@ exception
       gc_section_not_found_num,
       utl_lms.format_message(
         gc_ncmp_section_not_found_msg,
-        full_name(in_owner, in_name, in_dblink, in_type)
+        get_full_name(in_owner, in_name, in_dblink, in_type)
       )
     );
 end extract_noncompiled_section;
@@ -615,7 +622,7 @@ exception
       gc_section_not_found_num,
       utl_lms.format_message(
         gc_named_section_not_found_msg, in_occurrence,
-        in_section_name, full_name(in_owner, in_name, in_dblink, in_type)
+        in_section_name, get_full_name(in_owner, in_name, in_dblink, in_type)
       )
     );
 end extract_named_section;

@@ -18,16 +18,13 @@ package ftldb;
 
 import org.junit.Test;
 
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 
 
 public class TemplateProcessorTest {
 
     private static String process(String templName) throws Exception {
-        Configurator.newConfiguration();
-        Configurator.setDefaultFileTemplateLoader();
-        Configurator.getConfiguration().setDefaultEncoding("UTF-8");
+        Configurator.setConfiguration(new FileInputStream(new File("ftldb_config.xml")));
         StringWriter sw = new StringWriter();
         TemplateProcessor.process(templName, sw);
         String ret = sw.toString();
@@ -36,10 +33,10 @@ public class TemplateProcessorTest {
     }
 
     private static String processBody(String templBody) throws Exception {
-        Configurator.newConfiguration();
+        Configurator.setConfiguration(new ftldb.DefaultConfiguration());
         Configurator.getConfiguration().setDefaultEncoding("UTF-8");
         StringWriter sw = new StringWriter();
-        TemplateProcessor.processBody(new StringReader(templBody), sw);
+        TemplateProcessor.process(new StringReader(templBody), sw);
         String ret = sw.toString();
         System.out.println(ret);
         return ret;

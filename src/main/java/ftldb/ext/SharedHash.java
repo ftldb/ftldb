@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ftldb;
+package ftldb.ext;
 
 
 import java.util.HashMap;
@@ -22,9 +22,23 @@ import java.util.Map;
 
 /**
  * A helper class for storing FTL variables and passing them between different templates. Can be accessed in FTL as
- * a shared variable {@code shared_hash}.
+ * a shared variable named {@code shared_hash}.
+ *
+ * <p>Usage examples in FTL:
+ * <pre>
+ * {@code
+ * <#assign void = shared_hash.put("a", 1)/>
+ * <#assign void = shared_hash.put("b", "text")/>
+ * a = ${shared_hash.get("a")?c}
+ * <#assign map = shared_hash.get()/>
+ * b = ${map["b"]}
+ * <#assign void = shared_hash.remove("b")/>
+ * <#assign void = shared_hash.clear()/>
+ * }
+ * </pre>
  */
-public class TemplateSharedHash {
+public class SharedHash {
+
 
     private final Map storage = new HashMap();
 
@@ -35,7 +49,7 @@ public class TemplateSharedHash {
      * @param key the key name
      * @param value the key value
      */
-    public void set(String key, Object value) {
+    public void put(String key, Object value) {
         storage.put(key, value);
     }
 
@@ -52,7 +66,7 @@ public class TemplateSharedHash {
 
 
     /**
-     * Returns the whole storage as a {@link java.util.Map}.
+     * Returns the whole storage as a {@link Map}.
      *
      * @return the inner storage
      */
@@ -66,7 +80,7 @@ public class TemplateSharedHash {
      *
      * @param key the key name
      */
-    public void clear(String key) {
+    public void remove(String key) {
         storage.remove(key);
     }
 
@@ -77,5 +91,6 @@ public class TemplateSharedHash {
     public void clear() {
         storage.clear();
     }
+
 
 }

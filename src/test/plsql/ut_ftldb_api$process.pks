@@ -206,7 +206,7 @@ $if null $then
 
 
 --%begin java_hlp_methods2_beg
-  <#assign void = shared_hash.set("xxx", 123)>
+  <#assign void = shared_hash.put("xxx", 123)>
 
 --%end java_hlp_methods2_beg
 

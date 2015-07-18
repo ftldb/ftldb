@@ -63,23 +63,34 @@ procedure default_template_loader(
 
 
 /**
- * Initializes a new configuration for the FreeMarker engine. Sets a resolver
- * and a loader for FTL templates.
+ * Returns the default configuration XML.
  *
- * @param  in_templ_resolver  the stored PL/SQL procedure that is called by
- *                            ftldb.oracle.DBTemplateLoader class in order to
- *                            resolve a template's name and find its container
- *                            object
- * @param  in_templ_loader    the stored PL/SQL procedure that is called by
- *                            ftldb.oracle.DBTemplateLoader class in order to
- *                            load a template from a database object
+ * Uses 'ftldb.oracle.DatabaseTemplateLoader' class as a template loader with
+ * the default resolver, loader and checker calls.
+ * Uses 'freemarker.cache.MruCacheStorage' class a a cache storage with 20 hard
+ * references and 100 soft references (actually Oracle cleans then immediately).
+ *
+ * @return  the configuration XML
  */
-procedure init(in_templ_resolver in varchar2, in_templ_loader in varchar2);
+function default_config_xml return xmltype;
 
 
 /**
- * Initializes a new configuration for the FreeMarker engine. Sets the default
- * resolver and loader.
+ * Initializes a new configuration for the FreeMarker engine. Executes the
+ * specified function, gets an XML configuration from it and sets it as the new
+ * configuration.
+ *
+ * @param  in_config_func_name  the configuration function name, the function
+ *                              must have no parameters and return XMLType
+ */
+procedure init(in_config_func_name in varchar2);
+
+
+/**
+ * Initializes a new configuration for the FreeMarker engine. Seeks a function
+ * named FTLDB_CONFIG_XML and tries to get the XML configuration from it. If
+ * the function is not found, uses the DEFAULT_CONFIG_XML function from this
+ * package.
  */
 procedure init;
 
