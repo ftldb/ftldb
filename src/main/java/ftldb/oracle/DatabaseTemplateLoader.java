@@ -345,20 +345,32 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         final String type;
 
         TemplateLocator(String name, String owner, String object, String section, String dblink, String type) {
+            if (name == null || "".equals(name)) {
+                throw new IllegalArgumentException("Template name is not specified");
+            };
+            if (owner == null || "".equals(owner)) {
+                throw new IllegalArgumentException("Object owner is not specified");
+            };
+            if (object == null || "".equals(object)) {
+                throw new IllegalArgumentException("Object name is not specified");
+            };
+            if (type == null || "".equals(type.trim())) {
+                throw new IllegalArgumentException("Object type is not specified");
+            };
+
             this.name = name;
             this.owner = owner;
             this.object = object;
-            this.section = (section == null) ? "" : section.toUpperCase();
-            this.dblink = (dblink == null) ? "" : dblink.toUpperCase();
-            this.type = type.toUpperCase();
+            this.section = (section == null) ? "" : section.toUpperCase(); // may be empty, case-insensitive
+            this.dblink = (dblink == null) ? "" : dblink.toUpperCase(); // may be empty, case-insensitive
+            this.type = type.toUpperCase(); // case-insensitive
         }
 
         String getFullName() {
             return ((owner.toUpperCase().equals(owner)) ? owner : "\"" + owner + "\"") + "."
                     + ((object.toUpperCase().equals(object)) ? object : "\"" + object + "\"")
                     + ((section.length() > 0) ? '%' + section : "")
-                    + ((dblink.length() > 0) ? '@' + dblink : "")
-                    + " (" + type + ")";
+                    + ((dblink.length() > 0) ? '@' + dblink : "");
         }
 
         String getFullNameWithType() {

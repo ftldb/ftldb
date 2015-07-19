@@ -96,6 +96,15 @@ function default_config_xml return xmltype;
 
 
 /**
+ * Initializes a new configuration for the FreeMarker engine with the specified
+ * XML in java.beans.XMLEncoder format.
+ *
+ * @param  in_config_xml  the configuration XML
+ */
+procedure init(in_config_xml in xmltype);
+
+
+/**
  * Initializes a new configuration for the FreeMarker engine. Executes the
  * specified function, gets an XML configuration from it and sets it as the new
  * configuration.

@@ -168,13 +168,20 @@ exception
 end get_config_func_name;
 
 
+procedure init(in_config_xml in xmltype)
+is
+begin
+  ftldb_wrapper.set_configuration(in_config_xml.getclobval());
+end init;
+
+
 procedure init(in_config_func_name in varchar2)
 is
   l_config_xml xmltype;
 begin
   execute immediate 'call ' || in_config_func_name || '() into :1'
     using out l_config_xml;
-  ftldb_wrapper.set_configuration(l_config_xml.getclobval());
+  init(l_config_xml);
 end init;
 
 
