@@ -20,9 +20,7 @@ import freemarker.cache.FileTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -46,21 +44,32 @@ public class CommandLine {
     public static void main(String[] args) throws IOException, TemplateException {
 
         if (args.length < 1) {
-            System.err.println(
-                    "FTLDB v" + Configurator.getVersion() + ", "
-                            + "based on FreeMarker v" + Configuration.getVersion() + ".\n"
-                    + "Usage: " + CommandLine.class.getName()
-                            + " ftlFile1 arg1 ... argN [! ftlFile2 arg1 ... argN [! ftlFileN ...]]"
-            );
+            exitWithUsageExample("FTLDB v" + Configurator.getVersion() + ","
+                    + " based on FreeMarker v" + Configuration.getVersion() + ".");
         }
 
-        Configuration cfg = new DefaultConfiguration();
-        cfg.setTemplateLoader(new FileTemplateLoader());
-        Configurator.setConfiguration(cfg);
+        Configuration cfg;
+        int skip = 0;
 
+        if (args.length > 0 && args[0].equals("-c")) {
+            if (args.length < 2) {
+                exitWithUsageExample("Config XML file name is missing!");
+            }
+            cfg = Configurator.newConfiguration(new FileInputStream(new File(args[1])));
+            skip += 2;
+        } else {
+            cfg = new DefaultConfiguration();
+            cfg.setTemplateLoader(new FileTemplateLoader());
+        };
+
+        List calls = getFtlCalls(args, skip);
+        if (calls.size() == 0) {
+            exitWithUsageExample("List of FTL files is missing!");
+        }
+
+        Configurator.setConfiguration(cfg);
         Writer out = new OutputStreamWriter(System.out);
 
-        List calls = getFtlCalls(args);
         for (Iterator cmdIt = calls.iterator(); cmdIt.hasNext(); ) {
             List call = (List) cmdIt.next();
             if (call.size() == 0) continue;
@@ -82,13 +91,13 @@ public class CommandLine {
     private static final String FTL_CALL_DELIM = "!";
 
 
-    private static List getFtlCalls(String[] args) {
+    private static List getFtlCalls(String[] args, int skip) {
         List ret = new ArrayList();
 
         int currCmdInd = 0;
         List currCmd = null;
 
-        for (int i = 0; i < args.length; i++) {
+        for (int i = skip; i < args.length; i++) {
             if (ret.size() == currCmdInd) {
                 ret.add(currCmd = new ArrayList(8));
             }
@@ -99,6 +108,19 @@ public class CommandLine {
             }
         }
         return ret;
+    }
+
+
+    private static void exitWithUsageExample(String msg) {
+        if (!(msg == null || "".equals(msg.trim()))) {
+            System.err.println(msg);
+        }
+        System.err.println("Usage: java " + CommandLine.class.getName()
+                            + " [-c configXmlFile]"
+                            + " ftlFile1 arg1 ... argN [" + FTL_CALL_DELIM
+                            + " ftlFile2 arg1 ... argN [" + FTL_CALL_DELIM
+                            + " ftlFileN ...]]");
+        System.exit(1);
     }
 
 

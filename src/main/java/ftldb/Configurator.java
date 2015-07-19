@@ -59,16 +59,26 @@ public class Configurator {
 
 
     /**
-     * Instantiate a new {@link Configuration} object from a JavaBean serialized with {@link java.beans.XMLEncoder} and
+     * Creates a new {@link Configuration} instance from a JavaBean serialized with {@link java.beans.XMLEncoder}.
+     *
+     * @param configXMLInputStream XML binary stream
+     */
+    public static Configuration newConfiguration(InputStream configXMLInputStream) {
+        XMLDecoder decoder = new XMLDecoder(configXMLInputStream);
+        Configuration config = (Configuration) decoder.readObject();
+        decoder.close();
+        return config;
+    }
+
+
+    /**
+     * Instantiates a new {@link Configuration} object from a JavaBean serialized with {@link java.beans.XMLEncoder} and
      * sets it as the current configuration.
      *
      * @param configXMLInputStream the new configuration as an XML binary stream
      */
     public static void setConfiguration(InputStream configXMLInputStream) {
-        XMLDecoder decoder = new XMLDecoder(configXMLInputStream);
-        Configuration config = (Configuration) decoder.readObject();
-        decoder.close();
-        setConfiguration(config);
+        setConfiguration(newConfiguration(configXMLInputStream));
     }
 
 
