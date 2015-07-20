@@ -20,6 +20,7 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.Version;
 
+import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -64,7 +65,11 @@ public class Configurator {
      * @param configXMLInputStream XML binary stream
      */
     public static Configuration newConfiguration(InputStream configXMLInputStream) {
-        XMLDecoder decoder = new XMLDecoder(configXMLInputStream);
+        XMLDecoder decoder = new XMLDecoder(configXMLInputStream, null, new ExceptionListener() {
+            public void exceptionThrown(Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         Configuration config = (Configuration) decoder.readObject();
         decoder.close();
         return config;
