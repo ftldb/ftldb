@@ -15,7 +15,7 @@
  */
 
 /**
- * This package contains classes that extend FTL language with JDBC/SQL features. These classes must be registered in
- * the configuration with {@link freemarker.template.Configuration#setSharedVariable} method.
+ * This package contains classes that extend FTL language with JDBC/SQL features. Among them adapters for wrapping
+ * SQL types and shared methods for working with connections, queries, callable statements and result sets.
  */
 package ftldb.ext.sql;

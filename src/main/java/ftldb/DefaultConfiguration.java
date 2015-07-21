@@ -22,8 +22,8 @@ import ftldb.ext.sql.Connector;
 
 
 /**
- * The default configuration. Supports the latest FreeMarker features. Uses the default object wrapper. Localized lookup
- * is switched off.
+ * The default configuration. Supports the latest FreeMarker features. Uses the FTLDB's default object wrapper, which
+ * extends FreeMarker's with SQL type wrapping. Localized lookup is switched off. FTL exceptions are simply rethrown.
  *
  * <p>Registered shared variables and methods are:
  * <ul>
@@ -48,7 +48,7 @@ public class DefaultConfiguration extends Configuration {
         super(FM_INCOMPATIBLE_IMPROVEMENTS);
 
         // Set default settings
-        setObjectWrapper(new DefaultObjectWrapperBuilder(FM_INCOMPATIBLE_IMPROVEMENTS).build());
+        setObjectWrapper(new DefaultObjectWrapper(this.getIncompatibleImprovements()));
         setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         setLocalizedLookup(false);
 

@@ -15,7 +15,9 @@
  */
 
 /**
- * This package contains classes that extend FTL language with new features. These classes must be registered in the
- * configuration with {@link freemarker.template.Configuration#setSharedVariable} method.
+ * This package contains classes that extend FTL language with new features. Shared variable/method classes must be
+ * registered in the configuration with {@link freemarker.template.Configuration#setSharedVariable} method. Adapter
+ * classes must be added to the object wrapper's {@link freemarker.template.DefaultObjectWrapper#handleUnknownType}
+ * method override.
  */
 package ftldb.ext;

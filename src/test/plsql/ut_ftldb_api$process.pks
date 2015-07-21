@@ -39,16 +39,17 @@ $if null $then
   <#assign conn = default_connection()>
   <#assign ora_ver = conn.exec("begin :1 := dbms_db_version.version; end;", {}, {"1" : "NUMERIC"})["1"]>
   <#assign udt = conn.query("select sys.odcinumberlist(1,2,3) from dual").seq_rows[0][0]>
+  <#assign clob = conn.query("select to_clob('loooong text') from dual").seq_rows[0][0]>
 
   <#assign
     res = conn.query(
       "select :1 byte, :2 shrt, :3 int, :4 lngint, :5 flt, :6 dbl, :7 bigdec, " +
-      " :8 + 1/7 dt, :9 tmstmp, :10 str, :11 bool, :12 udt from dual",
+      " :8 + 1/7 dt, :9 tmstmp, :10 str, :11 bool, :12 udt, :13 clob from dual",
       [
         1?byte, 1?short, 1?int, 1?long, 1.2?float, 1.2?double, 1.56,
         "31.03.2055"?date["dd.MM.yyyy"],
         "31.03.2012 17:23:39.544"?datetime["dd.MM.yyyy HH:mm:ss.SSS"],
-        "text", true, udt
+        "text", true, udt, clob
       ]
     )
   />
@@ -73,7 +74,8 @@ $if null $then
   string = ${res.hash_rows[0].STR}
   boolean returned as int? = ${res.hash_rows[0].BOOL?is_number?c}
   boolean = ${res.hash_rows[0].BOOL?c}
-  udt = [<#list res.hash_rows[0].UDT.getArray() as i>${i}<#sep>, </#list>]
+  udt = [<#list res.hash_rows[0].UDT as i>${i}<#sep>, </#list>]
+  clob = ${res.hash_rows[0].CLOB}
 
 
   <#assign udt2 = conn.query("select sys.odcivarchar2list('a', 'b', 'c') from dual").seq_rows[0][0]>
@@ -101,7 +103,7 @@ $if null $then
   number = ${res["5"]}
   string = ${res["6"]}
   date = ${res["7"]?string["dd.MM.yyyy"]}
-  udt2 = [<#list res["8"].getArray() as i>'${i}'<#sep>, </#list>]
+  udt2 = [<#list res["8"] as i>'${i}'<#sep>, </#list>]
 
 --%end java_binds
 
@@ -120,6 +122,7 @@ $if null $then
   STR VARCHAR2
   BOOL NUMBER
   UDT SYS.ODCINUMBERLIST
+  CLOB CLOB
 
 
   byte = 1
@@ -137,6 +140,7 @@ $if null $then
   boolean returned as int? = true
   boolean = 1
   udt = [1, 2, 3]
+  clob = loooong text
 
 
 
@@ -162,6 +166,7 @@ $if null $then
   STR VARCHAR2
   BOOL NUMBER
   UDT SYS.ODCINUMBERLIST
+  CLOB CLOB
 
 
   byte = 1
@@ -179,6 +184,7 @@ $if null $then
   boolean returned as int? = true
   boolean = 1
   udt = [1, 2, 3]
+  clob = loooong text
 
 
 
@@ -395,7 +401,7 @@ column4, column5
   ${std.to_list(sql.get_column(rs2, 'C2'))}
 
   <#assign res = sql.collect([1,3,5,7], 'sys.odcinumberlist')/>
-  ${std.to_list(res.getArray())}
+  ${std.to_list(res)}
 
   <#assign res = sql.fetch("ut_ftldb_api.ut_process#sql#fetch", "3")/>
   ${std.to_list(res.col_seq[0])}
