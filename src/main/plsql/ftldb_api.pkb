@@ -81,14 +81,14 @@ end default_template_loader;
  */
 function timestamp2millis(in_timestamp timestamp) return integer
 is
-  l_interval interval day(9) to second(3) :=
+  c_interval constant interval day(9) to second(3) :=
     sys_extract_utc(in_timestamp) - timestamp '1970-01-01 00:00:00';
 begin
   return 1000 * (
-    extract(day from l_interval) * 86400 +
-    extract(hour from l_interval) * 3600 +
-    extract(minute from l_interval) * 60 +
-    extract(second from l_interval)
+    extract(day from c_interval) * 86400 +
+    extract(hour from c_interval) * 3600 +
+    extract(minute from c_interval) * 60 +
+    extract(second from c_interval)
   );
 end timestamp2millis;
 
@@ -111,25 +111,25 @@ end default_template_checker;
 
 function default_config_xml return xmltype
 is
-  l_pkg_name varchar2(70) :=
+  c_pkg_name constant varchar2(70) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"';
 
-  l_resolver_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.default_template_resolver(?, ?, ?, ?, ?, ?)}';
-  l_loader_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.default_template_loader(?, ?, ?, ?, ?, ?)}';
-  l_checker_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.default_template_checker(?, ?, ?, ?, ?, ?)}';
+  c_resolver_call constant varchar2(4000) :=
+    '{call ' || c_pkg_name || '.default_template_resolver(?, ?, ?, ?, ?, ?)}';
+  c_loader_call constant varchar2(4000) :=
+    '{call ' || c_pkg_name || '.default_template_loader(?, ?, ?, ?, ?, ?)}';
+  c_checker_call constant varchar2(4000) :=
+    '{call ' || c_pkg_name || '.default_template_checker(?, ?, ?, ?, ?, ?)}';
 
-  l_config varchar2(32767) :=
+  c_config constant varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
     <java version="1.0" class="java.beans.XMLDecoder">
       <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
           <object class="ftldb.oracle.DatabaseTemplateLoader">
-            <string>' || utl_i18n.escape_reference(l_resolver_call) || '</string>
-            <string>' || utl_i18n.escape_reference(l_loader_call) || '</string>
-            <string>' || utl_i18n.escape_reference(l_checker_call) || '</string>
+            <string>' || utl_i18n.escape_reference(c_resolver_call) || '</string>
+            <string>' || utl_i18n.escape_reference(c_loader_call) || '</string>
+            <string>' || utl_i18n.escape_reference(c_checker_call) || '</string>
           </object>
         </void>
         <void property="cacheStorage">
@@ -141,7 +141,7 @@ is
       </object>
     </java>';
 begin
-  return xmltype(l_config);
+  return xmltype(c_config);
 end default_config_xml;
 
 
@@ -151,7 +151,7 @@ is
   l_name varchar2(30);
   l_dblink varchar2(128);
   l_type varchar2(30);
-  l_default_config_func_name varchar2(70) :=
+  c_default_config_func_name varchar2(70) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"' ||
     '.default_config_xml';
 begin
@@ -159,12 +159,12 @@ begin
     'ftldb_config_xml', l_owner, l_name, l_dblink, l_type
   );
   if l_type != 'FUNCTION' then
-    return l_default_config_func_name;
+    return c_default_config_func_name;
   end if;
   return source_util.get_full_name(l_owner, l_name, l_dblink);
 exception
   when source_util.e_name_not_resolved then
-    return l_default_config_func_name;
+    return c_default_config_func_name;
 end get_config_func_name;
 
 
