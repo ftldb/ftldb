@@ -21,9 +21,11 @@ import freemarker.template.TemplateModelException;
 import freemarker.template.Version;
 import ftldb.ext.sql.ArrayAdapter;
 import ftldb.ext.sql.ClobAdapter;
+import ftldb.ext.sql.StructAdapter;
 
 import java.sql.Array;
 import java.sql.Clob;
+import java.sql.Struct;
 
 
 /**
@@ -33,6 +35,7 @@ import java.sql.Clob;
  * <ul>
  *     <li>{@link ArrayAdapter} - treats SQL collections ({@link Array}) as sequences
  *     <li>{@link ClobAdapter} - treats Clobs ({@link Clob}) as strings
+ *     <li>{@link StructAdapter} - treats UDTs ({@link Struct}) as sequences of elements
  * </ul>
  */
 public class DefaultObjectWrapper extends freemarker.template.DefaultObjectWrapper {
@@ -49,6 +52,9 @@ public class DefaultObjectWrapper extends freemarker.template.DefaultObjectWrapp
         }
         if (obj instanceof Clob) {
             return new ClobAdapter((Clob) obj, this);
+        }
+        if (obj instanceof Struct) {
+            return new StructAdapter((Struct) obj, this);
         }
         return super.handleUnknownType(obj);
     }
