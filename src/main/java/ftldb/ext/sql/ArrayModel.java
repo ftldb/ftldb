@@ -60,7 +60,7 @@ public class ArrayModel extends BeanModel implements TemplateSequenceModel {
      *
      * @return the number of items in the list.
      */
-    public int size() {//throws TemplateModelException {
+    public int size() {
         return array.length;
     }
 
