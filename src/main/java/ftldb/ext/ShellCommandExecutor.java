@@ -45,21 +45,29 @@ public class ShellCommandExecutor {
      *
      * <p>Method definition: {@code Map<String, String[]> shell_exec(String command)}
      * <p>Method arguments:
-     * <dd>{@code command} - the command to be executed</dd>
+     * <pre>
+     *     {@code command} - the command to be executed
+     * </pre>
      *
      * <p>Method overloading: {@code Map<String, String[]> shell_exec(String command, String encoding)}
      * <p>Method arguments:
-     * <dd>{@code command} - the command to be executed</dd>
-     * <dd>{@code encoding} - the encoding of standard system streams</dd>
+     * <pre>
+     *     {@code command} - the command to be executed
+     *     {@code encoding} - the encoding of standard system streams
+     * </pre>
      *
      * <p>Method overloading: {@code Map<String, String[]> shell_exec(String[] command_array)}
      * <p>Method arguments:
-     * <dd>{@code command_array} - the command to be executed passed as an array</dd>
+     * <pre>
+     *     {@code command_array} - the command to be executed passed as an array
+     * </pre>
      *
      * <p>Method overloading: {@code Map<String, String[]> shell_exec(String[] command_array, String encoding)}
      * <p>Method arguments:
-     * <dd>{@code command_array} - the command to be executed passed as an array</dd>
-     * <dd>{@code encoding} - the encoding of standard system streams</dd>
+     * <pre>
+     *     {@code command_array} - the command to be executed passed as an array
+     *     {@code encoding} - the encoding of standard system streams
+     * </pre>
      *
      * <p>Usage examples in FTL:
      * <pre>

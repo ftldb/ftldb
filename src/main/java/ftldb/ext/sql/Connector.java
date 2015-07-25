@@ -75,9 +75,11 @@ public class Connector {
      *
      * <p>Method definition: {@code ConnectionAdapter new_connection(String url, String user, String password)}
      * <p>Method arguments:
-     * <dd>{@code url} - a database url of the form <code>jdbc:<em>subprotocol</em>:<em>subname</em></code></dd>
-     * <dd>{@code user} - the database user on whose behalf the connection is being made</dd>
-     * <dd>{@code password} - the user's password</dd>
+     * <pre>
+     *     {@code url} - a database url of the form <code>jdbc:<em>subprotocol</em>:<em>subname</em></code>
+     *     {@code user} - the database user on whose behalf the connection is being made
+     *     {@code password} - the user's password
+     * </pre>
      *
      * <p>Method overloading: {@code ConnectionAdapter new_connection()}. Returns the driver's default connection with
      * the {@code "jdbc:default:connection"} url.
@@ -156,7 +158,9 @@ public class Connector {
      *
      * <p>Method definition: {@code void set_default_connection(ConnectionAdapter conn)}
      * <p>Method arguments:
-     * <dd>{@code conn} - the new default connection</dd>
+     * <pre>
+     *     {@code conn} - the new default connection
+     * </pre>
      *
      * <p>Usage examples in FTL:
      * <pre>

@@ -16,7 +16,10 @@
 package ftldb.ext.sql;
 
 
-import freemarker.template.*;
+import freemarker.ext.beans.BeanModel;
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateScalarModel;
 
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -25,25 +28,19 @@ import java.sql.SQLException;
 /**
  * This class wraps {@link Clob} and adapts it for using in FTL as a string.
  */
-public class ClobAdapter extends WrappingTemplateModel implements TemplateScalarModel, AdapterTemplateModel {
+public class ClobModel extends BeanModel implements TemplateScalarModel {
 
 
-    private final Clob clob;
+    private final String string;
 
 
-    public ClobAdapter(Clob clob, ObjectWrapper ow) {
-        super(ow);
-        this.clob = clob;
-    }
-
-
-    /**
-     * Returns the wrapped clob.
-     *
-     * @return clob itself
-     */
-    public Object getAdaptedObject(Class hint) {
-        return clob;
+    public ClobModel(Clob object, BeansWrapper wrapper) throws TemplateModelException {
+        super(object, wrapper);
+        try {
+            this.string = object.getSubString(1, (int) object.length());
+        } catch (SQLException e) {
+            throw new TemplateModelException(e);
+        }
     }
 
 
@@ -53,11 +50,7 @@ public class ClobAdapter extends WrappingTemplateModel implements TemplateScalar
      * @return clob as a string
      */
     public String getAsString() throws TemplateModelException {
-        try {
-            return clob.getSubString(1, (int) clob.length());
-        } catch (SQLException e) {
-            throw new TemplateModelException(e);
-        }
+        return string;
     }
 
 

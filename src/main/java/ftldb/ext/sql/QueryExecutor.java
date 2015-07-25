@@ -117,11 +117,11 @@ public class QueryExecutor {
      * <p>The result set itself is stored internally as a 2-dimensional array and can be represented in FTL in four
      * different ways as:
      * <ul>
-     *     <li>a sequence of rows, each represented as:</li>
+     *     <li>a sequence of rows, each represented as:
      *     <ul>
      *         <li>a sequence of columns - see {@link ftldb.ext.sql.QueryExecutor.QueryResult#getSeqRows};</li>
      *         <li>a hash of columns - see {@link ftldb.ext.sql.QueryExecutor.QueryResult#getHashRows};</li>
-     *     </ul>
+     *     </ul></li>
      *     <li>a sequence of columns, each presented as a sequence of rows - see
      *         {@link ftldb.ext.sql.QueryExecutor.QueryResult#getColSeq};</li>
      *     <li>a hash of columns, each presented as a sequence of rows - see

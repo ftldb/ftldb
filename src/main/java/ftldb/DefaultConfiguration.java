@@ -16,7 +16,10 @@
 package ftldb;
 
 
-import freemarker.template.*;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateModelException;
+import freemarker.template.Version;
 import ftldb.ext.*;
 import ftldb.ext.sql.Connector;
 

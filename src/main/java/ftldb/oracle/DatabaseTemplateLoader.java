@@ -136,6 +136,7 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * @param templateResolverCall a call to the database that resolves a template's name
      * @param templateLoaderCall a call to the database that returns a template's source
      * @param templateCheckerCall a call to the database that gets a template's timestamp - optional (nullable)
+     * @throws SQLException if a database access error occurs
      */
     public DatabaseTemplateLoader(String templateResolverCall, String templateLoaderCall, String templateCheckerCall)
             throws SQLException {
@@ -150,6 +151,7 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      *
      * @param templateResolverCall a call to the database that resolves a template's name
      * @param templateLoaderCall a call to the database that returns a template's source
+     * @throws SQLException if a database access error occurs
      */
     public DatabaseTemplateLoader(String templateResolverCall, String templateLoaderCall) throws SQLException {
         this(templateResolverCall, templateLoaderCall, null);
@@ -347,16 +349,16 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         TemplateLocator(String name, String owner, String object, String section, String dblink, String type) {
             if (name == null || "".equals(name)) {
                 throw new IllegalArgumentException("Template name is not specified");
-            };
+            }
             if (owner == null || "".equals(owner)) {
                 throw new IllegalArgumentException("Object owner is not specified");
-            };
+            }
             if (object == null || "".equals(object)) {
                 throw new IllegalArgumentException("Object name is not specified");
-            };
+            }
             if (type == null || "".equals(type.trim())) {
                 throw new IllegalArgumentException("Object type is not specified");
-            };
+            }
 
             this.name = name;
             this.owner = owner;

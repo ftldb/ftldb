@@ -31,6 +31,7 @@ public class Configurator extends ftldb.Configurator {
      * The convenience method for {@link #setConfiguration(java.io.InputStream)}.
      *
      * @param configXMLClob the new configuration as an XML clob
+     * @throws SQLException if a database access error occurs
      */
     public static void setConfiguration(Clob configXMLClob) throws SQLException {
         setConfiguration(configXMLClob.getAsciiStream());

@@ -71,31 +71,31 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testNewDBConnection() throws Exception {
+    public void testNewConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_new_connection.ftl");
     }
 
     @Test
-    public void testDefaultDBConnection() throws Exception {
+    public void testDefaultConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_default_connection.ftl");
     }
 
     @Test
-    public void testDBQueryAndCallExecutors() throws Exception {
+    public void testQueryAndCallExecutors() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_query_and_exec.ftl");
     }
 
     @Test
-    public void testDBQEColMetaData() throws Exception {
+    public void testQEColMetaData() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_colmetadata.ftl");
     }
 
     @Test
-    public void testDBQECol() throws Exception {
+    public void testQECol() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_col_sets.ftl");
     }

@@ -63,6 +63,7 @@ public class Configurator {
      * Creates a new {@link Configuration} instance from a JavaBean serialized with {@link java.beans.XMLEncoder}.
      *
      * @param configXMLInputStream XML binary stream
+     * @return a new instance
      */
     public static Configuration newConfiguration(InputStream configXMLInputStream) {
         XMLDecoder decoder = new XMLDecoder(configXMLInputStream, null, new ExceptionListener() {

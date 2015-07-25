@@ -30,7 +30,9 @@ import java.util.List;
  *
  * <p>Method definition: {@code StaticModel static(String class_name)}
  * <p>Method arguments:
- * <dd>{@code class_name} - the name of the class</dd>
+ * <pre>
+ *     {@code class_name} - the name of the class
+ * </pre>
  *
  * <p>Usage examples in FTL:
  * <pre>

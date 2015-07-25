@@ -105,6 +105,14 @@ $if null $then
   date = ${res["7"]?string["dd.MM.yyyy"]}
   udt2 = [<#list res["8"] as i>'${i}'<#sep>, </#list>]
 
+  <#assign udt3 = conn.query("select sys.odciobject('a', 'b') from dual").seq_rows[0][0]>
+  {
+  <#list udt3 as field>
+    field#${field?index} : '${field}'<#sep>;</#sep>
+  </#list>
+  }
+  udt3 type = ${udt3.getSQLTypeName()}
+
 --%end java_binds
 
 
@@ -149,6 +157,12 @@ $if null $then
   date = 12.03.2000
   udt2 = ['a', 'b', 'c', 'd']
 
+  {
+    field#0 : 'a';
+    field#1 : 'b'
+  }
+  udt3 type = SYS.ODCIOBJECT
+
 --%end java_binds_res
 
 
@@ -192,6 +206,12 @@ $if null $then
   string = abcx
   date = 12.03.2000
   udt2 = ['a', 'b', 'c', 'd']
+
+  {
+    field#0 : 'a';
+    field#1 : 'b'
+  }
+  udt3 type = SYS.ODCIOBJECT
 
 --%end java_binds_res_ora10
 

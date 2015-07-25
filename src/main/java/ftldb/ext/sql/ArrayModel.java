@@ -16,34 +16,32 @@
 package ftldb.ext.sql;
 
 
-import freemarker.template.*;
+import freemarker.ext.beans.BeanModel;
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateSequenceModel;
 
-import java.sql.Struct;
+import java.sql.Array;
 import java.sql.SQLException;
 
 
 /**
- * This class wraps {@link Struct} and adapts it for using in FTL as a sequence.
+ * This class wraps {@link Array} and adapts it for using in FTL both as a sequence and as a bean.
  */
-public class StructAdapter extends WrappingTemplateModel implements TemplateSequenceModel, AdapterTemplateModel {
+public class ArrayModel extends BeanModel implements TemplateSequenceModel {
 
 
-    private final Struct struct;
+    protected final Object[] array;
 
 
-    public StructAdapter(Struct struct, ObjectWrapper ow) {
-        super(ow);
-        this.struct = struct;
-    }
-
-
-    /**
-     * Returns the wrapped SQL struct.
-     *
-     * @return SQL struct itself
-     */
-    public Object getAdaptedObject(Class hint) {
-        return struct;
+    public ArrayModel(Array object, BeansWrapper wrapper) throws TemplateModelException {
+        super(object, wrapper);
+        try {
+            this.array = (Object[]) object.getArray();
+        } catch (SQLException e) {
+            throw new TemplateModelException(e);
+        }
     }
 
 
@@ -53,25 +51,17 @@ public class StructAdapter extends WrappingTemplateModel implements TemplateSequ
      * @return the item at the specified index
      */
     public TemplateModel get(int index) throws TemplateModelException {
-        try {
-            return wrap(struct.getAttributes()[index]);
-        } catch (SQLException e) {
-            throw new TemplateModelException(e);
-        }
+        return wrap(array[index]);
     }
 
 
     /**
-     * Returns the structure size.
+     * Returns the array size.
      *
      * @return the number of items in the list.
      */
-    public int size() throws TemplateModelException {
-        try {
-            return struct.getAttributes().length;
-        } catch (SQLException e) {
-            throw new TemplateModelException(e);
-        }
+    public int size() {//throws TemplateModelException {
+        return array.length;
     }
 
 

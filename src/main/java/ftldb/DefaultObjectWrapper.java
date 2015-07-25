@@ -19,9 +19,9 @@ package ftldb;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import freemarker.template.Version;
-import ftldb.ext.sql.ArrayAdapter;
-import ftldb.ext.sql.ClobAdapter;
-import ftldb.ext.sql.StructAdapter;
+import ftldb.ext.sql.ArrayModel;
+import ftldb.ext.sql.ClobModel;
+import ftldb.ext.sql.StructModel;
 
 import java.sql.Array;
 import java.sql.Clob;
@@ -33,9 +33,9 @@ import java.sql.Struct;
  *
  * <p>Registered wrappers are:
  * <ul>
- *     <li>{@link ArrayAdapter} - treats SQL collections ({@link Array}) as sequences
- *     <li>{@link ClobAdapter} - treats Clobs ({@link Clob}) as strings
- *     <li>{@link StructAdapter} - treats UDTs ({@link Struct}) as sequences of elements
+ *     <li>{@link ArrayModel} - treats SQL collections ({@link Array}) as sequences
+ *     <li>{@link ClobModel} - treats Clobs ({@link Clob}) as strings
+ *     <li>{@link StructModel} - treats UDTs ({@link Struct}) as sequences of elements
  * </ul>
  */
 public class DefaultObjectWrapper extends freemarker.template.DefaultObjectWrapper {
@@ -48,13 +48,13 @@ public class DefaultObjectWrapper extends freemarker.template.DefaultObjectWrapp
 
     protected TemplateModel handleUnknownType(Object obj) throws TemplateModelException {
         if (obj instanceof Array) {
-            return new ArrayAdapter((Array) obj, this);
+            return new ArrayModel((Array) obj, this);
         }
         if (obj instanceof Clob) {
-            return new ClobAdapter((Clob) obj, this);
+            return new ClobModel((Clob) obj, this);
         }
         if (obj instanceof Struct) {
-            return new StructAdapter((Struct) obj, this);
+            return new StructModel((Struct) obj, this);
         }
         return super.handleUnknownType(obj);
     }

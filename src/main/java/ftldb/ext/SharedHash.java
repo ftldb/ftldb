@@ -57,6 +57,9 @@ public class SharedHash {
     /**
      * Same as {@link #put(String, Object)}.
      *
+     * @param key the key name
+     * @param value the key value
+     *
      * @deprecated Left for backward compatibility.
      */
     public void set(String key, Object value) {
@@ -97,6 +100,8 @@ public class SharedHash {
 
     /**
      * Same as {@link #remove(String)}.
+     *
+     * @param key the key name
      *
      * @deprecated Left for backward compatibility.
      */

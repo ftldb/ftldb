@@ -116,6 +116,15 @@ Print result:
     </#list>
   }
 
+Create UDT3 instance.
+<#assign udt3 = conn.query("select sys.odciobject('a', 'b') from dual").seq_rows[0][0]>
+{
+<#list udt3 as field>
+  field#${field?index} : '${field}'<#sep>; </#sep>
+</#list>
+}
+UDT3 is of ${udt3.getSQLTypeName()} type.
+
 Close connection.
 <#assign void = conn.close()/>
 -- ${template_name()} END --
