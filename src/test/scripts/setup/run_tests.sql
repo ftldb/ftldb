@@ -89,5 +89,7 @@ begin
   ut_ftldb_api.ut_process#java_hlp_methods2;
   ut_ftldb_api.ut_process#standard;
   ut_ftldb_api.ut_process#sql;
+
+  ut_ftldb_api.ut_user_defined_config_xml;
 end;
 /

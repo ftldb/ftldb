@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ftldb;
+package ftldb.ext.sql;
 
 
 import java.sql.Connection;
@@ -25,11 +25,12 @@ import java.util.Map;
 /**
  * This class is a wrapper for working with JDBC connections in FTL.
  */
-public class DBConnection {
+public class ConnectionAdapter {
+
 
     private final Connection connection;
-    private DBQueryExecutor qe;
-    private DBCallExecutor ce;
+    private QueryExecutor qe;
+    private CallExecutor ce;
 
 
     /**
@@ -37,7 +38,7 @@ public class DBConnection {
      *
      * @param connection the connection to be wrapped
      */
-    public DBConnection(Connection connection) {
+    public ConnectionAdapter(Connection connection) {
         this.connection = connection;
     }
 
@@ -51,49 +52,49 @@ public class DBConnection {
     }
 
 
-    private synchronized DBQueryExecutor getDBQueryExecutor() {
+    private synchronized QueryExecutor getQueryExecutor() {
         if (qe == null) {
-            qe = new DBQueryExecutor(connection);
+            qe = new QueryExecutor(connection);
         }
         return qe;
     }
 
 
-    private synchronized DBCallExecutor getDBCallExecutor() {
+    private synchronized CallExecutor getCallExecutor() {
         if (ce == null) {
-            ce = new DBCallExecutor(connection);
+            ce = new CallExecutor(connection);
         }
         return ce;
     }
 
 
     /**
-     * Executes an SQL query with the aid of the inner {@link DBQueryExecutor}.
+     * Executes an SQL query with the aid of the inner {@link QueryExecutor}.
      *
      * @param sql the SQL-query to be executed
-     * @return the query result
+     * @return the query result wrapped into {@link FetchedResultSetTransposedModel}
      * @throws SQLException if a database access error occurs
      */
-    public DBQueryExecutor.QueryResult query(String sql) throws SQLException {
-        return getDBQueryExecutor().executeQuery(sql);
+    public FetchedResultSet query(String sql) throws SQLException {
+        return getQueryExecutor().executeQuery(sql);
     }
 
 
     /**
-     * Executes an SQL query with bind variables with the aid of the inner {@link DBQueryExecutor}.
+     * Executes an SQL query with bind variables with the aid of the inner {@link QueryExecutor}.
      *
      * @param sql the SQL-query to be executed
      * @param binds the list of bind variable values
-     * @return the query result
+     * @return the query result wrapped into {@link FetchedResultSetTransposedModel}
      * @throws SQLException if a database access error occurs
      */
-    public DBQueryExecutor.QueryResult query(String sql, List binds) throws SQLException {
-        return getDBQueryExecutor().executeQuery(sql, binds);
+    public FetchedResultSet query(String sql, List binds) throws SQLException {
+        return getQueryExecutor().executeQuery(sql, binds);
     }
 
 
     /**
-     * Executes a callable statement with the aid of the inner {@link DBCallExecutor}.
+     * Executes a callable statement with the aid of the inner {@link CallExecutor}.
      *
      * @param statement the callable statement to be executed
      * @param inBinds the map of in bind variable indices to their values
@@ -102,7 +103,7 @@ public class DBConnection {
      * @throws SQLException if a database access error occurs
      */
     public Map exec(String statement, Map inBinds, Map outBinds) throws SQLException {
-        return getDBCallExecutor().executeCall(statement, inBinds, outBinds);
+        return getCallExecutor().executeCall(statement, inBinds, outBinds);
     }
 
 
@@ -114,5 +115,6 @@ public class DBConnection {
     public void close() throws SQLException {
         connection.close();
     }
+
 
 }

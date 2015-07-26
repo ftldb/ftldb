@@ -106,7 +106,7 @@ create table orders (
   status varchar2(10) not null
 )
 partition by list(shop_id) (
-<#list partitions.hash_rows as p>
+<#list partitions as p>
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )

@@ -37,6 +37,8 @@ show errors
 prompt Create UT_FTLDB_API package and additional objects.
 <#include "../plsql/ut_ftldb_api$process.pks" parse=false>
 show errors
+<#include "../plsql/ut_ftldb_api$config.pck" parse=false>
+show errors
 <#include "../plsql/ut_ftldb_api.pck" parse=false>
 show errors
 

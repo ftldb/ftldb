@@ -33,6 +33,8 @@ procedure ut_process#sql;
 
 function ut_process#sql#fetch(in_cnt number) return sys_refcursor;
 
+procedure ut_user_defined_config_xml;
+
 end ut_ftldb_api;
 /
 create or replace package body ut_ftldb_api is
@@ -283,6 +285,19 @@ begin
     select rownum from dual connect by rownum <= in_cnt;
   return l_rc;
 end ut_process#sql#fetch;
+
+
+procedure ut_user_defined_config_xml
+is
+begin
+  ut_ftldb_api$config.gen_ftldb_config_xml_func().exec();
+  ftldb_api.init();
+
+  ut_process#args();
+
+  ut_ftldb_api$config.drop_ftldb_config_xml_func().exec();
+  ftldb_api.init();
+end ut_user_defined_config_xml;
 
 
 end ut_ftldb_api;

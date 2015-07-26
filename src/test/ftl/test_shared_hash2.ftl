@@ -19,4 +19,6 @@
 Get key "v" from the shared hash.
 <#assign v = shared_hash.get("v")>
 Content of V: [<#list v as i>"${i}"<#sep>, </#list>]
+Clean up the shared_hash.
+<#assign void = shared_hash.clear()>
 -- ${template_name()} END --

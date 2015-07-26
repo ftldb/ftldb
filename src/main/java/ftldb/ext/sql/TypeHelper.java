@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ftldb;
+package ftldb.ext.sql;
 
 
 import java.lang.reflect.Field;
@@ -24,9 +24,10 @@ import java.util.Map;
 
 
 /**
- * A helper class for getting SQL type int codes by their names.
+ * A helper class for working with SQL types.
  */
-public class SQLTypeHelper {
+public class TypeHelper {
+
 
     // Map of SQL type names to their int values.
     private static final Map encoder = new HashMap();
@@ -69,8 +70,8 @@ public class SQLTypeHelper {
     private static Integer extractConstant(String typeName) throws Exception {
         int lastDotPos = typeName.lastIndexOf(".");
         if (lastDotPos < 1) {
-            throw new IllegalArgumentException("Type constant is not member of " + Types.class.getName() +
-                    " and its name is not fully specified: " + typeName);
+            throw new IllegalArgumentException("Type constant is not member of " + Types.class.getName()
+                    + " and its name is not fully specified: " + typeName);
         }
 
         String className = typeName.substring(0, lastDotPos);
@@ -94,10 +95,10 @@ public class SQLTypeHelper {
     public static java.util.Date toSQLDate(java.util.Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        long msec = cal.getTimeInMillis();
-        boolean has_time_part = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) +
-                cal.get(Calendar.SECOND) + cal.get(Calendar.MILLISECOND) != 0;
-        return has_time_part ? (java.util.Date) new java.sql.Timestamp(msec) : new java.sql.Date(msec);
+        long millis = cal.getTimeInMillis();
+        boolean hasTimePart = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE)
+                + cal.get(Calendar.SECOND) + cal.get(Calendar.MILLISECOND) != 0;
+        return hasTimePart ? (java.util.Date) new java.sql.Timestamp(millis) : new java.sql.Date(millis);
     }
 
 }

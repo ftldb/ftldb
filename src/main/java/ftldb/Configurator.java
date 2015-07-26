@@ -16,25 +16,114 @@
 package ftldb;
 
 
-import freemarker.cache.*;
-import freemarker.core.Environment;
-import freemarker.core.EnvironmentInternalsAccessor;
-import freemarker.ext.beans.BeansWrapper;
-import freemarker.template.*;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
+import freemarker.template.Version;
 
+import java.beans.ExceptionListener;
+import java.beans.XMLDecoder;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.List;
 import java.util.Properties;
 
 
 /**
- * This class sets up the FreeMarker configuration and registers shared variables and methods for working in FTL.
+ * This class sets up the FreeMarker configuration as a singleton.
  */
 public class Configurator {
+
+
+    // The current configuration.
+    private static Configuration config;
+
+
+    /**
+     * Getter for the inner {@link Configuration} static field.
+     *
+     * @return the current configuration
+     */
+    public static synchronized Configuration getConfiguration() {
+        ensureConfigurationIsSet();
+        return config;
+    }
+
+
+    /**
+     * Setter for the inner {@link Configuration} static field.
+     *
+     * @param config the new configuration
+     */
+    public static synchronized void setConfiguration(Configuration config) {
+        Configurator.config = config;
+    }
+
+
+    /**
+     * Creates a new {@link Configuration} instance from a JavaBean serialized with {@link java.beans.XMLEncoder}.
+     *
+     * @param configXMLInputStream XML binary stream
+     * @return a new instance
+     */
+    public static Configuration newConfiguration(InputStream configXMLInputStream) {
+        XMLDecoder decoder = new XMLDecoder(configXMLInputStream, null, new ExceptionListener() {
+            public void exceptionThrown(Exception e) {
+                throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
+            }
+        });
+        Configuration config = (Configuration) decoder.readObject();
+        decoder.close();
+        return config;
+    }
+
+
+    /**
+     * Instantiates a new {@link Configuration} object from a JavaBean serialized with {@link java.beans.XMLEncoder} and
+     * sets it as the current configuration.
+     *
+     * @param configXMLInputStream the new configuration as an XML binary stream
+     */
+    public static void setConfiguration(InputStream configXMLInputStream) {
+        setConfiguration(newConfiguration(configXMLInputStream));
+    }
+
+
+    /**
+     * The convenience method for {@link #setConfiguration(InputStream)}.
+     *
+     * @param configXMLString the new configuration as an XML string
+     */
+    public static void setConfiguration(String configXMLString) {
+        setConfiguration(new ByteArrayInputStream(configXMLString.getBytes()));
+    }
+
+
+    /**
+     * Sets the specified setting in the current configuration with the specified value.
+     *
+     * @param name the setting name
+     * @param value the setting value
+     * @throws TemplateException if cannot set the setting
+     */
+    public static synchronized void setConfigurationSetting(String name, String value) throws TemplateException {
+        ensureConfigurationIsSet();
+        config.setSetting(name, value);
+    }
+
+
+    /**
+     * Drops the current configuration. In order to continue, the configuration must be re-set.
+     */
+    public static synchronized void dropConfiguration() {
+        config = null;
+    }
+
+
+    private static void ensureConfigurationIsSet() {
+        if (config == null) {
+            throw new RuntimeException("FTLDB configuration is not initialized");
+        }
+    }
 
 
     private static final String VERSION_PROPERTY_PATH = "ftldb/version.properties";
@@ -43,311 +132,43 @@ public class Configurator {
 
 
     /**
-     * Returns FTLDB version as a {@link Version} object.
+     * Returns FTLDB version as a {@link Version} instance.
      *
      * @return FTLDB version
      */
     public static Version getVersion() {
         if (VERSION == null) {
-            try {
-                Properties vp = new Properties();
-                InputStream ins = Configurator.class.getClassLoader().getResourceAsStream(VERSION_PROPERTY_PATH);
-                if (ins == null) {
-                    throw new RuntimeException("FTLDB version file is missing: " + VERSION_PROPERTY_PATH);
-                } else {
-                    try {
-                        vp.load(ins);
-                    } finally {
-                        ins.close();
-                    }
-
-                    String versionString = vp.getProperty(VERSION_PROPERTY_NAME);
-                    if (versionString == null) {
-                        throw new RuntimeException(
-                                "FTLDB version file is corrupt: \"" + VERSION_PROPERTY_NAME + "\" property is missing."
-                        );
-                    }
-
-                    VERSION = new Version(versionString);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load and parse " + VERSION_PROPERTY_PATH, e);
-            }
+            VERSION = readVersion();
         }
-
         return VERSION;
     }
 
 
-    /**
-     * Returns FTLDB version as a string.
-     *
-     * <p>This method is a part of FTLDB API for PL/SQL.
-     *
-     * @return FTLDB version
-     */
-    public static String getVersionString() {
-        return getVersion().toString();
-    }
-
-
-    /**
-     * Returns FTLDB version as a comparable integer.
-     *
-     * <p>This method is a part of FTLDB API for PL/SQL.
-     *
-     * @return FTLDB version
-     */
-    public static int getVersionNumber() {
-        return getVersion().intValue();
-    }
-
-
-    // The currently supported version of FreeMarker
-    private final static Version SUPPORTED_FM_VERSION = Configuration.VERSION_2_3_23;
-
-
-    /**
-     * Returns supported FreeMarker version as a {@link Version} object. It may be lower than the actual version of the
-     * used FreeMarker jar library.
-     *
-     * @return FreeMarker version
-     */
-    public static Version getFMVersion() {
-        return SUPPORTED_FM_VERSION;
-    }
-
-
-    private static Configuration cfg;
-
-
-    /**
-     * Drops the current configuration. In order to continue using FTL, the configuration must be re-set.
-     * This method is a part of FTLDB API for PL/SQL.
-     */
-    public static synchronized void dropConfiguration() {
-        cfg = null;
-    }
-
-
-    /**
-     * Checks if the configuration is set up and returns it.
-     *
-     * @return the current configuration
-     */
-    public static Configuration getConfiguration() {
-        ensureCfg();
-        return cfg;
-    }
-
-
-    /**
-     * Sets the new configuration. Registers new methods and variables available in FTL.
-     *
-     * <p>This method is a part of FTLDB API for PL/SQL.
-     *
-     * <p>Available shared variables and methods are:
-     * <ul>
-     *     <li>{@code shared_hash} is an instance of {@link TemplateSharedHash}
-     *     <li>{@code static(String className)} returns the static model of a class named {@code className}, which
-     *         allows to call any of its static methods
-     *     <li>{@code template_name()} returns the name of the current template
-     *     <li>{@code template_line()} returns the current line in a template
-     *     <li>{@code new_connection(String url, String user, String password)} opens and returns a new connection to
-     *         a database with the specified {@code url}, {@code name} and {@code password}
-     *     <li>{@code new_connection()} opens and returns a new connection to a database with "jdbc:default:connection"
-     *         url
-     *     <li>{@code default_connection()} returns the default connection set for the configuration
-     *     <li>{@code set_default_connection(DBConnection conn)} overrides the default connection with {@code conn}
-     *     <li>{@code shell_exec(String cmd)} executes the given shell command and returns a hash with two array
-     *         elements: {@code "stdout"} and {@code "stderr"}, containing lines which are fetched from the shell output
-     *     <li>{@code shell_exec(String cmd, String encoding)} the same as previous with the specified {@code encoding}
-     *     <li>{@code shell_exec(String[] cmdArray, String encoding)} the same as previous with the command passed as
-     *         an array
-     * </ul>
-     *
-     * <p>Usage examples in FTL:
-     * <pre>
-     * {@code
-     * <#assign void = shared_hash.set("a", 2)/>
-     * a = ${shared_hash.get("a")}
-     *
-     * <#assign sqr2 = static("java.lang.Math").sqrt(2)/>
-     *
-     * current line is ${template_line()}
-     *
-     * <#assign inner_conn = new_connection()/>
-     * <#assign ext_conn = new_connection("jdbc:oracle:thin@//localhost:1521/orcl", "scott", "tiger")/>
-     * <#assign void = set_default_connection(ext_conn)/>
-     * <#assign def_conn = default_connection()/>
-     *
-     * <#assign lines = shell_exec("ls -1").stdout/>
-     * <#list lines as line>
-     * ${line}
-     * </#list>
-     * }
-     * </pre>
-     */
-    public static synchronized void newConfiguration() {
-        cfg = new Configuration(SUPPORTED_FM_VERSION);
-
-        cfg.setObjectWrapper(new DefaultObjectWrapperBuilder(SUPPORTED_FM_VERSION).build());
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-        cfg.setLocalizedLookup(false);
-
-        // Register shared variables.
-        registerSharedHash();
-
-        // Register shared methods.
-        registerStaticSharedMethod();
-        registerTemplateNameSharedMethod();
-        registerTemplateLineSharedMethod();
-        registerDBConnectionSharedMethods();
-        registerShellExecuteSharedMethod();
-    }
-
-
-    private static void registerSharedHash() {
+    private static Version readVersion() {
         try {
-            cfg.setSharedVariable("shared_hash", new TemplateSharedHash());
-        } catch (TemplateModelException e) {
-            throw new RuntimeException("Unable to set shared_hash", e);
-        }
-    }
+            Properties vp = new Properties();
+            InputStream ins = Configurator.class.getClassLoader().getResourceAsStream(VERSION_PROPERTY_PATH);
+            if (ins == null) {
+                throw new RuntimeException("FTLDB version file is missing: " + VERSION_PROPERTY_PATH);
+            } else {
+                try {
+                    vp.load(ins);
+                } finally {
+                    ins.close();
+                }
 
+                String versionString = vp.getProperty(VERSION_PROPERTY_NAME);
+                if (versionString == null) {
+                    throw new RuntimeException("FTLDB version file is corrupt: \"" + VERSION_PROPERTY_NAME
+                            + "\" property is missing.");
+                }
 
-    private static void registerStaticSharedMethod() {
-        cfg.setSharedVariable("static", new TemplateMethodModelEx() {
-            public Object exec(List args) throws TemplateModelException {
-                if (args.size() != 1) throw new TemplateModelException("One argument expected, got " + args.size());
-                String className = ((SimpleScalar) args.get(0)).getAsString();
-                return ((BeansWrapper) cfg.getObjectWrapper()).getStaticModels().get(className);
+                return new Version(versionString);
             }
-        });
-    }
-
-
-    private static void registerTemplateNameSharedMethod() {
-        cfg.setSharedVariable("template_name", new TemplateMethodModelEx() {
-            public Object exec(List args) throws TemplateModelException {
-                if (args.size() != 0) throw new TemplateModelException("No arguments needed");
-                return Environment.getCurrentEnvironment().getCurrentTemplate().getName();
-            }
-        });
-    }
-
-
-    // This method accesses the internal FreeMarker API.
-    private static void registerTemplateLineSharedMethod() {
-        cfg.setSharedVariable("template_line", new TemplateMethodModelEx() {
-            public Object exec(List args) throws TemplateModelException {
-                if (args.size() != 0) throw new TemplateModelException("No arguments needed");
-                return new Integer(EnvironmentInternalsAccessor.getInstructionStackSnapshot()[0].getBeginLine());
-            }
-        });
-    }
-
-
-    private static void registerShellExecuteSharedMethod() {
-        cfg.setSharedVariable("shell_exec", ShellCommandExecutor.getMethodShellExecute());
-    }
-
-
-    private static void registerDBConnectionSharedMethods() {
-        DBConnectionFactory dbcf = new DBConnectionFactory();
-        cfg.setSharedVariable("new_connection", dbcf.getMethodNewDBConnection());
-        cfg.setSharedVariable("default_connection", dbcf.getMethodGetDefaultDBConnection());
-        cfg.setSharedVariable("set_default_connection", dbcf.getMethodSetDefaultDBConnection());
-    }
-
-
-    /**
-     * Sets the template loader for the current configuration.
-     *
-     * @param templateLoader the template loader
-     * @param cacheStorage the cache storage
-     */
-    public static synchronized void setTemplateLoader(TemplateLoader templateLoader, CacheStorage cacheStorage) {
-        ensureCfg();
-        cfg.setTemplateLoader(templateLoader);
-        cfg.setCacheStorage(cacheStorage);
-    }
-
-
-    /**
-     * Sets the specified setting in the current configuration with the specified value.
-     *
-     * <p>This method is a part of FTLDB API for PL/SQL.
-     *
-     * @param name the setting name
-     * @param value the setting value
-     * @throws TemplateException if cannot set the setting
-     */
-    public static synchronized void setConfigurationSetting(String name, String value) throws TemplateException {
-        ensureCfg();
-        cfg.setSetting(name, value);
-    }
-
-
-    /**
-     * Creates a new {@code DBTemplateLoader} instance using the specified database connection and sets it as
-     * a template loader for the current configuration.
-     *
-     * @param conn an opened connection to the database
-     * @param templateResolverCall a call to the database that resolves a template's name
-     * @param templateCheckerCall a call to the database that gets a template's timestamp
-     * @param templateLoaderCall a call to the database that returns a template's source
-     * @throws SQLException if a database access error occurs
-     */
-    public static void setDBTemplateLoader(
-            Connection conn, String templateResolverCall, String templateCheckerCall, String templateLoaderCall
-    ) throws SQLException {
-        StatefulTemplateLoader templateLoader = DBTemplateLoaderFactory.newDBTemplateLoader(
-                conn, templateResolverCall, templateCheckerCall, templateLoaderCall
-        );
-        CacheStorage cacheStorage = new NullCacheStorage(); //TODO CacheStorageFactory
-        Configurator.setTemplateLoader(templateLoader, cacheStorage);
-    }
-
-
-    /**
-     * Creates a new {@code DBTemplateLoader} instance using the database's inner connection and sets it as
-     * a template loader for the current configuration.
-     *
-     * <p>This method is a part of FTLDB API for PL/SQL.
-     *
-     * @param templateResolverCall a call to the database that resolves a template's name
-     * @param templateCheckerCall a call to the database that gets a template's timestamp
-     * @param templateLoaderCall a call to the database that returns a template's source
-     * @throws SQLException if a database access error occurs
-     */
-    public static void setDBTemplateLoader(
-            String templateResolverCall, String templateCheckerCall, String templateLoaderCall
-    ) throws SQLException {
-        Connection defaultConn = DriverManager.getConnection("jdbc:default:connection");
-        setDBTemplateLoader(defaultConn, templateResolverCall, templateCheckerCall, templateLoaderCall);
-    }
-
-
-    /**
-     * Creates a new {@link FileTemplateLoader} instance and sets it as the template loader for the current
-     * configuration. {@link SoftCacheStorage} is used for template caching.
-     */
-    public static void setDefaultFileTemplateLoader() {
-        FileTemplateLoader fileTemplateLoader;
-        try {
-            fileTemplateLoader = new FileTemplateLoader();
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Configurator.setTemplateLoader(fileTemplateLoader, new SoftCacheStorage());
-    }
-
-
-    private static void ensureCfg() {
-        if (cfg == null) {
-            throw new RuntimeException("FreeMarker configuration is not initialized");
+            throw new RuntimeException("Failed to load and parse " + VERSION_PROPERTY_PATH, e);
         }
     }
+
 
 }

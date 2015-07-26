@@ -1,4 +1,5 @@
-<#--
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
 
     Copyright 2014-2015 Victor Osolovskiy, Sergey Navrotskiy
 
@@ -15,12 +16,16 @@
     limitations under the License.
 
 -->
--- ${template_name()} START --
-Passed arguments:
-<#list template_args as arg>
-  arg[${arg?index}] = "${arg}"
-</#list>
-
-Save them to the shared hash as the key "v".
-<#assign void = shared_hash.put("v", template_args)>
--- ${template_name()} END --
+<java version="1.0" class="java.beans.XMLDecoder">
+    <object class="ftldb.DefaultConfiguration">
+        <void property="templateLoader">
+            <object class="freemarker.cache.FileTemplateLoader"/>
+        </void>
+        <void property="cacheStorage">
+            <object class="freemarker.cache.NullCacheStorage"/>
+        </void>
+        <void property="defaultEncoding">
+            <string>UTF-8</string>
+        </void>
+    </object>
+</java>

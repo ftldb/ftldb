@@ -16,22 +16,14 @@
 
 create or replace package ftldb_wrapper authid current_user as
 /**
- * This package wraps Java API for the FTLDB engine.
+ * This package wraps FTLDB Java API for PL/SQL usage.
  * @headcom
  */
 
 
-procedure new_configuration
+procedure set_configuration(in_config_xml in clob)
 is
-language java name 'ftldb.Configurator.newConfiguration()';
-
-
-procedure set_db_template_loader(
-  in_templ_resolver_call in varchar2,
-  in_templ_checker_call in varchar2,
-  in_templ_loader_call in varchar2)
-is
-language java name 'ftldb.Configurator.setDBTemplateLoader(java.lang.String, java.lang.String, java.lang.String)';
+language java name 'ftldb.oracle.Configurator.setConfiguration(java.sql.Clob)';
 
 
 procedure set_configuration_setting(
@@ -39,37 +31,37 @@ procedure set_configuration_setting(
   in_setting_value in varchar2
 )
 is
-language java name 'ftldb.Configurator.setConfigurationSetting(java.lang.String, java.lang.String)';
+language java name 'ftldb.oracle.Configurator.setConfigurationSetting(java.lang.String, java.lang.String)';
 
 
 procedure drop_configuration
 is
-language java name 'ftldb.Configurator.dropConfiguration()';
-
-
-function process(in_templ_name in varchar2) return clob
-is
-language java name 'ftldb.oracle.DBTemplateProcessor.process(java.lang.String) return java.sql.Clob';
-
-
-function process_body(in_templ_body in clob) return clob
-is
-language java name 'ftldb.oracle.DBTemplateProcessor.processBody(java.sql.Clob) return java.sql.Clob';
-
-
-procedure set_arguments(in_templ_args in varchar2_nt)
-is
-language java name 'ftldb.oracle.DBTemplateProcessor.setArguments(java.sql.Array)';
+language java name 'ftldb.oracle.Configurator.dropConfiguration()';
 
 
 function get_version return varchar2
 is
-language java name 'ftldb.Configurator.getVersionString() return java.lang.String';
+language java name 'ftldb.oracle.Configurator.getVersionString() return java.lang.String';
 
 
 function get_version_number return number
 is
-language java name 'ftldb.Configurator.getVersionNumber() return int';
+language java name 'ftldb.oracle.Configurator.getVersionNumber() return int';
+
+
+procedure process(in_templ_name in varchar2, io_result in out clob)
+is
+language java name 'ftldb.oracle.TemplateProcessor.process(java.lang.String, java.sql.Clob[])';
+
+
+procedure process_body(in_templ_body in clob, io_result in out clob)
+is
+language java name 'ftldb.oracle.TemplateProcessor.process(java.sql.Clob, java.sql.Clob[])';
+
+
+procedure set_arguments(in_templ_args in varchar2_nt)
+is
+language java name 'ftldb.oracle.TemplateProcessor.setArguments(java.sql.Array)';
 
 
 end ftldb_wrapper;

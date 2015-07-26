@@ -18,16 +18,13 @@ package ftldb;
 
 import org.junit.Test;
 
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 
 
 public class TemplateProcessorTest {
 
     private static String process(String templName) throws Exception {
-        Configurator.newConfiguration();
-        Configurator.setDefaultFileTemplateLoader();
-        Configurator.getConfiguration().setDefaultEncoding("UTF-8");
+        Configurator.setConfiguration(new FileInputStream(new File("ftldb_config.xml")));
         StringWriter sw = new StringWriter();
         TemplateProcessor.process(templName, sw);
         String ret = sw.toString();
@@ -36,10 +33,10 @@ public class TemplateProcessorTest {
     }
 
     private static String processBody(String templBody) throws Exception {
-        Configurator.newConfiguration();
+        Configurator.setConfiguration(new ftldb.DefaultConfiguration());
         Configurator.getConfiguration().setDefaultEncoding("UTF-8");
         StringWriter sw = new StringWriter();
-        TemplateProcessor.processBody(new StringReader(templBody), sw);
+        TemplateProcessor.process(new StringReader(templBody), sw);
         String ret = sw.toString();
         System.out.println(ret);
         return ret;
@@ -74,38 +71,21 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testNewDBConnection() throws Exception {
+    public void testNewConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_new_connection.ftl");
     }
 
     @Test
-    public void testDefaultDBConnection() throws Exception {
+    public void testDefaultConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_default_connection.ftl");
     }
 
     @Test
-    public void testDBQueryAndCallExecutors() throws Exception {
+    public void testQueryAndCallExecutors() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
         process("test_query_and_exec.ftl");
-    }
-
-    @Test
-    public void testDBQEColMetaData() throws Exception {
-        Class.forName("oracle.jdbc.OracleDriver");
-        process("test_colmetadata.ftl");
-    }
-
-    @Test
-    public void testDBQECol() throws Exception {
-        Class.forName("oracle.jdbc.OracleDriver");
-        process("test_col_sets.ftl");
-    }
-
-    @Test
-    public void testShellExec() throws Exception {
-        process("test_shell_exec.ftl");
     }
 
 }
