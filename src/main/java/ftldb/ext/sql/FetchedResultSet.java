@@ -40,7 +40,7 @@ public class FetchedResultSet {
 
 
     /**
-     * Fetches the specified result set and saves it as an {@link Object[][]}. Also saves its metadata.
+     * Fetches the specified result set and saves it as an {@link Object}[][]. Also saves its metadata.
      *
      * @param rs the original result set
      * @throws SQLException if a database access error occurs
