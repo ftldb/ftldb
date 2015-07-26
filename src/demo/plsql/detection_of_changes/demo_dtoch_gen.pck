@@ -166,7 +166,7 @@ $if null $then
   <#return
     sql.fetch(
       "demo_dtoch_gen.internal_get_columns_info", a_selectable?upper_case
-    ).hash_rows
+    )
   />
 </#function>
 
@@ -174,7 +174,7 @@ $if null $then
   <#return
     sql.fetch(
       "demo_dtoch_gen.internal_uk_columns_info", a_selectable?upper_case
-    ).hash_rows
+    )
   />
 </#function>
 
@@ -194,7 +194,7 @@ $if null $then
       <#local
         l_cols =
           std.to_list(
-            sql.get_column(get_uk_columns_info(a_selectable), "COLUMN_NAME")
+            get_uk_columns_info(a_selectable).transpose().COLUMN_NAME
           )?lower_case
       />
       -- specification of index is out of scope
@@ -216,7 +216,7 @@ $if null $then
         "from user_tab_comments tc\n" +
         "where tc.table_name = :1",
         [a_selectable?upper_case]
-      ).seq_rows[0][0]
+      )[0][0]
   />
   comment on table ${a_snap_tab} is 'Snapshots. ${l_src_comments} @generated ${template_name()}'
   </>
@@ -292,7 +292,7 @@ $if null $then
           "  tc.virtual_column = 'NO'\n" +
           "order by tc.column_id",
         [a_selectable?upper_case]
-      ).col_seq[0]
+      ).transpose()[0]
   />
 
   <@std.indent ltab = 2>
@@ -356,7 +356,7 @@ $if null $then
           "  tc.virtual_column = 'NO'\n" +
           "order by tc.column_id",
         [a_selectable?upper_case]
-      ).col_seq[0]
+      ).transpose()[0]
   />
 
 create or replace view ${a_diff_view} as
@@ -464,14 +464,14 @@ end demo_dtoch;
 
 create or replace package body demo_dtoch is
 <#assign
-  params = sql.fetch("demo_dtoch_gen.internal_gen_parm_list").hash_rows
+  params = sql.fetch("demo_dtoch_gen.internal_gen_parm_list")
 />
 <#list params as r>
   <#assign
     l_cols =
       sql.fetch(
         "demo_dtoch_gen.internal_get_columns_info", r.SRC?upper_case
-      ).col_seq[0]
+      ).transpose()[0]
   />
 
 

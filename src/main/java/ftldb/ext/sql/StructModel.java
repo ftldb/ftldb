@@ -35,10 +35,10 @@ public class StructModel extends BeanModel implements TemplateSequenceModel {
     private final Object[] struct;
 
 
-    public StructModel(Struct object, BeansWrapper wrapper) throws TemplateModelException {
-        super(object, wrapper);
+    public StructModel(Struct sqlStruct, BeansWrapper wrapper) throws TemplateModelException {
+        super(sqlStruct, wrapper);
         try {
-            this.struct = object.getAttributes();
+            this.struct = sqlStruct.getAttributes();
         } catch (SQLException e) {
             throw new TemplateModelException(e);
         }

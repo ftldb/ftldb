@@ -38,180 +38,239 @@ $if null $then
 --%begin java_binds
   <#assign conn = default_connection()>
   <#assign ora_ver = conn.exec("begin :1 := dbms_db_version.version; end;", {}, {"1" : "NUMERIC"})["1"]>
-  <#assign udt = conn.query("select sys.odcinumberlist(1,2,3) from dual").seq_rows[0][0]>
-  <#assign clob = conn.query("select to_clob('loooong text') from dual").seq_rows[0][0]>
+
+  <#assign coll = conn.query("select sys.odcinumberlist(1,2,3) from dual")[0][0]/>
+  coll = [<#list coll as i>${i}<#sep>, </#list>]
+  type: ${coll.SQLTypeName}
+  base type: ${coll.baseTypeName}
+
+  <#assign clob = conn.query("select to_clob('loooong text') from dual")[0][0]/>
+  clob = "${clob}"
+  length: ${clob?length}
+
+  <#assign struct = conn.query("select sys.odciobject('duck', 'goose') from dual")[0][0]/>
+  struct = {<#list struct as i>field#${(i?index+1)?c} : "${i}"<#sep>, </#list>}
+  type: ${struct.SQLTypeName}
 
   <#assign
     res = conn.query(
       "select :1 byte, :2 shrt, :3 int, :4 lngint, :5 flt, :6 dbl, :7 bigdec, " +
-      " :8 + 1/7 dt, :9 tmstmp, :10 str, :11 bool, :12 udt, :13 clob from dual",
+      " :8 + 1/7 dt, :9 tmstmp, :10 str, :11 bool, :12 coll, :13 struct, :14 clob from dual",
       [
-        1?byte, 1?short, 1?int, 1?long, 1.2?float, 1.2?double, 1.56,
-        "31.03.2055"?date["dd.MM.yyyy"],
-        "31.03.2012 17:23:39.544"?datetime["dd.MM.yyyy HH:mm:ss.SSS"],
-        "text", true, udt, clob
+      1?byte, 1?short, 1?int, 1?long, 1.2?float, 1.2?double, 1.56,
+      "31.03.2055"?date["dd.MM.yyyy"], "31.03.2012 17:23:39.544"?datetime["dd.MM.yyyy HH:mm:ss.SSS"],
+      "text", true, coll, struct, clob
       ]
     )
   />
-
-  <#list res.col_meta_seq as currCol>
-  ${currCol.name} ${currCol.typeName}
+  {
+  <#list 1..res.metaData.columnCount as i>
+    ${res.metaData.columnName(i)} : ${res.metaData.columnTypeName(i)}
   </#list>
+  }
 
-  <#assign r = res.hash_rows[0]>
+  <#assign r = res[0]/>
+  {
+    byte : ${r.BYTE?c}
+    short : ${r.SHRT?c}
+    int : ${r.INT?c}
+    longint : ${r.LNGINT?c}
+    float : <#if (ora_ver < 11)>*BINARY_VALUE*<#else/>${r.FLT?c}</#if>
+    double : ${r.DBL?c}
+    numeric : ${r.BIGDEC?c}
+    date : ${r.DT?string["dd.MM.yyyy HH:mm:ss"]}
+    timestamp : <#if (ora_ver < 11)>*JAVA_OBJ_REF*<#else/>${r.TMSTMP}</#if>
+        timestamp is datetime? - ${r.TMSTMP?is_unknown_date_like?c}
+        timestamp is string? - ${r.TMSTMP?is_string?c}
+    string : ${r.STR}
+    boolean : ${r.BOOL?c}
+        boolean is int? - ${r.BOOL?is_number?c}
+    collection = [<#list r.COLL as i>${i}<#sep>, </#list>]
+    struct = {<#list r.STRUCT as i>field#${(i?index+1)?c} : "${i}"<#sep>, </#list>}
+    clob = ${r.CLOB}
+  }
 
-  byte = ${r.BYTE?c}
-  short = ${res.hash_rows[0].SHRT?c}
-  int = ${res.hash_rows[0].INT?c}
-  longint = ${res.hash_rows[0].LNGINT?c}
-  float = <#if (ora_ver < 11)>*BINARY_VALUE*<#else/>${res.hash_rows[0].FLT?c}</#if>
-  double = ${res.hash_rows[0].DBL?c}
-  numeric = ${res.hash_rows[0].BIGDEC?c}
-  date = ${res.hash_rows[0].DT?string["dd.MM.yyyy HH:mm:ss"]}
-  timestamp returned as datetime? = ${res.hash_rows[0].TMSTMP?is_unknown_date_like?c}
-  timestamp returned as string? = ${res.hash_rows[0].TMSTMP?is_string?c}
-  timestamp = <#if (ora_ver < 11)>*JAVA_OBJ_REF*<#else/>${res.hash_rows[0].TMSTMP}</#if>
-  string = ${res.hash_rows[0].STR}
-  boolean returned as int? = ${res.hash_rows[0].BOOL?is_number?c}
-  boolean = ${res.hash_rows[0].BOOL?c}
-  udt = [<#list res.hash_rows[0].UDT as i>${i}<#sep>, </#list>]
-  clob = ${res.hash_rows[0].CLOB}
-
-
-  <#assign udt2 = conn.query("select sys.odcivarchar2list('a', 'b', 'c') from dual").seq_rows[0][0]>
-
+  <#assign coll2 = conn.query("select sys.odcivarchar2list('a', 'b', 'c') from dual")[0][0]/>
   <#assign
-    res =
-    conn.exec(
+    res = conn.exec(
       "declare\n" +
       "  v1 number := :1;\n" +
       "  v2 varchar2(200) := :2;\n" +
       "  v3 date := :3;\n" +
       "  v4 sys.odcivarchar2list := :4;\n" +
+      "  v5 sys_refcursor;\n" +
       "begin\n" +
       "  :5 := v1 + 1;\n" +
       "  :6 := v2 || 'x';\n" +
       "  :7 := add_months(v3, 1);\n" +
       "  v4.extend(); v4(v4.last()) := 'd';\n" +
       "  :8 := v4;\n" +
+      "  open v5 for select date'2015-03-01'+rownum dt from dual connect by rownum <= 5;\n" +
+      "  :9 := v5;\n" +
       "end;",
-      {"1" : 1, "2" : "abc", "3" : "12.02.2000"?date["dd.MM.yyyy"], "4" : udt2},
-      {"5" : "NUMERIC", "6" : "VARCHAR", "7" : "DATE", "8" : "ARRAY:SYS.ODCIVARCHAR2LIST"}
+      {"1" : 1, "2" : "abc", "3" : "12.02.2000"?date["dd.MM.yyyy"], "4" : coll2},
+      {"5" : "NUMERIC", "6" : "VARCHAR", "7" : "DATE", "8" : "ARRAY:SYS.ODCIVARCHAR2LIST",
+       "9" : "oracle.jdbc.OracleTypes.CURSOR"}
     )
   />
-
-  number = ${res["5"]}
-  string = ${res["6"]}
-  date = ${res["7"]?string["dd.MM.yyyy"]}
-  udt2 = [<#list res["8"] as i>'${i}'<#sep>, </#list>]
-
-  <#assign udt3 = conn.query("select sys.odciobject('a', 'b') from dual").seq_rows[0][0]>
   {
-  <#list udt3 as field>
-    field#${field?index} : '${field}'<#sep>;</#sep>
+    number : ${res["5"]}
+    string : ${res["6"]}
+    date : ${res["7"]?string["dd.MM.yyyy"]}
+    collection : [<#list res["8"] as i>'${i}'<#sep>, </#list>]
+    cursor : {
+      <#list res["9"] as r>
+      row#${(r?index+1)?c}: "DT" = ${r.DT?string["dd.MM.yyyy"]}
+      </#list>
+    }
+  }
+
+  <#assign res = conn.query("select rownum n, 'row_' || rownum label from dual connect by level <= 5")/>
+  {
+  <#list res.transpose() as col>
+    "${res.metaData.columnName(col?index+1)}" : [<#list col as val>${val}<#sep>, </#list>]
   </#list>
   }
-  udt3 type = ${udt3.getSQLTypeName()}
 
 --%end java_binds
 
 
 --%begin java_binds_res
+  coll = [1, 2, 3]
+  type: SYS.ODCINUMBERLIST
+  base type: NUMBER
 
-  BYTE NUMBER
-  SHRT NUMBER
-  INT NUMBER
-  LNGINT NUMBER
-  FLT NUMBER
-  DBL NUMBER
-  BIGDEC NUMBER
-  DT DATE
-  TMSTMP TIMESTAMP
-  STR VARCHAR2
-  BOOL NUMBER
-  UDT SYS.ODCINUMBERLIST
-  CLOB CLOB
+  clob = "loooong text"
+  length: 12
 
-
-  byte = 1
-  short = 1
-  int = 1
-  longint = 1
-  float = 1.2
-  double = 1.2
-  numeric = 1.56
-  date = 31.03.2055 03:25:43
-  timestamp returned as datetime? = false
-  timestamp returned as string? = true
-  timestamp = 2012-03-31 17:23:39.544
-  string = text
-  boolean returned as int? = true
-  boolean = 1
-  udt = [1, 2, 3]
-  clob = loooong text
-
-
-
-  number = 2
-  string = abcx
-  date = 12.03.2000
-  udt2 = ['a', 'b', 'c', 'd']
+  struct = {field#1 : "duck", field#2 : "goose"}
+  type: SYS.ODCIOBJECT
 
   {
-    field#0 : 'a';
-    field#1 : 'b'
+    BYTE : NUMBER
+    SHRT : NUMBER
+    INT : NUMBER
+    LNGINT : NUMBER
+    FLT : NUMBER
+    DBL : NUMBER
+    BIGDEC : NUMBER
+    DT : DATE
+    TMSTMP : TIMESTAMP
+    STR : VARCHAR2
+    BOOL : NUMBER
+    COLL : SYS.ODCINUMBERLIST
+    STRUCT : SYS.ODCIOBJECT
+    CLOB : CLOB
   }
-  udt3 type = SYS.ODCIOBJECT
+
+  {
+    byte : 1
+    short : 1
+    int : 1
+    longint : 1
+    float : 1.2
+    double : 1.2
+    numeric : 1.56
+    date : 31.03.2055 03:25:43
+    timestamp : 2012-03-31 17:23:39.544
+        timestamp is datetime? - false
+        timestamp is string? - true
+    string : text
+    boolean : 1
+        boolean is int? - true
+    collection = [1, 2, 3]
+    struct = {field#1 : "duck", field#2 : "goose"}
+    clob = loooong text
+  }
+
+  {
+    number : 2
+    string : abcx
+    date : 12.03.2000
+    collection : ['a', 'b', 'c', 'd']
+    cursor : {
+      row#1: "DT" = 02.03.2015
+      row#2: "DT" = 03.03.2015
+      row#3: "DT" = 04.03.2015
+      row#4: "DT" = 05.03.2015
+      row#5: "DT" = 06.03.2015
+    }
+  }
+
+  {
+    "N" : [1, 2, 3, 4, 5]
+    "LABEL" : [row_1, row_2, row_3, row_4, row_5]
+  }
 
 --%end java_binds_res
 
 
 --%begin java_binds_res_ora10
+  coll = [1, 2, 3]
+  type: SYS.ODCINUMBERLIST
+  base type: NUMBER
 
-  BYTE NUMBER
-  SHRT NUMBER
-  INT NUMBER
-  LNGINT NUMBER
-  FLT NUMBER
-  DBL NUMBER
-  BIGDEC NUMBER
-  DT DATE
-  TMSTMP TIMESTAMP
-  STR VARCHAR2
-  BOOL NUMBER
-  UDT SYS.ODCINUMBERLIST
-  CLOB CLOB
+  clob = "loooong text"
+  length: 12
 
-
-  byte = 1
-  short = 1
-  int = 1
-  longint = 1
-  float = *BINARY_VALUE*
-  double = 1.2
-  numeric = 1.56
-  date = 31.03.2055 00:00:00
-  timestamp returned as datetime? = false
-  timestamp returned as string? = true
-  timestamp = *JAVA_OBJ_REF*
-  string = text
-  boolean returned as int? = true
-  boolean = 1
-  udt = [1, 2, 3]
-  clob = loooong text
-
-
-
-  number = 2
-  string = abcx
-  date = 12.03.2000
-  udt2 = ['a', 'b', 'c', 'd']
+  struct = {field#1 : "duck", field#2 : "goose"}
+  type: SYS.ODCIOBJECT
 
   {
-    field#0 : 'a';
-    field#1 : 'b'
+    BYTE : NUMBER
+    SHRT : NUMBER
+    INT : NUMBER
+    LNGINT : NUMBER
+    FLT : NUMBER
+    DBL : NUMBER
+    BIGDEC : NUMBER
+    DT : DATE
+    TMSTMP : TIMESTAMP
+    STR : VARCHAR2
+    BOOL : NUMBER
+    COLL : SYS.ODCINUMBERLIST
+    STRUCT : SYS.ODCIOBJECT
+    CLOB : CLOB
   }
-  udt3 type = SYS.ODCIOBJECT
+
+  {
+    byte : 1
+    short : 1
+    int : 1
+    longint : 1
+    float : *BINARY_VALUE*
+    double : 1.2
+    numeric : 1.56
+    date : 31.03.2055 00:00:00
+    timestamp : *JAVA_OBJ_REF*
+        timestamp is datetime? - false
+        timestamp is string? - true
+    string : text
+    boolean : 1
+        boolean is int? - true
+    collection = [1, 2, 3]
+    struct = {field#1 : "duck", field#2 : "goose"}
+    clob = loooong text
+  }
+
+  {
+    number : 2
+    string : abcx
+    date : 12.03.2000
+    collection : ['a', 'b', 'c', 'd']
+    cursor : {
+      row#1: "DT" = 02.03.2015
+      row#2: "DT" = 03.03.2015
+      row#3: "DT" = 04.03.2015
+      row#4: "DT" = 05.03.2015
+      row#5: "DT" = 06.03.2015
+    }
+  }
+
+  {
+    "N" : [1, 2, 3, 4, 5]
+    "LABEL" : [row_1, row_2, row_3, row_4, row_5]
+  }
 
 --%end java_binds_res_ora10
 
@@ -409,22 +468,11 @@ column4, column5
   <#assign res = sql.eval("BOOLEAN", "dbms_db_version.ver_le_9")>
   ${res?c}
 
-  <#assign res =
-    default_connection()
-    .query("select nullif(rownum, 2) c1, rownum*2 c2 from dual connect by level <= 4")
-  />
-
-  <#assign rs1 = res.seq_rows>
-  <#assign rs2 = res.hash_rows>
-
-  ${std.to_list(sql.get_column(rs1, 0))}
-  ${std.to_list(sql.get_column(rs2, 'C2'))}
-
   <#assign res = sql.collect([1,3,5,7], 'sys.odcinumberlist')/>
   ${std.to_list(res)}
 
-  <#assign res = sql.fetch("ut_ftldb_api.ut_process#sql#fetch", "3")/>
-  ${std.to_list(res.col_seq[0])}
+  <#assign res = sql.fetch("ut_ftldb_api.ut_process#sql#fetch", 3)/>
+  ${std.to_list(res.transpose()[0])}
 
 --%end sql
 
@@ -437,10 +485,6 @@ column4, column5
   1
 
   false
-
-
-  1, 3, 4
-  2, 4, 6, 8
 
   1, 3, 5, 7
 

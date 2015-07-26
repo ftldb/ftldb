@@ -36,7 +36,7 @@
       args?has_content?then('('?right_pad(args?size*3 - 1, ' ?,') + ')', '') +
       ' from dual'
   />
-  <#local res = default_connection().query(sql_statement, args).seq_rows/>
+  <#local res = default_connection().query(sql_statement, args)/>
   <#if res[0][0]??>
     <#return res[0][0]/>
   <#else/>
@@ -58,7 +58,7 @@
       seq?has_content?then(''?right_pad(seq?size*3 - 2, '?, '), '') +
       ') from dual'
   />
-  <#return default_connection().query(sql_statement, seq).seq_rows[0][0]/>
+  <#return default_connection().query(sql_statement, seq)[0][0]/>
 </#function>
 
 
@@ -134,25 +134,4 @@
   </#list>
   <#local ftl_call += ')'/>
   <#return ftl_call?eval/>
-</#function>
-
-
-<#--
--- Extracts the specified column from the specified QueryResult object, which
--- is represented as a row set (using .hash_rows or .seq_rows). May be useful
--- if your function returns a row set, but you need to use its single column as
--- a simple sequence. The resulting sequence doesn't contain null elements.
---
--- @param  row_set  the QueryResult object, represented as a row set
--- @param  column   the name or the index (from 0) of the column
--- @return          the column as a sequence
---->
-<#function get_column row_set column>
-  <#local seq = []/>
-  <#list row_set as row>
-    <#if row[column]??>
-      <#local seq += [row[column]]/>
-    </#if>
-  </#list>
-  <#return seq/>
 </#function>

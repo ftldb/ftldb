@@ -35,10 +35,10 @@ public class ArrayModel extends BeanModel implements TemplateSequenceModel {
     protected final Object[] array;
 
 
-    public ArrayModel(Array object, BeansWrapper wrapper) throws TemplateModelException {
-        super(object, wrapper);
+    public ArrayModel(Array sqlArray, BeansWrapper wrapper) throws TemplateModelException {
+        super(sqlArray, wrapper);
         try {
-            this.array = (Object[]) object.getArray();
+            this.array = (Object[]) sqlArray.getArray();
         } catch (SQLException e) {
             throw new TemplateModelException(e);
         }
@@ -58,7 +58,7 @@ public class ArrayModel extends BeanModel implements TemplateSequenceModel {
     /**
      * Returns the array size.
      *
-     * @return the number of items in the list.
+     * @return the number of items in the list
      */
     public int size() {
         return array.length;

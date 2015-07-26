@@ -88,21 +88,4 @@ public class TemplateProcessorTest {
         process("test_query_and_exec.ftl");
     }
 
-    @Test
-    public void testQEColMetaData() throws Exception {
-        Class.forName("oracle.jdbc.OracleDriver");
-        process("test_colmetadata.ftl");
-    }
-
-    @Test
-    public void testQECol() throws Exception {
-        Class.forName("oracle.jdbc.OracleDriver");
-        process("test_col_sets.ftl");
-    }
-
-    @Test
-    public void testShellExec() throws Exception {
-        process("test_shell_exec.ftl");
-    }
-
 }

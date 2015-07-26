@@ -72,10 +72,10 @@ public class ConnectionAdapter {
      * Executes an SQL query with the aid of the inner {@link QueryExecutor}.
      *
      * @param sql the SQL-query to be executed
-     * @return the query result
+     * @return the query result wrapped into {@link FetchedResultSetTransposedModel}
      * @throws SQLException if a database access error occurs
      */
-    public QueryExecutor.QueryResult query(String sql) throws SQLException {
+    public FetchedResultSet query(String sql) throws SQLException {
         return getQueryExecutor().executeQuery(sql);
     }
 
@@ -85,10 +85,10 @@ public class ConnectionAdapter {
      *
      * @param sql the SQL-query to be executed
      * @param binds the list of bind variable values
-     * @return the query result
+     * @return the query result wrapped into {@link FetchedResultSetTransposedModel}
      * @throws SQLException if a database access error occurs
      */
-    public QueryExecutor.QueryResult query(String sql, List binds) throws SQLException {
+    public FetchedResultSet query(String sql, List binds) throws SQLException {
         return getQueryExecutor().executeQuery(sql, binds);
     }
 

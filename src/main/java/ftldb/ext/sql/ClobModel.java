@@ -34,10 +34,10 @@ public class ClobModel extends BeanModel implements TemplateScalarModel {
     private final String string;
 
 
-    public ClobModel(Clob object, BeansWrapper wrapper) throws TemplateModelException {
-        super(object, wrapper);
+    public ClobModel(Clob clob, BeansWrapper wrapper) throws TemplateModelException {
+        super(clob, wrapper);
         try {
-            this.string = object.getSubString(1, (int) object.length());
+            this.string = clob.getSubString(1, (int) clob.length());
         } catch (SQLException e) {
             throw new TemplateModelException(e);
         }
