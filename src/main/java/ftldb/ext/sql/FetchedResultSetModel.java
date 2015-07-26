@@ -84,7 +84,7 @@ public class FetchedResultSetModel extends BeanModel implements TemplateSequence
      *
      * @return the transposed result set
      */
-    public TemplateModel transpose() throws TemplateModelException {
+    public TemplateModel transpose() {
         return new TemplateMethodModelEx() {
             public Object exec(List args) throws TemplateModelException {
                 if (args.size() != 0) {
