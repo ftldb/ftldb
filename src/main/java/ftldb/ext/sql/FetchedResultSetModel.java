@@ -16,9 +16,14 @@
 package ftldb.ext.sql;
 
 
+import freemarker.core.CollectionAndSequence;
 import freemarker.ext.beans.BeanModel;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -58,16 +63,58 @@ public class FetchedResultSetModel extends BeanModel implements TemplateSequence
     }
 
 
+    private final static String TRANSPOSE_METHOD_NAME = "transpose";
+
+
     /**
      * Get the specified property or method's result.
      *
      * @return the result of evaluation
      */
     public TemplateModel get(String key) throws TemplateModelException {
-        if (key.equals("transpose")) {
-            return new FetchedResultSetTransposedModel(frs, wrapper);
+        if (key.equals(TRANSPOSE_METHOD_NAME)) {
+            return transpose();
         }
         return super.get(key);
+    }
+
+
+    /**
+     * Returns the transposed result set as a {@link FetchedResultSetTransposedModel}.
+     *
+     * @return the transposed result set
+     */
+    public TemplateModel transpose() throws TemplateModelException {
+        return new TemplateMethodModelEx() {
+            public Object exec(List args) throws TemplateModelException {
+                if (args.size() != 0) {
+                    throw new TemplateModelException("No arguments needed");
+                }
+                return new FetchedResultSetTransposedModel(frs, wrapper);
+            }
+        };
+    }
+
+
+    /**
+     * Returns the list of available methods and properties, extended by own methods.
+     *
+     * @return the collection of methods and properties
+     */
+    public TemplateCollectionModel keys() {
+        Set keySetEx = super.keySet();
+        keySetEx.add(TRANSPOSE_METHOD_NAME);
+        return new CollectionAndSequence(new SimpleSequence(keySetEx, wrapper));
+    }
+
+
+    /**
+     * Returns the empty list. Iteration through the {@code super.values()} list causes an exception.
+     *
+     * @return the empty list
+     */
+    public TemplateCollectionModel values() {
+        return new SimpleCollection(new ArrayList(0), wrapper);
     }
 
 

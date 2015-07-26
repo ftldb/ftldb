@@ -18,12 +18,11 @@ package ftldb.ext.sql;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.ext.beans.BeansWrapper;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
-import freemarker.template.TemplateSequenceModel;
+import freemarker.template.*;
 
 import java.sql.Array;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 /**
@@ -62,6 +61,16 @@ public class ArrayModel extends BeanModel implements TemplateSequenceModel {
      */
     public int size() {
         return array.length;
+    }
+
+
+    /**
+     * Returns the empty list. Iteration through the {@code super.values()} list causes an exception.
+     *
+     * @return the empty list
+     */
+    public TemplateCollectionModel values() {
+        return new SimpleCollection(new ArrayList(0), wrapper);
     }
 
 

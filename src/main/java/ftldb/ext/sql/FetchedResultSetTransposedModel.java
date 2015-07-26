@@ -25,7 +25,7 @@ import java.util.List;
  * This class wraps {@link java.sql.ResultSet} and adapts it for using in FTL both as a sequence and a hash of columns.
  */
 public class FetchedResultSetTransposedModel extends WrappingTemplateModel implements TemplateSequenceModel,
-        TemplateHashModelEx, TemplateMethodModelEx {
+        TemplateHashModelEx {
 
 
     public final FetchedResultSet resultSet;
@@ -105,20 +105,6 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      */
     public boolean isEmpty() throws TemplateModelException {
         return transposedData.length == 0;
-    }
-
-
-    /**
-     * Evaluates the {@code transpose()} method of {@link FetchedResultSetModel} and returns this object.
-     *
-     * @param args method arguments
-     * @return this model
-     */
-    public Object exec(List args) throws TemplateModelException {
-        if (args.size() != 0) {
-            throw new TemplateModelException("No arguments needed");
-        }
-        return this;
     }
 
 

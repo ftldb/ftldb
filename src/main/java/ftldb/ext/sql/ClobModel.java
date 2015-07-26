@@ -18,11 +18,14 @@ package ftldb.ext.sql;
 
 import freemarker.ext.beans.BeanModel;
 import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.SimpleCollection;
+import freemarker.template.TemplateCollectionModel;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateScalarModel;
 
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 /**
@@ -51,6 +54,26 @@ public class ClobModel extends BeanModel implements TemplateScalarModel {
      */
     public String getAsString() throws TemplateModelException {
         return string;
+    }
+
+
+    /**
+     * Returns the clob size.
+     *
+     * @return the number of characters
+     */
+    public int size() {
+        return string.length();
+    }
+
+
+    /**
+     * Returns the empty list. Iteration through the {@code super.values()} list causes an exception.
+     *
+     * @return the empty list
+     */
+    public TemplateCollectionModel values() {
+        return new SimpleCollection(new ArrayList(0), wrapper);
     }
 
 
