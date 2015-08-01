@@ -90,7 +90,7 @@ public class FetchedResultSetModel extends BeanModel implements TemplateSequence
                 if (args.size() != 0) {
                     throw new TemplateModelException("No arguments needed");
                 }
-                return new FetchedResultSetTransposedModel(frs, wrapper);
+                return wrap(new FetchedResultSetTransposed(frs));
             }
         };
     }

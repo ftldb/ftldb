@@ -54,7 +54,10 @@ public class FetchedResultSet {
 
         for (int i = 0; i < columnCount; i++) {
             columnNames[i] = metaData.getColumnName(i + 1);
-            columnIndices.put(columnNames[i], new Integer(i));
+            // if two columns have same names, save only the 1st one
+            if (columnIndices.get(columnNames[i]) == null) {
+                columnIndices.put(columnNames[i], new Integer(i));
+            }
         }
 
         List rows = new ArrayList(64);
@@ -84,6 +87,102 @@ public class FetchedResultSet {
      */
     public ResultSetMetaData getMetaData() {
         return metaData;
+    }
+
+
+    /**
+     * Returns the specified column's index starting from 0.
+     *
+     * @param name the column's name
+     * @return the column's index or {@code null} if no column with such name exists
+     */
+    public Integer getColumnIndex(String name) {
+        return (Integer) columnIndices.get(name);
+    }
+
+
+    /**
+     * Returns the specified column's position starting from 1.
+     *
+     * @param name the column's name
+     * @return the column's position or {@code null} if no column with such name exists
+     */
+    public Integer getColumnPosition(String name) {
+        Integer index = getColumnIndex(name);
+        if (index == null) return null;
+        return new Integer(index.intValue() + 1);
+    }
+
+
+    /**
+     * @return this object
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSet getHashRows() {
+        return this;
+    }
+
+
+    /**
+     * @return this object
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSet getHash_rows() {
+        return getHashRows();
+    }
+
+
+    /**
+     * @return this object
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSet getSeqRows() {
+        return this;
+    }
+
+
+    /**
+     * @return this object
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSet getSeq_rows() {
+        return getSeqRows();
+    }
+
+
+    /**
+     * @return this object transposed
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSetTransposed getColHash() {
+        return new FetchedResultSetTransposed(this);
+    }
+
+
+    /**
+     * @return this object transposed
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSetTransposed getCol_hash() {
+        return getColHash();
+    }
+
+
+    /**
+     * @return this object transposed
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSetTransposed getColSeq() {
+        return new FetchedResultSetTransposed(this);
+    }
+
+
+    /**
+     * @return this object transposed
+     * @deprecated Emulates v1.3.0 access method.
+     */
+    public FetchedResultSetTransposed getCol_seq() {
+        return getColSeq();
     }
 
 

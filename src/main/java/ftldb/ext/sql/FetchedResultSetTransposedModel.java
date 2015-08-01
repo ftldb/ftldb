@@ -18,33 +18,22 @@ package ftldb.ext.sql;
 
 import freemarker.template.*;
 
-import java.util.List;
-
 
 /**
- * This class wraps {@link java.sql.ResultSet} and adapts it for using in FTL both as a sequence and a hash of columns.
+ * This class wraps {@link FetchedResultSetTransposed} and adapts it for using in FTL both as a sequence and a hash of
+ * columns.
  */
 public class FetchedResultSetTransposedModel extends WrappingTemplateModel implements TemplateSequenceModel,
         TemplateHashModelEx {
 
 
-    public final FetchedResultSet resultSet;
-    public final Object[][] transposedData;
+    public final FetchedResultSetTransposed frst;
 
 
-    public FetchedResultSetTransposedModel(FetchedResultSet frs, ObjectWrapper wrapper)
+    public FetchedResultSetTransposedModel(FetchedResultSetTransposed frst, ObjectWrapper wrapper)
             throws TemplateModelException {
         super(wrapper);
-
-        this.resultSet = frs;
-
-        transposedData = new Object[resultSet.columnNames.length][];
-        for (int ri = 0; ri < resultSet.data.length; ri++) {
-            for (int ci = 0; ci < resultSet.columnNames.length; ci++) {
-                if (transposedData[ci] == null) transposedData[ci] = new Object[resultSet.data.length];
-                transposedData[ci][ri] = resultSet.data[ri][ci];
-            }
-        }
+        this.frst = frst;
     }
 
 
@@ -54,7 +43,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return the column at the specified index
      */
     public TemplateModel get(int index) throws TemplateModelException {
-        return wrap(transposedData[index]);
+        return wrap(frst.transposedData[index]);
     }
 
 
@@ -64,7 +53,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return the specified column as an array
      */
     public TemplateModel get(String key) throws TemplateModelException {
-        return wrap(transposedData[((Integer) resultSet.columnIndices.get(key)).intValue()]);
+        return wrap(frst.transposedData[((Integer) frst.resultSet.columnIndices.get(key)).intValue()]);
     }
 
 
@@ -74,7 +63,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return the number of columns in this result set
      */
     public int size() {
-        return transposedData.length;
+        return frst.transposedData.length;
     }
 
 
@@ -84,7 +73,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return a list of column names ordered by position
      */
     public TemplateCollectionModel keys() throws TemplateModelException {
-        return new SimpleCollection(java.util.Arrays.asList(resultSet.columnNames), getObjectWrapper());
+        return new SimpleCollection(java.util.Arrays.asList(frst.resultSet.columnNames), getObjectWrapper());
     }
 
 
@@ -94,7 +83,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return the list of column arrays ordered by position
      */
     public TemplateCollectionModel values() throws TemplateModelException {
-        return new SimpleCollection(java.util.Arrays.asList(transposedData), getObjectWrapper());
+        return new SimpleCollection(java.util.Arrays.asList(frst.transposedData), getObjectWrapper());
     }
 
 
@@ -104,7 +93,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return always {@code false}
      */
     public boolean isEmpty() throws TemplateModelException {
-        return transposedData.length == 0;
+        return frst.transposedData.length == 0;
     }
 
 

@@ -35,6 +35,7 @@ import java.sql.Struct;
  *     <li>{@link ClobModel} - treats CLOBs ({@link Clob}) as strings
  *     <li>{@link StructModel} - treats UDTs ({@link Struct}) as sequences of elements
  *     <li>{@link FetchedResultSetModel} - treats fetched result sets ({@link FetchedResultSet}) as 2-layer objects
+ *     <li>{@link FetchedResultSetTransposedModel} - wraps transposed result sets
  * </ul>
  */
 public class DefaultObjectWrapper extends freemarker.template.DefaultObjectWrapper {
@@ -57,6 +58,9 @@ public class DefaultObjectWrapper extends freemarker.template.DefaultObjectWrapp
         }
         if (obj instanceof FetchedResultSet) {
             return new FetchedResultSetModel((FetchedResultSet) obj, this);
+        }
+        if (obj instanceof FetchedResultSetTransposed) {
+            return new FetchedResultSetTransposedModel((FetchedResultSetTransposed) obj, this);
         }
         return super.handleUnknownType(obj);
     }

@@ -135,3 +135,27 @@
   <#local ftl_call += ')'/>
   <#return ftl_call?eval/>
 </#function>
+
+
+<#--
+-- Extracts the specified column from the specified FetchedResultSet, which
+-- is represented as a row set (using .hash_rows or .seq_rows). May be useful
+-- if your function returns a row set, but you need to use its single column as
+-- a simple sequence. The resulting sequence doesn't contain null elements.
+--
+-- @deprecated  Use new .transpose() method to access a result set as a sequence
+--              or a hash of columnar sequences, e.g. ${res.transpose().COL1}.
+--
+-- @param  row_set  the FetchedResultSet object, represented as a row set
+-- @param  column   the name or the index (from 0) of the column
+-- @return          the column as a sequence
+--->
+<#function get_column row_set column>
+  <#local seq = []/>
+  <#list row_set as row>
+    <#if row[column]??>
+      <#local seq = seq + [row[column]]/>
+    </#if>
+  </#list>
+  <#return seq/>
+</#function>
