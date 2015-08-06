@@ -171,4 +171,14 @@ public class Configurator {
     }
 
 
+    /**
+     * Returns FreeMarker version as a {@link Version} instance.
+     *
+     * @return FreeMarker version
+     */
+    public static Version getFreeMarkerVersion() {
+        return Configuration.getVersion();
+    }
+
+
 }

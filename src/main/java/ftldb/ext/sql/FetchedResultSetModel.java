@@ -126,12 +126,12 @@ public class FetchedResultSetModel extends BeanModel implements TemplateSequence
      */
     public String getAsString() {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < frs.columnNames.length; i++) {
-            sb.append(frs.columnNames[i]).append('\t');
+        for (int i = 0; i < frs.columnLabels.length; i++) {
+            sb.append(frs.columnLabels[i]).append('\t');
         }
         sb.append('\n');
         for (int ri = 0; ri < frs.data.length; ri++) {
-            for (int ci = 0; ci < frs.columnNames.length; ci++) {
+            for (int ci = 0; ci < frs.columnLabels.length; ci++) {
                 sb.append(frs.data[ri][ci]).append('\t');
             }
             sb.append('\n');

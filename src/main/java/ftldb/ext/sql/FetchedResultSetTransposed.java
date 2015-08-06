@@ -30,9 +30,9 @@ public class FetchedResultSetTransposed {
 
         this.resultSet = frs;
 
-        transposedData = new Object[resultSet.columnNames.length][];
+        transposedData = new Object[resultSet.columnLabels.length][];
         for (int ri = 0; ri < resultSet.data.length; ri++) {
-            for (int ci = 0; ci < resultSet.columnNames.length; ci++) {
+            for (int ci = 0; ci < resultSet.columnLabels.length; ci++) {
                 if (transposedData[ci] == null) transposedData[ci] = new Object[resultSet.data.length];
                 transposedData[ci][ri] = resultSet.data[ri][ci];
             }

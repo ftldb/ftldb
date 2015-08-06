@@ -24,6 +24,7 @@ public class VersionTest {
     @Test
     public void printVersion() throws Exception {
         System.out.println("FTLDB version: " + Configurator.getVersion());
+        System.out.println("FeeMarker version: " + Configurator.getFreeMarkerVersion());
     }
 
 }

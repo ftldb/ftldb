@@ -73,7 +73,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
      * @return a list of column names ordered by position
      */
     public TemplateCollectionModel keys() throws TemplateModelException {
-        return new SimpleCollection(java.util.Arrays.asList(frst.resultSet.columnNames), getObjectWrapper());
+        return new SimpleCollection(java.util.Arrays.asList(frst.resultSet.columnLabels), getObjectWrapper());
     }
 
 

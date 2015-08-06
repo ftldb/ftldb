@@ -196,5 +196,21 @@ function get_version return varchar2;
 function get_version_number return integer;
 
 
+/**
+ * Returns the FreeMarker version as a string.
+ *
+ * @return FreeMarker version
+ */
+function get_freemarker_version return varchar2;
+
+
+/**
+ * Returns the FreeMarker version as a comparable integer.
+ *
+ * @return FreeMarker version
+ */
+function get_freemarker_version_number return integer;
+
+
 end ftldb_api;
 /

@@ -45,7 +45,7 @@ public class CommandLine {
 
         if (args.length < 1) {
             exitWithUsageExample("FTLDB v" + Configurator.getVersion() + ","
-                    + " based on FreeMarker v" + Configuration.getVersion() + ".");
+                    + " based on FreeMarker v" + Configurator.getFreeMarkerVersion() + ".");
         }
 
         Configuration cfg;

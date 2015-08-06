@@ -179,8 +179,10 @@ procedure init(in_config_func_name in varchar2)
 is
   l_config_xml xmltype;
 begin
-  execute immediate 'call ' || in_config_func_name || '() into :1'
-    using out l_config_xml;
+  execute immediate
+    'call ' || dbms_assert.sql_object_name(in_config_func_name) || '() into :1'
+  using out l_config_xml;
+
   init(l_config_xml);
 end init;
 
@@ -260,6 +262,20 @@ is
 begin
   return ftldb_wrapper.get_version_number();
 end get_version_number;
+
+
+function get_freemarker_version return varchar2
+is
+begin
+  return ftldb_wrapper.get_freemarker_version();
+end get_freemarker_version;
+
+
+function get_freemarker_version_number return integer
+is
+begin
+  return ftldb_wrapper.get_freemarker_version_number();
+end get_freemarker_version_number;
 
 
 begin

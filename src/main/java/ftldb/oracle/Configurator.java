@@ -58,4 +58,24 @@ public class Configurator extends ftldb.Configurator {
     }
 
 
+    /**
+     * Returns FreeMarker version as a string.
+     *
+     * @return FreeMarker version
+     */
+    public static String getFreeMarkerVersionString() {
+        return getFreeMarkerVersion().toString();
+    }
+
+
+    /**
+     * Returns FreeMarker version as a comparable integer.
+     *
+     * @return FreeMarker version
+     */
+    public static int getFreeMarkerVersionNumber() {
+        return getFreeMarkerVersion().intValue();
+    }
+
+
 }

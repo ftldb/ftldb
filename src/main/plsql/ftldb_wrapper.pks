@@ -49,6 +49,16 @@ is
 language java name 'ftldb.oracle.Configurator.getVersionNumber() return int';
 
 
+function get_freemarker_version return varchar2
+is
+language java name 'ftldb.oracle.Configurator.getFreeMarkerVersionString() return java.lang.String';
+
+
+function get_freemarker_version_number return number
+is
+language java name 'ftldb.oracle.Configurator.getFreeMarkerVersionNumber() return int';
+
+
 procedure process(in_templ_name in varchar2, io_result in out clob)
 is
 language java name 'ftldb.oracle.TemplateProcessor.process(java.lang.String, java.sql.Clob[])';

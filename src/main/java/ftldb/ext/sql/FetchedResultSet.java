@@ -34,7 +34,7 @@ public class FetchedResultSet {
 
 
     public final ResultSetMetaData metaData;
-    public final String[] columnNames;
+    public final String[] columnLabels;
     public final Map columnIndices;
     public final Object[][] data;
 
@@ -49,14 +49,14 @@ public class FetchedResultSet {
         metaData = rs.getMetaData();
         int columnCount = metaData.getColumnCount();
 
-        columnNames = new String[columnCount];
-        columnIndices = new HashMap(columnNames.length, 1);
+        columnLabels = new String[columnCount];
+        columnIndices = new HashMap(columnLabels.length, 1);
 
         for (int i = 0; i < columnCount; i++) {
-            columnNames[i] = metaData.getColumnName(i + 1);
-            // if two columns have same names, save only the 1st one
-            if (columnIndices.get(columnNames[i]) == null) {
-                columnIndices.put(columnNames[i], new Integer(i));
+            columnLabels[i] = metaData.getColumnLabel(i + 1);
+            // if two columns have same labels, save only the 1st one
+            if (columnIndices.get(columnLabels[i]) == null) {
+                columnIndices.put(columnLabels[i], new Integer(i));
             }
         }
 
@@ -91,24 +91,25 @@ public class FetchedResultSet {
 
 
     /**
-     * Returns the specified column's index starting from 0.
+     * Returns the specified column's index starting from 0. This index is used to access FTL sequences.
      *
-     * @param name the column's name
-     * @return the column's index or {@code null} if no column with such name exists
+     * @param label the column's label
+     * @return the column's index or {@code null} if no column with such label exists
      */
-    public Integer getColumnIndex(String name) {
-        return (Integer) columnIndices.get(name);
+    public Integer getColumnIndex(String label) {
+        return (Integer) columnIndices.get(label);
     }
 
 
     /**
-     * Returns the specified column's position starting from 1.
+     * Returns the specified column's position starting from 1 as {@link ResultSet#findColumn(String)} does. This
+     * index is used in {@link ResultSetMetaData} methods.
      *
-     * @param name the column's name
-     * @return the column's position or {@code null} if no column with such name exists
+     * @param label the column's label
+     * @return the column's position or {@code null} if no column with such label exists
      */
-    public Integer getColumnPosition(String name) {
-        Integer index = getColumnIndex(name);
+    public Integer findColumn(String label) {
+        Integer index = getColumnIndex(label);
         if (index == null) return null;
         return new Integer(index.intValue() + 1);
     }

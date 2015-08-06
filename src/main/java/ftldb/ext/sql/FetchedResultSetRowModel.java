@@ -77,7 +77,7 @@ public class FetchedResultSetRowModel extends WrappingTemplateModel implements T
      * @return a list of column names ordered by position
      */
     public TemplateCollectionModel keys() throws TemplateModelException {
-        return new SimpleCollection(Arrays.asList(resultSet.columnNames), getObjectWrapper());
+        return new SimpleCollection(Arrays.asList(resultSet.columnLabels), getObjectWrapper());
     }
 
 
