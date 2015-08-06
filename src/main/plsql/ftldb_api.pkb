@@ -123,7 +123,7 @@ is
 
   c_config constant varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
-    <java version="1.0" class="java.beans.XMLDecoder">
+    <java version="1.4.0" class="java.beans.XMLDecoder">
       <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
           <object class="ftldb.oracle.DatabaseTemplateLoader">

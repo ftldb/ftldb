@@ -68,12 +68,24 @@ public class Configurator {
     public static Configuration newConfiguration(InputStream configXMLInputStream) {
         XMLDecoder decoder = new XMLDecoder(configXMLInputStream, null, new ExceptionListener() {
             public void exceptionThrown(Exception e) {
-                throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
+                throw ((e instanceof RuntimeException) && !(e instanceof ArrayIndexOutOfBoundsException))
+                        ? (RuntimeException) e
+                        : new RuntimeException(e);
             }
         });
-        Configuration config = (Configuration) decoder.readObject();
+        Object obj;
+        do {
+            try {
+                obj = decoder.readObject();
+            } catch (ArrayIndexOutOfBoundsException e) {
+                obj = null;
+            }
+            if (obj == null) {
+                throw new RuntimeException("Provided XML contains no " + Configuration.class.getName() + " objects");
+            }
+        } while (!(obj instanceof Configuration));
         decoder.close();
-        return config;
+        return (Configuration) obj;
     }
 
 
@@ -121,7 +133,7 @@ public class Configurator {
 
     private static void ensureConfigurationIsSet() {
         if (config == null) {
-            throw new RuntimeException("FTLDB configuration is not initialized");
+            throw new NullPointerException("FTLDB configuration is not initialized");
         }
     }
 

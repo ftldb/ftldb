@@ -16,7 +16,7 @@
     limitations under the License.
 
 -->
-<java version="1.0" class="java.beans.XMLDecoder">
+<java version="1.4.0" class="java.beans.XMLDecoder">
     <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
             <object class="freemarker.cache.FileTemplateLoader"/>
