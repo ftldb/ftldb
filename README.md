@@ -67,8 +67,7 @@ language called FTL.
 
 > **Notice**: FreeMarker is not the only possible option. We have also tried its
 > closest competitor [Velocity](http://velocity.apache.org) and succeeded, but
-> the project seems frozen and its language is not as convenient as FTL. See an
-> old [feature comparison](http://freemarker.org/fmVsVel.html) for more details.
+> the project seems frozen and its language is not as convenient as FTL.
 
 FTLDB is an enhancement of FreeMarker for working with databases via JDBC. It
 provides FTL methods for retrieving data from a database with queries and calls.
@@ -552,8 +551,8 @@ Do the following:
   1. Download and unpack the source archive or clone from the GitHub repository.
   2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
-  3. Run in the command line from the base project directory:
-     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`
+  3. Run in the command line from the base project directory:  
+     `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
      if you don't have an Oracle instance available.
   4. Check the `target` directory for the installation files.
 

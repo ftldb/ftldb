@@ -32,11 +32,11 @@ import java.util.Set;
 public class FetchedResultSetModel extends BeanModel implements TemplateSequenceModel, TemplateScalarModel {
 
 
-    private ObjectWrapper wrapper;
-    private FetchedResultSet frs;
+    private final ObjectWrapper wrapper;
+    private final FetchedResultSet frs;
 
 
-    public FetchedResultSetModel(FetchedResultSet frs, BeansWrapper wrapper) throws TemplateModelException {
+    public FetchedResultSetModel(FetchedResultSet frs, BeansWrapper wrapper) {
         super(frs, wrapper);
         this.wrapper = wrapper;
         this.frs = frs;

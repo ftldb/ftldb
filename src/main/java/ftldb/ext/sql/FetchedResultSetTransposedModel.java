@@ -30,8 +30,7 @@ public class FetchedResultSetTransposedModel extends WrappingTemplateModel imple
     public final FetchedResultSetTransposed frst;
 
 
-    public FetchedResultSetTransposedModel(FetchedResultSetTransposed frst, ObjectWrapper wrapper)
-            throws TemplateModelException {
+    public FetchedResultSetTransposedModel(FetchedResultSetTransposed frst, ObjectWrapper wrapper) {
         super(wrapper);
         this.frst = frst;
     }

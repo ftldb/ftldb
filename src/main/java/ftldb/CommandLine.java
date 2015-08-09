@@ -60,7 +60,7 @@ public class CommandLine {
         } else {
             cfg = new DefaultConfiguration();
             cfg.setTemplateLoader(new FileTemplateLoader());
-        };
+        }
 
         List calls = getFtlCalls(args, skip);
         if (calls.size() == 0) {

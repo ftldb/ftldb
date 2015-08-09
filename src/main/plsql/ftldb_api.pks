@@ -87,8 +87,8 @@ procedure default_template_checker(
  *
  * Uses 'ftldb.oracle.DatabaseTemplateLoader' class as a template loader with
  * the default resolver, loader and checker calls.
- * Uses 'freemarker.cache.MruCacheStorage' class a a cache storage with 20 hard
- * references and 100 soft references (actually Oracle cleans then immediately).
+ * Uses 'freemarker.cache.MruCacheStorage' class as a cache storage with 20 hard
+ * references and 200 soft references (actually Oracle cleans them immediately).
  *
  * @return  the configuration XML
  */

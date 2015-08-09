@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class ArrayModel extends BeanModel implements TemplateSequenceModel {
 
 
-    protected final Object[] array;
+    private final Object[] array;
 
 
     public ArrayModel(Array sqlArray, BeansWrapper wrapper) throws TemplateModelException {

@@ -33,8 +33,7 @@ public class FetchedResultSetRowModel extends WrappingTemplateModel implements T
     public final int rowIndex;
 
 
-    public FetchedResultSetRowModel(FetchedResultSet frs, int index, ObjectWrapper wrapper)
-            throws TemplateModelException {
+    public FetchedResultSetRowModel(FetchedResultSet frs, int index, ObjectWrapper wrapper) {
         super(wrapper);
         this.resultSet = frs;
         this.rowIndex = index;

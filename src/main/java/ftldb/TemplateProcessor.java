@@ -89,9 +89,8 @@ public class TemplateProcessor {
      * @param templateName the template's name
      * @return the template itself
      * @throws IOException if a file access error occurs
-     * @throws TemplateException if a template processing error occurs
      */
-    protected static Template getTemplate(String templateName) throws IOException, TemplateException {
+    protected static Template getTemplate(String templateName) throws IOException {
         if (templateName == null || "".equals(templateName.trim())) {
             throw new IllegalArgumentException("Template name is not specified");
         }
@@ -105,9 +104,8 @@ public class TemplateProcessor {
      * @param templateBody the template's source
      * @return the template itself
      * @throws IOException if a file access error occurs
-     * @throws TemplateException if a template processing error occurs
      */
-    protected static Template getTemplate(Reader templateBody) throws IOException, TemplateException {
+    protected static Template getTemplate(Reader templateBody) throws IOException {
         if (templateBody == null) {
             throw new IllegalArgumentException("Template body is null");
         }

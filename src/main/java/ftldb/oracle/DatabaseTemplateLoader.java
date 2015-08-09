@@ -101,7 +101,7 @@ import java.sql.*;
 public class DatabaseTemplateLoader implements StatefulTemplateLoader {
 
 
-    private Connection connection;
+    private final Connection connection;
     private final String templateResolverCall;
     private final String templateLoaderCall;
     private final String templateCheckerCall;
@@ -191,7 +191,7 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         if (templateResolverCS != null) {
             try {
                 templateResolverCS.close();
-            } catch (SQLException e) {
+            } catch (SQLException ignored) {
             } finally {
                 templateResolverCS = null;
             }
@@ -199,7 +199,7 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         if (templateLoaderCS != null) {
             try {
                 templateLoaderCS.close();
-            } catch (SQLException e) {
+            } catch (SQLException ignored) {
             } finally {
                 templateLoaderCS = null;
             }
@@ -207,7 +207,7 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         if (templateCheckerCS != null) {
             try {
                 templateCheckerCS.close();
-            } catch (SQLException e) {
+            } catch (SQLException ignored) {
             } finally {
                 templateCheckerCS = null;
             }
@@ -379,7 +379,6 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
             return getFullName() + " (" + type + ")";
         }
 
-
         public boolean equals(Object o) {
             if (this == o)
                 return true;
@@ -396,5 +395,6 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
         }
 
     }
+
 
 }
