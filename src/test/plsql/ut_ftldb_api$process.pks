@@ -36,24 +36,23 @@ $if null $then
 
 
 --%begin java_binds
-  <#assign conn = default_connection()>
-  <#assign ora_ver = conn.exec("begin :1 := dbms_db_version.version; end;", {}, {"1" : "NUMERIC"})["1"]>
+  <#assign ora_ver = exec("begin :1 := dbms_db_version.version; end;", {}, {"1" : "NUMERIC"})["1"]>
 
-  <#assign coll = conn.query("select sys.odcinumberlist(1,2,3) from dual")[0][0]/>
+  <#assign coll = query("select sys.odcinumberlist(1,2,3) from dual")[0][0]/>
   coll = [<#list coll as i>${i}<#sep>, </#list>]
   type: ${coll.SQLTypeName}
   base type: ${coll.baseTypeName}
 
-  <#assign clob = conn.query("select to_clob('loooong text') from dual")[0][0]/>
+  <#assign clob = query("select to_clob('loooong text') from dual")[0][0]/>
   clob = "${clob}"
   length: ${clob?length}
 
-  <#assign struct = conn.query("select sys.odciobject('duck', 'goose') from dual")[0][0]/>
+  <#assign struct = query("select sys.odciobject('duck', 'goose') from dual")[0][0]/>
   struct = {<#list struct as i>field#${(i?index+1)?c} : "${i}"<#sep>, </#list>}
   type: ${struct.SQLTypeName}
 
   <#assign
-    res = conn.query(
+    res = query(
       "select :1 byte, :2 shrt, :3 int, :4 lngint, :5 flt, :6 dbl, :7 bigdec, " +
       " :8 + 1/7 dt, :9 tmstmp, :10 str, :11 bool, :12 coll, :13 struct, :14 clob from dual",
       [
@@ -90,9 +89,9 @@ $if null $then
     clob = ${r.CLOB}
   }
 
-  <#assign coll2 = conn.query("select sys.odcivarchar2list('a', 'b', 'c') from dual")[0][0]/>
+  <#assign coll2 = query("select sys.odcivarchar2list('a', 'b', 'c') from dual")[0][0]/>
   <#assign
-    res = conn.exec(
+    res = exec(
       "declare\n" +
       "  v1 number := :1;\n" +
       "  v2 varchar2(200) := :2;\n" +
@@ -125,7 +124,7 @@ $if null $then
     }
   }
 
-  <#assign res = conn.query("select rownum n, 'row_' || rownum label from dual connect by level <= 5")/>
+  <#assign res = query("select rownum n, 'row_' || rownum label from dual connect by level <= 5")/>
   {
   <#list res.transpose() as col>
     "${res.metaData.columnName(col?index+1)}" : [<#list col as val>${val}<#sep>, </#list>]

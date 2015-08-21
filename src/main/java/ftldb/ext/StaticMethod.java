@@ -16,11 +16,9 @@
 package ftldb.ext;
 
 
-import freemarker.ext.beans.BeansWrapperBuilder;
-import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
-import ftldb.Configurator;
+import freemarker.template.TemplateScalarModel;
 
 import java.util.List;
 
@@ -47,17 +45,16 @@ public class StaticMethod implements TemplateMethodModelEx {
 
     public Object exec(List args) throws TemplateModelException {
         if (args.size() != 1) {
-            throw new TemplateModelException("One argument expected, got " + args.size());
+            throw new TemplateModelException("Wrong number of arguments: expected 1, got " + args.size());
         }
 
         Object classNameObj = args.get(0);
-        if (!(classNameObj instanceof SimpleScalar)) {
+        if (!(classNameObj instanceof TemplateScalarModel)) {
             throw new TemplateModelException("Illegal type of argument #1: "
-                    + "expected SimpleScalar (i.e. String), got " + classNameObj.getClass().getName());
+                    + "expected Scalar, got " + classNameObj.getClass().getName());
         }
 
-        return new BeansWrapperBuilder(Configurator.getConfiguration().getIncompatibleImprovements()).build()
-                .getStaticModels().get(((SimpleScalar) classNameObj).getAsString());
+        return ModelHelper.getBeansWrapper().getStaticModels().get(((TemplateScalarModel) classNameObj).getAsString());
     }
 
 

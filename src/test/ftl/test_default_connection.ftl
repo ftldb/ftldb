@@ -20,7 +20,7 @@ Open connection.
 <#import "dbconn.config.ftl" as conf>
 <#assign conn = conf.new_conn()/>
 
-Override default DBConnection.
+Override default DB connection.
 <#assign void = set_default_connection(conn)/>
 
 Execute query via default connection.

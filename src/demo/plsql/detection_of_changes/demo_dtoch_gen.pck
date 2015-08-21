@@ -211,7 +211,7 @@ $if null $then
 
   <#local
     l_src_comments =
-      default_connection().query(
+      query(
         "select tc.comments\n" +
         "from user_tab_comments tc\n" +
         "where tc.table_name = :1",
@@ -283,7 +283,7 @@ $if null $then
 
   <#assign
     l_col_list =
-      default_connection().query(
+      query(
         "select lower(tc.column_name) cn\n" +
           "from user_tab_cols tc\n" +
           "where\n" +
@@ -347,7 +347,7 @@ $if null $then
 
   <#assign
     l_col_list =
-      default_connection().query(
+      query(
         "select lower(tc.column_name) cn\n" +
           "from user_tab_cols tc\n" +
           "where\n" +

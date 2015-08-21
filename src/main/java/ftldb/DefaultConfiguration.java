@@ -19,7 +19,6 @@ package ftldb;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
-import freemarker.template.Version;
 import ftldb.ext.*;
 import ftldb.ext.sql.Connector;
 
@@ -43,12 +42,9 @@ import ftldb.ext.sql.Connector;
 public class DefaultConfiguration extends Configuration {
 
 
-    // The currently supported FreeMarker features
-    private final static Version FM_INCOMPATIBLE_IMPROVEMENTS = Configuration.VERSION_2_3_23;
-
-
     public DefaultConfiguration() {
-        super(FM_INCOMPATIBLE_IMPROVEMENTS);
+        // Set FreeMarker features up to the latest version
+        super(Configuration.getVersion());
 
         // Set default settings
         setObjectWrapper(new DefaultObjectWrapper(this.getIncompatibleImprovements()));
@@ -73,6 +69,8 @@ public class DefaultConfiguration extends Configuration {
         setSharedVariable("new_connection", new Connector.NewConnectionMethod());
         setSharedVariable("default_connection", new Connector.GetDefaultConnectionMethod());
         setSharedVariable("set_default_connection", new Connector.SetDefaultConnectionMethod());
+        setSharedVariable("query", new Connector.QueryMethod());
+        setSharedVariable("exec", new Connector.ExecMethod());
         setSharedVariable("shell_exec", new ShellCommandExecutor.ShellExecMethod());
     }
 

@@ -16,14 +16,15 @@
 package ftldb.ext.sql;
 
 
-import freemarker.ext.beans.StringModel;
-import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
+
+import freemarker.ext.beans.BeanModel;
+import freemarker.template.*;
+import ftldb.ext.ModelHelper;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -107,11 +108,11 @@ public class Connector {
             String[] strArgs = new String[3];
             for (int i = 0; i < 3; i++) {
                 Object o = args.get(i);
-                if (o instanceof SimpleScalar) {
-                    strArgs[i] = ((SimpleScalar) o).getAsString();
+                if (o instanceof TemplateScalarModel) {
+                    strArgs[i] = ((TemplateScalarModel) o).getAsString();
                 } else {
                     throw new TemplateModelException("Illegal type of argument #" + (i + 1) + ": "
-                            + "expected SimpleScalar (i.e. String), got " + args.get(i).getClass().getName());
+                            + "expected Scalar, got " + args.get(i).getClass().getName());
                 }
             }
 
@@ -179,27 +180,107 @@ public class Connector {
             }
 
             if (args.size() != 1) {
-                throw new TemplateModelException("Wrong number of arguments: expected 0 or 1, got " + args.size());
+                throw new TemplateModelException("Wrong number of arguments: expected 1, got " + args.size());
             }
 
             Object o = args.get(0);
 
-            if (!(o instanceof StringModel)) {
-                throw new TemplateModelException("Illegal type of argument: expected "
-                        + StringModel.class.getName() + ", got " + o.getClass().getName());
+            if (!(o instanceof BeanModel)) {
+                throw new TemplateModelException("Illegal type of argument #1: it cannot be unwrapped");
             }
 
-            StringModel sm = (StringModel) o;
-            o = sm.getWrappedObject();
+            o = ((BeanModel) o).getWrappedObject();
 
             if (o instanceof ConnectionAdapter) {
                 setDefaultConnection((ConnectionAdapter) o);
             } else {
-                throw new TemplateModelException("Illegal type of argument: expected "
+                throw new TemplateModelException("Illegal type of argument #1: expected "
                         + ConnectionAdapter.class.getName() + ", got " + o.getClass().getName());
             }
 
             return Void.TYPE;
+        }
+
+    }
+
+
+    /**
+     * This class implements an FTL method named {@code query}, which is a convenience alternative to
+     * {@code default_connection().query(...)}.
+     */
+    public static class QueryMethod implements TemplateMethodModelEx {
+
+        public Object exec(List args) throws TemplateModelException {
+            if (args.size() < 1 || args.size() > 2) {
+                throw new TemplateModelException("Wrong number of arguments: expected 1 or 2, got " + args.size());
+            }
+
+            if (!(args.get(0) instanceof TemplateScalarModel)) {
+                throw new TemplateModelException("Illegal type of argument #1: expected Scalar, got "
+                        + args.get(0).getClass().getName());
+            }
+
+            if (args.size() == 2 && !(args.get(1) instanceof TemplateSequenceModel)) {
+                throw new TemplateModelException("Illegal type of argument #2: expected Sequence, got "
+                        + args.get(1).getClass().getName());
+            }
+
+            ConnectionAdapter conn = getDefaultConnection();
+            String sql = ((TemplateScalarModel) args.get(0)).getAsString();
+            if (args.size() == 1) {
+                try {
+                    return conn.query(sql);
+                } catch (SQLException e) {
+                    throw new TemplateModelException(e);
+                }
+            } else { // args.size() == 2 && args.get(1) instanceof TemplateSequenceModel
+                List binds = ModelHelper.toList((TemplateSequenceModel) args.get(1));
+                try {
+                    return conn.query(sql, binds);
+                } catch (SQLException e) {
+                    throw new TemplateModelException(e);
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * This class implements an FTL method named {@code exec}, which is a convenience alternative to
+     * {@code default_connection().exec(...)}.
+     */
+    public static class ExecMethod implements TemplateMethodModelEx {
+
+        public Object exec(List args) throws TemplateModelException {
+            if (args.size() != 3) {
+                throw new TemplateModelException("Wrong number of arguments: expected 3, got " + args.size());
+            }
+
+            if (!(args.get(0) instanceof TemplateScalarModel)) {
+                throw new TemplateModelException("Illegal type of argument #1: expected Scalar, got "
+                        + args.get(0).getClass().getName());
+            }
+
+            if (!(args.get(1) instanceof TemplateHashModelEx)) {
+                throw new TemplateModelException("Illegal type of argument #2: expected Hash, got "
+                        + args.get(1).getClass().getName());
+            }
+
+            if (!(args.get(2) instanceof TemplateHashModelEx)) {
+                throw new TemplateModelException("Illegal type of argument #3: expected Hash, got "
+                        + args.get(2).getClass().getName());
+            }
+
+            ConnectionAdapter conn = getDefaultConnection();
+            String statement = ((TemplateScalarModel) args.get(0)).getAsString();
+            Map inBinds = ModelHelper.toMap((TemplateHashModelEx) args.get(1));
+            Map outBinds = ModelHelper.toMap((TemplateHashModelEx) args.get(2));
+            try {
+                return conn.exec(statement, inBinds, outBinds);
+            } catch (SQLException e) {
+                throw new TemplateModelException(e);
+            }
         }
 
     }

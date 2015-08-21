@@ -36,7 +36,7 @@
       args?has_content?then('('?right_pad(args?size*3 - 1, ' ?,') + ')', '') +
       ' from dual'
   />
-  <#local res = default_connection().query(sql_statement, args)/>
+  <#local res = query(sql_statement, args)/>
   <#if res[0][0]??>
     <#return res[0][0]/>
   <#else/>
@@ -58,7 +58,7 @@
       seq?has_content?then(''?right_pad(seq?size*3 - 2, '?, '), '') +
       ') from dual'
   />
-  <#return default_connection().query(sql_statement, seq)[0][0]/>
+  <#return query(sql_statement, seq)[0][0]/>
 </#function>
 
 
@@ -103,7 +103,7 @@
     <#local binds += {(arg?index + 2)?c : val}/>
   </#list>
   <#local
-    res = default_connection().exec(
+    res = exec(
       callable_statement, binds, {'1' : is_bool_ret?then('NUMERIC', typ)}
     )
   />

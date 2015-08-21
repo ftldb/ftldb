@@ -16,10 +16,7 @@
 package ftldb.ext;
 
 
-import freemarker.template.SimpleScalar;
-import freemarker.template.SimpleSequence;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModelException;
+import freemarker.template.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -93,24 +90,29 @@ public class ShellCommandExecutor {
 
         public Object exec(List args) throws TemplateModelException {
 
-            if (args.size() < 1) {
-                throw new TemplateModelException("At least one argument expected, got 0");
+            if (args.size() < 1 || args.size() > 2) {
+                throw new TemplateModelException("Wrong number of arguments: expected 1 or 2, got " + args.size());
             }
 
+            Object cmd = args.get(0);
             String[] cmdArray;
 
-            if (args.get(0) instanceof SimpleScalar) {
-                cmdArray = new String[]{((SimpleScalar) args.get(0)).getAsString()};
-            } else if (args.get(0) instanceof SimpleSequence) {
-                try {
-                    List cmdList = ((SimpleSequence) args.get(0)).toList();
-                    cmdArray = (String[]) cmdList.toArray(new String[cmdList.size()]);
-                } catch (RuntimeException e) {
-                    throw new TemplateModelException("Illegal type of elements of sequence argument #1", e);
+            if (cmd instanceof TemplateScalarModel) {
+                cmdArray = new String[]{((TemplateScalarModel) cmd).getAsString()};
+            } else if (cmd instanceof TemplateSequenceModel) {
+                TemplateSequenceModel cmdSeq = (TemplateSequenceModel) cmd;
+                cmdArray = new String[cmdSeq.size()];
+                for (int i = 0; i < cmdSeq.size(); i++) {
+                    Object o = cmdSeq.get(i);
+                    if (!(o instanceof TemplateScalarModel)) {
+                        throw new TemplateModelException("Illegal type of element #" + (i + 1)
+                                + " of sequence argument #1: expected Scalar, got " + o.getClass().getName());
+                    }
+                    cmdArray[i] = ((TemplateScalarModel) o).getAsString();
                 }
             } else {
                 throw new TemplateModelException("Illegal type of argument #1: "
-                        + "expected SimpleScalar or SimpleSequence, got " + args.get(0).getClass().getName());
+                        + "expected Scalar or Sequence, got " + args.get(0).getClass().getName());
             }
 
             String encoding;
@@ -118,11 +120,11 @@ public class ShellCommandExecutor {
             if (args.size() < 2) {
                 encoding = "UTF8";
             } else {
-                if (args.get(1) instanceof SimpleScalar) {
-                    encoding = ((SimpleScalar) args.get(1)).getAsString();
+                if (args.get(1) instanceof TemplateScalarModel) {
+                    encoding = ((TemplateScalarModel) args.get(1)).getAsString();
                 } else {
                     throw new TemplateModelException("Illegal type of argument #2: "
-                            + "expected SimpleScalar, got " + args.get(0).getClass().getName());
+                            + "expected Scalar, got " + args.get(0).getClass().getName());
                 }
             }
 
