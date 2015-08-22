@@ -211,7 +211,7 @@ $if null $then
 
   <#local
     l_src_comments =
-      query(
+      sql.query(
         "select tc.comments\n" +
         "from user_tab_comments tc\n" +
         "where tc.table_name = :1",
@@ -280,10 +280,11 @@ $if null $then
   <#assign a_selectable = template_args[1]/>
 
   <#import "ftldb_standard_ftl" as std>
+  <#import "ftldb_sql_ftl" as sql>
 
   <#assign
     l_col_list =
-      query(
+      sql.query(
         "select lower(tc.column_name) cn\n" +
           "from user_tab_cols tc\n" +
           "where\n" +
@@ -343,11 +344,12 @@ $if null $then
   <#assign a_snap = template_args[2]/>
 
   <#import "ftldb_standard_ftl" as std>
+  <#import "ftldb_sql_ftl" as sql>
   <#import "demo_dtoch_gen%local_ftl_macros" as lm>
 
   <#assign
     l_col_list =
-      query(
+      sql.query(
         "select lower(tc.column_name) cn\n" +
           "from user_tab_cols tc\n" +
           "where\n" +

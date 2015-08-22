@@ -69,8 +69,6 @@ public class DefaultConfiguration extends Configuration {
         setSharedVariable("new_connection", new Connector.NewConnectionMethod());
         setSharedVariable("default_connection", new Connector.GetDefaultConnectionMethod());
         setSharedVariable("set_default_connection", new Connector.SetDefaultConnectionMethod());
-        setSharedVariable("query", new Connector.QueryMethod());
-        setSharedVariable("exec", new Connector.ExecMethod());
         setSharedVariable("shell_exec", new ShellCommandExecutor.ShellExecMethod());
     }
 

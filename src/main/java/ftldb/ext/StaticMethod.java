@@ -16,9 +16,11 @@
 package ftldb.ext;
 
 
+import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateScalarModel;
+import ftldb.Configurator;
 
 import java.util.List;
 
@@ -54,7 +56,8 @@ public class StaticMethod implements TemplateMethodModelEx {
                     + "expected Scalar, got " + classNameObj.getClass().getName());
         }
 
-        return ModelHelper.getBeansWrapper().getStaticModels().get(((TemplateScalarModel) classNameObj).getAsString());
+        return new BeansWrapperBuilder(Configurator.getConfiguration().getIncompatibleImprovements()).build()
+                .getStaticModels().get(((TemplateScalarModel) classNameObj).getAsString());
     }
 
 

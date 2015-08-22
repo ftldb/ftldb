@@ -90,7 +90,7 @@ Create SQL collection.
 
 Execute call with variety of in/out-bind variables.
 <#assign
-  res = conn.exec(
+  res = conn.call(
     "declare\n" +
     "  v1 number := :1;\n" +
     "  v2 varchar2(200) := :2;\n" +

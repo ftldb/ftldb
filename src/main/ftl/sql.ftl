@@ -21,6 +21,33 @@
 
 
 <#--
+-- Executes the specified SQL query within the default connection. This is a
+-- convenience method for default_connection().query(...).
+--
+-- @param  sql    the SQL query statement
+-- @param  binds  the sequence of bind variable values
+-- @return        the result set
+--->
+<#function query sql binds = []>
+  <#return default_connection().query(sql, binds)/>
+</#function>
+
+
+<#--
+-- Executes the specified PL/SQL call within the default connection. This is a
+-- convenience method for default_connection().call(...).
+--
+-- @param  statement  the callable statement to be executed
+-- @param  in_binds   the map of in bind variable indices to their values
+-- @param  out_binds  the map of out bind variable indices to their type names
+-- @return            a map of out bind variable indices to their values
+--->
+<#function call statement in_binds out_binds>
+  <#return default_connection().call(statement, in_binds, out_binds)/>
+</#function>
+
+
+<#--
 -- Evaluates the specified SQL-compatible expression or function as a scalar
 -- query, i.e select expr from dual. The returning type is automatically
 -- determined.
@@ -28,9 +55,9 @@
 -- @param  expr  the expression or the function's name
 -- @param  args  the list of the function's parameters (optional)
 -- @return       the result of the query as a scalar; if the function returns
---               REF CURSOR, the result is returned as a QueryResult object
+--               REF CURSOR, the result is returned as a ResultSet object
 --->
-<#function select expr args...>
+<#function scalar expr args...>
   <#local
     sql_statement = 'select ' + expr +
       args?has_content?then('('?right_pad(args?size*3 - 1, ' ?,') + ')', '') +
@@ -64,7 +91,7 @@
 
 <#--
 -- Evaluates the specified PL/SQL expression or function. The returning type
--- must be provided as the first argument. Should be used instead of select
+-- must be provided as the first argument. Should be used instead of 'scalar'
 -- function when the expression or the function are incompatible with the pure
 -- SQL (e.g. for accessing a package variable or passing/returning a boolean).
 -- In contrast to Native Dynamic SQL you can call functions that have boolean
@@ -103,7 +130,7 @@
     <#local binds += {(arg?index + 2)?c : val}/>
   </#list>
   <#local
-    res = exec(
+    res = call(
       callable_statement, binds, {'1' : is_bool_ret?then('NUMERIC', typ)}
     )
   />
@@ -125,7 +152,7 @@
 --
 -- @param  cursor_func  the function's name
 -- @param  args         the list of the function's parameters (optional)
--- @return              the result as a QueryResult object
+-- @return              the result as a ResultSet object
 --->
 <#function fetch cursor_func args...>
   <#local ftl_call = 'eval("oracle.jdbc.OracleTypes.CURSOR", cursor_func'/>

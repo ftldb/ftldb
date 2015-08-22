@@ -85,7 +85,7 @@ public class TemplateProcessorTest {
     @Test
     public void testQueryAndCallExecutors() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("test_query_and_exec.ftl");
+        process("test_query_and_call.ftl");
     }
 
 }
