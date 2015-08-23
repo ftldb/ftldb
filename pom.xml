@@ -71,6 +71,7 @@
                     <exclude>ftldb/version.properties</exclude>
                 </excludes>
             </resource>
+
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>

@@ -82,7 +82,7 @@ begin
   into l_err_flg
   from dual;
   if l_err_flg = 1 then
-    raise_application_error(-20000, 'Compilation errors detected');
+    raise_application_error(-20000, 'Compilation errors detected.');
   end if;
   dbms_output.put_line('Compilation errors not detected.');
 end;

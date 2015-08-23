@@ -49,7 +49,7 @@
 
 <#--
 -- Evaluates the specified SQL-compatible expression or function as a scalar
--- query, i.e select expr from dual. The returning type is automatically
+-- query, i.e. select expr from dual. The returning type is automatically
 -- determined.
 --
 -- @param  expr  the expression or the function's name
@@ -164,6 +164,9 @@
 </#function>
 
 
+<#-- Below are deprecated functions. -->
+
+
 <#--
 -- Extracts the specified column from the specified FetchedResultSet, which
 -- is represented as a row set (using .hash_rows or .seq_rows). May be useful
@@ -185,4 +188,17 @@
     </#if>
   </#list>
   <#return seq/>
+</#function>
+
+
+<#--
+-- @deprecated  The old name of 'scalar' function.
+--->
+<#function select expr args...>
+  <#local ftl_call = 'scalar(expr'/>
+  <#list args as arg>
+    <#local ftl_call += ', args[' + arg?index?c + ']'/>
+  </#list>
+  <#local ftl_call += ')'/>
+  <#return ftl_call?eval/>
 </#function>
