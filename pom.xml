@@ -7,7 +7,7 @@
 
     <groupId>ftldb</groupId>
     <artifactId>ftldb</artifactId>
-    <version>1.4.1-alpha</version>
+    <version>1.5.0-nightly</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -100,7 +100,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
-                    <workingDirectory>src/test/ftl</workingDirectory>
+                    <workingDirectory>src/test</workingDirectory>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>src/test/config</additionalClasspathElement>
+                        <additionalClasspathElement>src/test/ftl</additionalClasspathElement>
+                        <additionalClasspathElement>src/main/ftl</additionalClasspathElement>
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
 

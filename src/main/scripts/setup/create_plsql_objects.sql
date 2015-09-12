@@ -22,51 +22,51 @@ alter session set current_schema = &&ftldb_schema.
 /
 
 prompt Create NUMBER_NT type.
-@plsql/number_nt.typ
+@plsql/ftldb/number_nt.typ
 show errors type number_nt
 
 prompt Create VARCHAR2_NT type.
-@plsql/varchar2_nt.typ
+@plsql/ftldb/varchar2_nt.typ
 show errors type varchar2_nt
 
 prompt Create CLOB_NT type.
-@plsql/clob_nt.typ
+@plsql/ftldb/clob_nt.typ
 show errors type clob_nt
 
 prompt Create CLOB_UTIL package.
-@plsql/clob_util.pks
+@plsql/ftldb/clob_util.pks
 show errors package clob_util
-@plsql/clob_util.pkb
+@plsql/ftldb/clob_util.pkb
 show errors package body clob_util
 
 prompt Create SCRIPT_OT type.
-@plsql/script_ot.tps
+@plsql/ftldb/script_ot.tps
 show errors type script_ot
-@plsql/script_ot.tpb
+@plsql/ftldb/script_ot.tpb
 show errors type body script_ot
 
 prompt Create SOURCE_UTIL package.
-@plsql/source_util.pks
+@plsql/ftldb/source_util.pks
 show errors package source_util
-@plsql/source_util.pkb
+@plsql/ftldb/source_util.pkb
 show errors package body source_util
 
 prompt Create FTLDB_WRAPPER package.
-@plsql/ftldb_wrapper.pks
+@plsql/ftldb/ftldb_wrapper.pks
 show errors package ftldb_wrapper
 
 prompt Create FTLDB_API package.
-@plsql/ftldb_api.pks
+@plsql/ftldb/ftldb_api.pks
 show errors package ftldb_api
-@plsql/ftldb_api.pkb
+@plsql/ftldb/ftldb_api.pkb
 show errors package body ftldb_api
 
-prompt Create STANDARD_FTL package.
-@plsql/standard_ftl.ftc
+prompt Create STD_FTL package.
+@plsql/ftldb/std_ftl.ftc
 show errors package standard_ftl
 
-prompt Create SQL_FTL package.
-@plsql/sql_ftl.ftc
+prompt Create ORASQL_FTL package.
+@plsql/ftldb/orasql_ftl.ftc
 show errors package sql_ftl
 
 prompt Check for compilation errors.
@@ -101,9 +101,9 @@ grant execute on clob_nt to &&grantee.
 /
 grant execute on script_ot to &&grantee.
 /
-grant execute on standard_ftl to &&grantee.
+grant execute on std_ftl to &&grantee.
 /
-grant execute on sql_ftl to &&grantee.
+grant execute on orasql_ftl to &&grantee.
 /
 grant execute on source_util to &&grantee.
 /

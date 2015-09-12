@@ -28,10 +28,10 @@ procedure ut_process#java_binds;
 procedure ut_process#java_hlp_methods1;
 procedure ut_process#java_hlp_methods2;
 procedure ut_process#java_hlp_methods3;
-procedure ut_process#standard;
-procedure ut_process#sql;
+procedure ut_process#std;
+procedure ut_process#orasql;
 
-function ut_process#sql#fetch(in_cnt number) return sys_refcursor;
+function ut_process#orasql#fetch(in_cnt number) return sys_refcursor;
 
 procedure ut_user_defined_config_xml;
 
@@ -137,7 +137,7 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_body_to_clob(
-    '<#import "ftldb_standard_ftl" as std/>' || chr(10) ||
+    '<#import "ftldb_std_ftl" as std/>' || chr(10) ||
     '<@std.include "ut_ftldb_api$process%args", ["x", "y", "z"]/>'
   );
 
@@ -237,54 +237,54 @@ begin
 end ut_process#java_hlp_methods3;
 
 
-procedure ut_process#standard
+procedure ut_process#std
 is
   l_tmpl clob;
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%standard'
+    'ut_ftldb_api$process%std'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%standard_res'
+    'ut_ftldb_api$process%std_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end ut_process#standard;
+end ut_process#std;
 
 
-procedure ut_process#sql
+procedure ut_process#orasql
 is
   l_tmpl clob;
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%sql'
+    'ut_ftldb_api$process%orasql'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%sql_res'
+    'ut_ftldb_api$process%orasql_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_tmpl);
     raise_application_error(-20000, 'Result is not as expected');
   end if;
-end ut_process#sql;
+end ut_process#orasql;
 
 
-function ut_process#sql#fetch(in_cnt number) return sys_refcursor
+function ut_process#orasql#fetch(in_cnt number) return sys_refcursor
 is
   l_rc sys_refcursor;
 begin
   open l_rc for
     select rownum from dual connect by rownum <= in_cnt;
   return l_rc;
-end ut_process#sql#fetch;
+end ut_process#orasql#fetch;
 
 
 procedure ut_user_defined_config_xml

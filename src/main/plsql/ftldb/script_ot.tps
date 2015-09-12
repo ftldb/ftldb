@@ -43,13 +43,11 @@ constructor function script_ot(
  * Constructs a new script from the specified CLOB by splitting it into
  * a collection of statements.
  *
- * @param  in_clob        the CLOB of statements
- * @param  in_stmt_delim  the delimiter
- * @return                a script object
+ * @param  in_clob  the CLOB of statements
+ * @return          a script object
  */
 constructor function script_ot(
-  in_clob in clob,
-  in_stmt_delim in varchar2 := '/'
+  in_clob in clob
 ) return self as result,
 
 

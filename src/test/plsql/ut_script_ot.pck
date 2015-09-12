@@ -70,20 +70,20 @@ procedure ut_constructor#clob
 is
   l_clob clob :=
     'statement1' || chr(10) ||
-    '</>' || chr(10) ||
+    ' /  ' || chr(10) ||
     'statement2' || chr(10) ||
-    '</>' || chr(10) ||
+    '/' || chr(10) ||
     'statement3' || chr(10) ||
-    '</>';
+    '   / ';
   l_scr ftldb_script_ot;
 begin
-  l_scr := ftldb_script_ot(l_clob, '</>');
+  l_scr := ftldb_script_ot(l_clob);
 
   if not nvl(
     l_scr.statements.count() = 3 and
-    l_scr.statements(1) = 'statement1' and
-    l_scr.statements(2) = 'statement2' and
-    l_scr.statements(3) = 'statement3',
+    l_scr.statements(1) = 'statement1' || chr(10) and
+    l_scr.statements(2) = 'statement2' || chr(10) and
+    l_scr.statements(3) = 'statement3' || chr(10),
     false
   ) then
     for l_i in 1..l_scr.statements.count() loop

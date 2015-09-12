@@ -15,6 +15,7 @@
     limitations under the License.
 
 -->
+<@template name = "ftldb/orasql.ftl"/>
 <#--
 -- This library contains functions and macros for working with SQL.
 --->
@@ -57,7 +58,7 @@
 -- @return       the result of the query as a scalar; if the function returns
 --               REF CURSOR, the result is returned as a ResultSet object
 --->
-<#function scalar expr args...>
+<#function scalar expr args>
   <#local
     sql_statement = 'select ' + expr +
       args?has_content?then('('?right_pad(args?size*3 - 1, ' ?,') + ')', '') +
@@ -75,11 +76,11 @@
 <#--
 -- Converts the specified sequence to an SQL collection of the specified type.
 --
--- @param  seq  the sequence to be converted to a collection
 -- @param  typ  the collection's type (stored UDT)
+-- @param  seq  the sequence to be converted to a collection
 -- @return      a collection of the specified type containing the sequence
 --->
-<#function collect seq typ>
+<#function collect typ seq>
   <#local
     sql_statement = 'select ' + typ + '(' +
       seq?has_content?then(''?right_pad(seq?size*3 - 2, '?, '), '') +
@@ -104,7 +105,7 @@
 -- @param  args  the list of the function's parameters (optional)
 -- @return       the result of the evaluation
 --->
-<#function eval typ expr args...>
+<#function eval typ expr args = []>
   <#local is_bool_ret = (typ == 'BOOLEAN')/>
   <#local callable_statement = expr/>
   <#list args as arg>
@@ -154,51 +155,6 @@
 -- @param  args         the list of the function's parameters (optional)
 -- @return              the result as a ResultSet object
 --->
-<#function fetch cursor_func args...>
-  <#local ftl_call = 'eval("oracle.jdbc.OracleTypes.CURSOR", cursor_func'/>
-  <#list args as arg>
-    <#local ftl_call += ', args[' + arg?index?c + ']'/>
-  </#list>
-  <#local ftl_call += ')'/>
-  <#return ftl_call?eval/>
-</#function>
-
-
-<#-- Below are deprecated functions. -->
-
-
-<#--
--- Extracts the specified column from the specified FetchedResultSet, which
--- is represented as a row set (using .hash_rows or .seq_rows). May be useful
--- if your function returns a row set, but you need to use its single column as
--- a simple sequence. The resulting sequence doesn't contain null elements.
---
--- @deprecated  Use new .transpose() method to access a result set as a sequence
---              or a hash of columnar sequences, e.g. ${res.transpose().COL1}.
---
--- @param  row_set  the FetchedResultSet object, represented as a row set
--- @param  column   the name or the index (from 0) of the column
--- @return          the column as a sequence
---->
-<#function get_column row_set column>
-  <#local seq = []/>
-  <#list row_set as row>
-    <#if row[column]??>
-      <#local seq = seq + [row[column]]/>
-    </#if>
-  </#list>
-  <#return seq/>
-</#function>
-
-
-<#--
--- @deprecated  The old name of 'scalar' function.
---->
-<#function select expr args...>
-  <#local ftl_call = 'scalar(expr'/>
-  <#list args as arg>
-    <#local ftl_call += ', args[' + arg?index?c + ']'/>
-  </#list>
-  <#local ftl_call += ')'/>
-  <#return ftl_call?eval/>
+<#function fetch cursor_func args = []>
+  <#return eval("oracle.jdbc.OracleTypes.CURSOR", cursor_func, args)/>
 </#function>

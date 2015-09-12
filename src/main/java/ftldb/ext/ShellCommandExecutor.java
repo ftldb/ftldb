@@ -106,13 +106,13 @@ public class ShellCommandExecutor {
                     Object o = cmdSeq.get(i);
                     if (!(o instanceof TemplateScalarModel)) {
                         throw new TemplateModelException("Illegal type of element #" + (i + 1)
-                                + " of sequence argument #1: expected Scalar, got " + o.getClass().getName());
+                                + " of sequence argument #1: expected string, got " + o.getClass().getName());
                     }
                     cmdArray[i] = ((TemplateScalarModel) o).getAsString();
                 }
             } else {
                 throw new TemplateModelException("Illegal type of argument #1: "
-                        + "expected Scalar or Sequence, got " + args.get(0).getClass().getName());
+                        + "expected string or sequence, got " + args.get(0).getClass().getName());
             }
 
             String encoding;
@@ -124,7 +124,7 @@ public class ShellCommandExecutor {
                     encoding = ((TemplateScalarModel) args.get(1)).getAsString();
                 } else {
                     throw new TemplateModelException("Illegal type of argument #2: "
-                            + "expected Scalar, got " + args.get(0).getClass().getName());
+                            + "expected string, got " + args.get(0).getClass().getName());
                 }
             }
 

@@ -16,16 +16,19 @@
 package ftldb.ext.sql;
 
 
+import freemarker.core.Environment;
 import freemarker.ext.beans.BeanModel;
 import freemarker.template.*;
 
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 
 /**
- * This class is manages JDBC connections for FTL. It contains private methods for constructing
+ * This class manages JDBC connections for FTL. It contains private methods for constructing
  * {@link ConnectionAdapter}s and public static classes for FTL.
  */
 public class Connector {
@@ -109,7 +112,7 @@ public class Connector {
                     strArgs[i] = ((TemplateScalarModel) o).getAsString();
                 } else {
                     throw new TemplateModelException("Illegal type of argument #" + (i + 1) + ": "
-                            + "expected Scalar, got " + args.get(i).getClass().getName());
+                            + "expected string, got " + args.get(i).getClass().getName());
                 }
             }
 
@@ -151,10 +154,10 @@ public class Connector {
 
 
     /**
-     * This class implements an FTL method named {@code set_default_connection} that sets the default {@link
+     * This class implements an FTL directive named {@code set_default_connection} that sets the default {@link
      * ConnectionAdapter} instance for the configuration.
      *
-     * <p>Method definition: {@code void set_default_connection(ConnectionAdapter conn)}
+     * <p>Directive definition: {@code set_default_connection(ConnectionAdapter conn)}
      * <p>Method arguments:
      * <pre>
      *     {@code conn} - the new default connection
@@ -164,38 +167,38 @@ public class Connector {
      * <pre>
      * {@code
      * <#assign ext_conn = new_connection("jdbc:oracle:thin@//localhost:1521/orcl", "scott", "tiger")/>
-     * <#assign void = set_default_connection(ext_conn)/>
+     * <@set_default_connection conn = ext_conn/>
      * }
      * </pre>
      */
-    public static class SetDefaultConnectionMethod implements TemplateMethodModelEx {
+    public static class SetDefaultConnectionDirective implements TemplateDirectiveModel {
 
-        public Object exec(List args) throws TemplateModelException {
-            if (args.size() == 0 || args.size() == 1 && args.get(0) == null) {
-                setDefaultConnection(null);
-                return Void.TYPE;
+        private static final String PARAM_NAME_CONN = "conn";
+
+        public void execute(Environment env, Map params, TemplateModel[] loopVars, TemplateDirectiveBody body)
+                throws TemplateException, IOException {
+            if (body != null) {
+                throw new TemplateModelException("Wrong usage: body is not allowed");
+            }
+            if (loopVars.length != 0) {
+                throw new TemplateModelException("Wrong usage: loop variables are not allowed");
+            }
+            if (params.size() != 1) {
+                throw new TemplateModelException("Wrong number of named parameters: expected 1, got " + params.size());
+            }
+            if (!params.containsKey(PARAM_NAME_CONN)) {
+                throw new TemplateModelException("Wrong parameter name: expected \"" + PARAM_NAME_CONN + "\", got \""
+                        + params.keySet().toArray()[0] + "\"");
             }
 
-            if (args.size() != 1) {
-                throw new TemplateModelException("Wrong number of arguments: expected 1, got " + args.size());
-            }
+            Object o = params.get(PARAM_NAME_CONN);
 
-            Object o = args.get(0);
-
-            if (!(o instanceof BeanModel)) {
-                throw new TemplateModelException("Illegal type of argument #1: it cannot be unwrapped");
-            }
-
-            o = ((BeanModel) o).getWrappedObject();
-
-            if (o instanceof ConnectionAdapter) {
-                setDefaultConnection((ConnectionAdapter) o);
-            } else {
-                throw new TemplateModelException("Illegal type of argument #1: expected "
+            if (!(o instanceof BeanModel) || !((o = ((BeanModel) o).getWrappedObject()) instanceof ConnectionAdapter)) {
+                throw new TemplateModelException("Illegal type of parameter \"" + PARAM_NAME_CONN + "\": expected "
                         + ConnectionAdapter.class.getName() + ", got " + o.getClass().getName());
             }
 
-            return Void.TYPE;
+            setDefaultConnection((ConnectionAdapter) o);
         }
 
     }

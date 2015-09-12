@@ -16,30 +16,36 @@
 
 create or replace package body source_util as
 
+-- Blank characters: space and tab.
+gc_blank constant varchar2(2) := ' ' || chr(9);
+
+-- LF character.
+gc_lf constant varchar2(1) := chr(10);
+
 -- The regexp pattern for the beginning of a non-compiled section. Used in
 -- {%link extract_noncompiled_section}.
 gc_noncmp_section_start_ptrn constant varchar2(128) :=
-  '\$if[[:space:]]+(false|null)[[:space:]]+\$then[[:blank:]]*' ||
-  chr(10) || '?';
+  '\$if\s+(false|null)\s+\$then[' || gc_blank || ']*' ||
+  gc_lf || '?';
 
 -- The regexp pattern for the ending of a non-compiled section. Used in
 -- {%link extract_noncompiled_section}.
 gc_noncmp_section_end_ptrn constant varchar2(128) :=
-  '[[:blank:]]*\$end';
+  '[' || gc_blank || ']*\$end';
 
 -- The regexp pattern for the beginning of a named section. The %name%
 -- placeholder should be replaced with the section name. Used in
 -- {%link extract_named_section}, {%link replace_named_section_in_clob}.
 gc_named_section_start_ptrn constant varchar2(128) :=
-  '[[:blank:]]*--[[:blank:]]*%begin[[:blank:]]+' || '%name%' ||
-  '([[:blank:]][^' || chr(10) || ']*)?' || chr(10);
+  '[' || gc_blank || ']*--[' || gc_blank || ']*%begin[' || gc_blank || ']+' ||
+  '%name%' || '([[' || gc_blank || ']][^' || gc_lf || ']*)?' || gc_lf;
 
 -- The regexp pattern for the ending of a named section. The %name%
 -- placeholder should be replaced with the section name. Used in
 -- {%link extract_named_section}, {%link replace_named_section_in_clob}.
 gc_named_section_end_ptrn constant varchar2(128) :=
-  '[[:blank:]]*--[[:blank:]]*%end[[:blank:]]+' || '%name%' ||
-  '([[:blank:]][^' || chr(10) || ']*)?' || chr(10);
+  '[' || gc_blank || ']*--[' || gc_blank || ']*%end[' || gc_blank || ']+' ||
+  '%name%' || '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
 
 
 function long2clob(

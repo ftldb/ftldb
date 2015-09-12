@@ -312,8 +312,8 @@ $if null $then
   template_name = "${template_name()}"
 --%end java_hlp_methods3
 
---%begin standard
-<#import "ftldb_standard_ftl" as std>
+--%begin std
+<#import "ftldb_std_ftl" as std>
 
 <#assign a = std.least(5, 3, 7, 9)>
 <#assign b = std.greatest(5, 3, 17, 9)>
@@ -402,9 +402,9 @@ line1
 </@std.format_list>
 
 
---%end standard
+--%end std
 
---%begin standard_res
+--%begin std_res
 3 17 "x  " "     x"
 
 "t.col1 = v.col1 and t.col2 = v.col2 and t.col3 = v.col3"
@@ -449,17 +449,17 @@ column1, column2, column3,
 column4, column5
 
 
---%end standard_res
+--%end std_res
 
 
---%begin sql
-  <#import "ftldb_standard_ftl" as std>
-  <#import "ftldb_sql_ftl" as sql>
+--%begin orasql
+  <#import "ftldb_std_ftl" as std>
+  <#import "ftldb_orasql_ftl" as sql>
 
-  <#assign res = sql.scalar("add_months", "20-01-2000"?date["dd-MM-yyyy"], 1)>
+  <#assign res = sql.scalar("add_months", ['20-01-2000'?date['dd-MM-yyyy'], 1])>
   ${res?string["dd.MM.yyyy"]}
 
-  <#assign res = sql.eval("DATE", "add_months", "20-01-2000"?date["dd-MM-yyyy"], 1)>
+  <#assign res = sql.eval("DATE", "add_months", ['20-01-2000'?date['dd-MM-yyyy'], 1])>
   ${res?string["dd.MM.yyyy"]}
 
   <#assign res = sql.eval("NUMERIC", "utl_raw.big_endian")>
@@ -468,16 +468,16 @@ column4, column5
   <#assign res = sql.eval("BOOLEAN", "dbms_db_version.ver_le_9")>
   ${res?c}
 
-  <#assign res = sql.collect([1,3,5,7], 'sys.odcinumberlist')/>
+  <#assign res = sql.collect("sys.odcinumberlist", [1,3,5,7])/>
   ${std.to_list(res)}
 
-  <#assign res = sql.fetch("ut_ftldb_api.ut_process#sql#fetch", 3)/>
+  <#assign res = sql.fetch("ut_ftldb_api.ut_process#orasql#fetch", [3])/>
   ${std.to_list(res.transpose()[0])}
 
---%end sql
+--%end orasql
 
 
---%begin sql_res
+--%begin orasql_res
   20.02.2000
 
   20.02.2000
@@ -490,7 +490,7 @@ column4, column5
 
   1, 2, 3
 
---%end sql_res
+--%end orasql_res
 
 
 $end

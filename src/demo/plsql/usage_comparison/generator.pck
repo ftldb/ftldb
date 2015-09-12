@@ -18,7 +18,6 @@ create or replace package generator as
 
 procedure gen_orders_plsql;
 
-function get_partitions return sys_refcursor;
 function gen_orders_ftldb return ftldb_script_ot;
 
 end;
@@ -26,20 +25,20 @@ end;
 create or replace package body generator as
 
 
--- data for partitioning clause generation
-cursor cur_partitions is
-  select
-    t.region name,
-    listagg(t.shop_id, ', ')
-      within group (order by t.shop_id) vals
-  from shops t
-  group by t.region
-  order by t.region;
-
-
 procedure gen_orders_plsql
 is
   l_scr clob;
+
+  -- data for partitioning clause generation
+  cursor cur_partitions is
+    select
+      t.region name,
+      listagg(t.shop_id, ', ')
+        within group (order by t.shop_id) vals
+    from shops t
+    group by t.region
+    order by t.region;
+
 begin
   l_scr :=
     'create table orders (' || chr(10) ||
@@ -73,30 +72,21 @@ begin
 end;
 
 
-function get_partitions return sys_refcursor
-is
-  l_rc sys_refcursor;
-begin
-  -- data for partitioning clause generation
-  open l_rc for
-    select
-      t.region name,
-      listagg(t.shop_id, ', ')
-        within group (order by t.shop_id) vals
-    from shops t
-    group by t.region
-    order by t.region;
-
-  return l_rc;
-end;
-
-
 $if null $then
 --%begin orders_ftl
 
-<#import "ftldb_sql_ftl" as sql/>
+<#assign conn = default_connection()/>
 
-<#assign partitions = sql.fetch('generator.get_partitions')/>
+<#assign partitions_sql>
+  select
+    t.region name,
+    listagg(t.shop_id, ', ') within group (order by t.shop_id) vals
+  from shops t
+  group by t.region
+  order by t.region
+</#assign>
+
+<#assign partitions = conn.query(partitions_sql)/>
 
 create table orders (
   order_id integer not null primary key,
@@ -110,10 +100,10 @@ partition by list(shop_id) (
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
-</>
+${"/"}
 
 comment on table orders is 'Orders partitioned by region.'
-</>
+${"/"}
 
 --%end orders_ftl
 $end

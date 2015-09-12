@@ -222,31 +222,21 @@ end process_body_to_clob;
 
 function process(
   in_templ_name in varchar2,
-  in_templ_args in varchar2_nt := varchar2_nt(),
-  in_stmt_delim in varchar2 := '</>'
+  in_templ_args in varchar2_nt := varchar2_nt()
 ) return script_ot
 is
 begin
-  return
-    script_ot(
-      process_to_clob(in_templ_name, in_templ_args),
-      in_stmt_delim
-    );
+  return script_ot(process_to_clob(in_templ_name, in_templ_args));
 end process;
 
 
 function process_body(
   in_templ_body in clob,
-  in_templ_args in varchar2_nt := varchar2_nt(),
-  in_stmt_delim varchar2 := '</>'
+  in_templ_args in varchar2_nt := varchar2_nt()
 ) return script_ot
 is
 begin
-  return
-    script_ot(
-      process_body_to_clob(in_templ_body, in_templ_args),
-      in_stmt_delim
-    );
+  return script_ot(process_body_to_clob(in_templ_body, in_templ_args));
 end process_body;
 
 

@@ -159,13 +159,13 @@ end;
  */
 $if null $then
 --%begin local_ftl_macros
-<#import "ftldb_standard_ftl" as std>
-<#import "ftldb_sql_ftl" as sql>
+<#import "ftldb_std_ftl" as std>
+<#import "ftldb_orasql_ftl" as sql>
 
 <#function get_columns_info a_selectable>
   <#return
     sql.fetch(
-      "demo_dtoch_gen.internal_get_columns_info", a_selectable?upper_case
+      "demo_dtoch_gen.internal_get_columns_info", [a_selectable?upper_case]
     )
   />
 </#function>
@@ -173,7 +173,7 @@ $if null $then
 <#function get_uk_columns_info a_selectable>
   <#return
     sql.fetch(
-      "demo_dtoch_gen.internal_uk_columns_info", a_selectable?upper_case
+      "demo_dtoch_gen.internal_uk_columns_info", [a_selectable?upper_case]
     )
   />
 </#function>
@@ -207,7 +207,7 @@ $if null $then
     from ${a_selectable?lower_case} src
     where 1=2
   </@std.indent>
-  </>
+  ${"/"}
 
   <#local
     l_src_comments =
@@ -219,15 +219,11 @@ $if null $then
       )[0][0]
   />
   comment on table ${a_snap_tab} is 'Snapshots. ${l_src_comments} @generated ${template_name()}'
-  </>
+  ${"/"}
   <#list l_cols_info as r>
     <#if r.COMMENTS??>
-      <#compress>
-        comment on column<#rt/>
-          ${a_snap_tab + "." + r.COLUMN_NAME?lower_case} is<#rt/>
-          '${r.COMMENTS}'
-      </>
-      </#compress>
+      comment on column ${a_snap_tab + "." + r.COLUMN_NAME?lower_case} is '${r.COMMENTS}'
+      ${"/"}
     </#if>
   </#list>
 </#macro>
@@ -279,8 +275,8 @@ $if null $then
   <#assign a_err_log_tab = template_args[0]/>
   <#assign a_selectable = template_args[1]/>
 
-  <#import "ftldb_standard_ftl" as std>
-  <#import "ftldb_sql_ftl" as sql>
+  <#import "ftldb_std_ftl" as std>
+  <#import "ftldb_orasql_ftl" as sql>
 
   <#assign
     l_col_list =
@@ -308,10 +304,10 @@ $if null $then
         ${std.to_list(l_col_list '% varchar2(4000)')}
       </@std.format_list>
     )
-    </>
+    ${"/"}
     comment on table ${a_err_log_tab?lower_case} is
       'Error logging table for ${a_selectable?lower_case}. @generated ${template_name()}'
-    </>
+    ${"/"}
   </@std.indent>
 --%end gen_err_log_table_ftl
 $end
@@ -343,8 +339,8 @@ $if null $then
   <#assign a_selectable = template_args[1]/>
   <#assign a_snap = template_args[2]/>
 
-  <#import "ftldb_standard_ftl" as std>
-  <#import "ftldb_sql_ftl" as sql>
+  <#import "ftldb_std_ftl" as std>
+  <#import "ftldb_orasql_ftl" as sql>
   <#import "demo_dtoch_gen%local_ftl_macros" as lm>
 
   <#assign
@@ -410,10 +406,10 @@ where
       ${std.to_list(l_col_list 'decode(n.%, o.%, 1, 0) = 0' '; ')}
     </@std.format_list>
   )
-</>
+${"/"}
 comment on table ${a_diff_view} is
   'Detector of changes for ${a_selectable}. @generated ${template_name()}'
-</>
+${"/"}
 --%end gen_diff_view_ftl
 $end
 
@@ -448,8 +444,8 @@ end;
 $if null $then
 --%begin gen_dtoch_pck_ftl
 
-<#import "ftldb_standard_ftl" as std>
-<#import "ftldb_sql_ftl" as sql>
+<#import "ftldb_std_ftl" as std>
+<#import "ftldb_orasql_ftl" as sql>
 <#import "demo_dtoch_gen%local_ftl_macros" as lm>
 
 create or replace package demo_dtoch is
@@ -462,7 +458,7 @@ procedure process;
 
 
 end demo_dtoch;
-</>
+${"/"}
 
 create or replace package body demo_dtoch is
 <#assign
@@ -472,7 +468,7 @@ create or replace package body demo_dtoch is
   <#assign
     l_cols =
       sql.fetch(
-        "demo_dtoch_gen.internal_get_columns_info", r.SRC?upper_case
+        "demo_dtoch_gen.internal_get_columns_info", [r.SRC?upper_case]
       ).transpose()[0]
   />
 
@@ -522,7 +518,7 @@ end;
 
 
 end demo_dtoch;
-</>
+${"/"}
 
 --%end gen_dtoch_pck_ftl
 $end

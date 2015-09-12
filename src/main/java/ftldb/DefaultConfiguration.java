@@ -16,6 +16,7 @@
 package ftldb;
 
 
+import freemarker.cache.TemplateNameFormat;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateModelException;
@@ -31,11 +32,12 @@ import ftldb.ext.sql.Connector;
  * <ul>
  *     <li>{@code shared_hash} - see {@link SharedHash}
  *     <li>{@code static} - see {@link StaticMethod}
- *     <li>{@code template_name} - see {@link TemplateNameMethod}
- *     <li>{@code template_line} - see {@link TemplateLineMethod}
+ *     <li>{@code template} - see {@link ftldb.ext.TemplateHelper.TemplateDirective}
+ *     <li>{@code template_name} - see {@link ftldb.ext.TemplateHelper.TemplateNameMethod}
+ *     <li>{@code template_line} - see {@link ftldb.ext.TemplateHelper.TemplateLineMethod}
  *     <li>{@code new_connection} - see {@link ftldb.ext.sql.Connector.NewConnectionMethod}
  *     <li>{@code default_connection} - see {@link ftldb.ext.sql.Connector.GetDefaultConnectionMethod}
- *     <li>{@code set_default_connection} - see {@link ftldb.ext.sql.Connector.SetDefaultConnectionMethod}
+ *     <li>{@code set_default_connection} - see {@link ftldb.ext.sql.Connector.SetDefaultConnectionDirective}
  *     <li>{@code shell_exec} - see {@link ftldb.ext.ShellCommandExecutor.ShellExecMethod}
  * </ul>
  */
@@ -50,6 +52,7 @@ public class DefaultConfiguration extends Configuration {
         setObjectWrapper(new DefaultObjectWrapper(this.getIncompatibleImprovements()));
         setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         setLocalizedLookup(false);
+        setTemplateNameFormat(TemplateNameFormat.DEFAULT_2_3_0);
 
         // Register user-defined variables and methods
         registerUserDefinedVariablesAndMethods();
@@ -64,11 +67,12 @@ public class DefaultConfiguration extends Configuration {
         }
 
         setSharedVariable("static", new StaticMethod());
-        setSharedVariable("template_name", new TemplateNameMethod());
-        setSharedVariable("template_line", new TemplateLineMethod());
+        setSharedVariable("template", new TemplateHelper.TemplateDirective());
+        setSharedVariable("template_name", new TemplateHelper.TemplateNameMethod());
+        setSharedVariable("template_line", new TemplateHelper.TemplateLineMethod());
         setSharedVariable("new_connection", new Connector.NewConnectionMethod());
         setSharedVariable("default_connection", new Connector.GetDefaultConnectionMethod());
-        setSharedVariable("set_default_connection", new Connector.SetDefaultConnectionMethod());
+        setSharedVariable("set_default_connection", new Connector.SetDefaultConnectionDirective());
         setSharedVariable("shell_exec", new ShellCommandExecutor.ShellExecMethod());
     }
 

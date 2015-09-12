@@ -15,7 +15,21 @@
     limitations under the License.
 
 -->
+<@template name = "ftldb/test_default_connection.ftl"/>
 -- ${template_name()} START --
-Include another template:
-<#include "test_included.ftl">
+Open connection.
+<#import "/dbconn.config.ftl" as conf>
+<#assign conn = conf.new_conn()/>
+
+Override default DB connection.
+<@set_default_connection conn = conn/>
+
+Execute query via default connection.
+<#assign result = default_connection().query("select sys_context('userenv', 'db_name') db_name, sysdate dt from dual")/>
+
+Print result:
+${result}
+
+Close connection.
+<#assign void = conn.close()/>
 -- ${template_name()} END --

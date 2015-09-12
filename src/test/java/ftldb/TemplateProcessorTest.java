@@ -24,7 +24,7 @@ import java.io.*;
 public class TemplateProcessorTest {
 
     private static String process(String templName) throws Exception {
-        Configurator.setConfiguration(new FileInputStream(new File("ftldb_config.xml")));
+        Configurator.setConfiguration(new FileInputStream(new File("config/ftldb_config.xml")));
         StringWriter sw = new StringWriter();
         TemplateProcessor.process(templName, sw);
         String ret = sw.toString();
@@ -44,48 +44,52 @@ public class TemplateProcessorTest {
 
     @Test
     public void testStatic() throws Exception {
-        process("test_static.ftl");
+        process("/ftldb/test_static.ftl");
     }
 
     @Test
     public void testTemplateLine() throws Exception {
-        process("test_template_line.ftl");
+        process("/ftldb/test_template_line.ftl");
     }
 
     @Test
     public void testSharedHash() throws Exception {
         CommandLine.main(new String[]{
-                "test_shared_hash1.ftl", "x", "y", "z", "!", "test_shared_hash2.ftl"
+                "/ftldb/test_shared_hash1.ftl", "x", "y", "z", "!", "/ftldb/test_shared_hash2.ftl"
         });
     }
 
     @Test
     public void testInclude() throws Exception {
-        process("test_include.ftl");
+        process("/ftldb/test_include.ftl");
     }
 
     @Test
     public void testText() throws Exception {
-        processBody("<#assign X = 777/>\nFirst call: X = ${X?c}");
-        processBody("Second call: X = ${(X!-1)?c}");
+        processBody("<#assign X = 777/>\nX = ${X?c}");
     }
 
     @Test
     public void testNewConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("test_new_connection.ftl");
+        process("/ftldb/test_new_connection.ftl");
     }
 
     @Test
     public void testDefaultConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("test_default_connection.ftl");
+        process("/ftldb/test_default_connection.ftl");
     }
 
     @Test
     public void testQueryAndCallExecutors() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("test_query_and_call.ftl");
+        process("/ftldb/test_query_and_call.ftl");
+    }
+
+    @Test
+    public void testShellExec() throws Exception {
+        process("/ftldb/test_shell_exec.ftl");
     }
 
 }

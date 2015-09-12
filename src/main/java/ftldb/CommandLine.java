@@ -16,7 +16,7 @@
 package ftldb;
 
 
-import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 
@@ -59,7 +59,7 @@ public class CommandLine {
             skip += 2;
         } else {
             cfg = new DefaultConfiguration();
-            cfg.setTemplateLoader(new FileTemplateLoader());
+            cfg.setTemplateLoader(new ClassTemplateLoader(CommandLine.class, "/"));
         }
 
         List calls = getFtlCalls(args, skip);

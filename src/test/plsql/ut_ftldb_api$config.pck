@@ -90,7 +90,7 @@ as
 begin
   return xmltype(l_config);
 end ftldb_config_xml;
-</>
+${"/"}
 
 --%end ftldb_config_xml
 $end

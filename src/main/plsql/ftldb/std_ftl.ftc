@@ -14,17 +14,17 @@
 -- limitations under the License.
 --
 
-create or replace package sql_ftl authid current_user as
+create or replace package std_ftl authid current_user as
 /**
- * This package is a PL/SQL container for the "sql.ftl" macro library.
+ * This package is a PL/SQL container for the "ftldb/std.ftl" macro library.
  * @headcom
  */
 
 $if false $then
 
-@ftl/sql.ftl
+@ftl/ftldb/std.ftl
 
 $end
 
-end sql_ftl;
+end std_ftl;
 /

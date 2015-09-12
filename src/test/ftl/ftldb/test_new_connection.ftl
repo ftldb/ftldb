@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<#--
 
     Copyright 2014-2015 Victor Osolovskiy, Sergey Navrotskiy
 
@@ -16,16 +15,18 @@
     limitations under the License.
 
 -->
-<java version="1.4.0" class="java.beans.XMLDecoder">
-    <object class="ftldb.DefaultConfiguration">
-        <void property="templateLoader">
-            <object class="freemarker.cache.FileTemplateLoader"/>
-        </void>
-        <void property="cacheStorage">
-            <object class="freemarker.cache.NullCacheStorage"/>
-        </void>
-        <void property="defaultEncoding">
-            <string>UTF-8</string>
-        </void>
-    </object>
-</java>
+<@template name = "ftldb/test_new_connection.ftl"/>
+-- ${template_name()} START --
+Open connection.
+<#import "/dbconn.config.ftl" as conf>
+<#assign conn = conf.new_conn()/>
+
+Execute query.
+<#assign result = conn.query("select sys_context('userenv', 'db_name') db_name, sysdate dt from dual")/>
+
+Print result:
+${result}
+
+Close connection.
+<#assign void = conn.close()/>
+-- ${template_name()} END --

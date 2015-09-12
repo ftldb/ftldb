@@ -17,6 +17,13 @@
 create or replace package body clob_util as
 
 
+-- Blank characters: space and tab.
+gc_blank constant varchar2(2) := ' ' || chr(9);
+
+-- LF character.
+gc_lf constant varchar2(1) := chr(10);
+
+
 function create_temporary(in_content in varchar2 := '') return clob
 is
   l_clob clob;
@@ -29,16 +36,29 @@ begin
 end create_temporary;
 
 
+procedure ensure_trailing_lf(io_clob in out nocopy clob)
+is
+begin
+  if dbms_lob.substr(io_clob, 1, dbms_lob.getlength(io_clob)) != gc_lf then
+    dbms_lob.writeappend(io_clob, 1, gc_lf);
+  end if;
+end;
+
+
 procedure put(
   io_clob in out nocopy clob,
   in_string in varchar2,
-  in_indent in naturaln := 0
+  in_indent in natural := null
 )
 is
-  l_indented_string varchar2(32767) := rpad(' ', in_indent, ' ') || in_string;
+  c_indented_string constant varchar2(32767) :=
+    rpad(' ', nvl(in_indent, 0), ' ') || in_string;
 begin
-  if l_indented_string is not null then
-    dbms_lob.writeappend(io_clob, length(l_indented_string), l_indented_string);
+  if in_indent is not null then
+    ensure_trailing_lf(io_clob);
+  end if;
+  if c_indented_string is not null then
+    dbms_lob.writeappend(io_clob, length(c_indented_string), c_indented_string);
   end if;
 end put;
 
@@ -46,44 +66,57 @@ end put;
 procedure put_line(
   io_clob in out nocopy clob,
   in_string in varchar2 := '',
-  in_indent in naturaln := 0
+  in_indent in natural := null
 )
 is
 begin
-  put(io_clob, in_string || chr(10), in_indent);
+  put(io_clob, in_string || gc_lf, in_indent);
 end put_line;
 
 
 procedure append(
   io_clob in out nocopy clob,
   in_text in clob,
-  in_indent in naturaln := 0
+  in_indent in natural := null
 )
 is
   l_space varchar2(32767);
 begin
+  if in_indent is not null then
+    ensure_trailing_lf(io_clob);
+  end if;
   if in_indent > 0 then
     l_space := rpad(' ', in_indent, ' ');
-    put(io_clob, l_space);
-    dbms_lob.append(io_clob, replace(in_text, chr(10), chr(10) || l_space));
+    dbms_lob.append(io_clob, regexp_replace(in_text, '^', l_space, 1, 0, 'm'));
   else
     dbms_lob.append(io_clob, in_text);
   end if;
 end append;
 
 
-function trim_spaces(in_clob in clob) return clob
+function trim_blank_lines(in_clob in clob) return clob
 is
+  c_blank_line_ptrn constant varchar2(64) :=
+    '[' || gc_blank ||']*' || gc_lf;
+  c_filled_line_ptrn constant varchar2(64) :=
+    '[^[:space:]]+[' || gc_blank ||']*' || gc_lf;
+  c_leading_lines_ptrn constant varchar2(64) :=
+    '^(' || c_blank_line_ptrn || ')*';
+  c_trailing_lines_ptrn constant varchar2(64) :=
+    '(' || c_filled_line_ptrn || ')?(' || c_blank_line_ptrn || ')*$';
 begin
-  return regexp_replace(in_clob, '^[[:space:]]+|[[:space:]]+$');
-end trim_spaces;
+  return
+    regexp_replace(
+      regexp_replace(in_clob, c_leading_lines_ptrn), c_trailing_lines_ptrn, '\1'
+    );
+end trim_blank_lines;
 
 
 function join(
   in_clobs in clob_nt,
   in_delim in varchar2 := '',
   in_final_delim in boolean := false,
-  in_refine_spaces in boolean := false
+  in_refine_lines in boolean := false
 ) return clob
 is
   l_i pls_integer := in_clobs.first();
@@ -93,16 +126,12 @@ is
 begin
   while l_i is not null loop
     l_i_next := in_clobs.next(l_i);
-    if in_refine_spaces then
-      l_tmp := trim_spaces(in_clobs(l_i));
+    if in_refine_lines then
+      l_tmp := trim_blank_lines(in_clobs(l_i));
       if dbms_lob.getlength(l_tmp) > 0 then
-        append(l_res, l_tmp);
-        if in_final_delim or l_i_next is not null then
-          put(
-            l_res,
-            chr(10) || in_delim ||
-            case when l_i_next is not null then chr(10) end
-          );
+        append(l_res, l_tmp, 0);
+        if in_final_delim or l_i_next is not null and in_delim is not null then
+          append(l_res, in_delim, 0);
         end if;
       end if;
     else
@@ -127,7 +156,7 @@ is
 begin
   l_start_pos := 1;
   loop
-    l_eol_pos := dbms_lob.instr(in_clob, chr(10), l_start_pos);
+    l_eol_pos := dbms_lob.instr(in_clob, gc_lf, l_start_pos);
 
     l_lines(l_no) :=
       dbms_lob.substr(
@@ -151,32 +180,34 @@ end split_into_lines;
 
 function split_into_pieces(
   in_clob in clob,
-  in_delim in varchar2,
-  in_trim_spaces in boolean := false
+  in_delim_ptrn in varchar2,
+  in_regexp_mdfr in varchar2,
+  in_trim_lines in boolean := false
 ) return clob_nt
 is
-  l_length pls_integer := dbms_lob.getlength(in_clob);
+  c_length constant pls_integer := dbms_lob.getlength(in_clob);
   l_start_pos pls_integer := 1;
   l_end_pos pls_integer;
   l_tmp clob;
   l_res clob_nt := clob_nt();
 begin
-  if in_clob is null or l_length = 0 then
+  if in_clob is null or c_length = 0 then
     return l_res;
   end if;
 
   loop
-    l_end_pos := dbms_lob.instr(in_clob, in_delim, l_start_pos);
+    l_end_pos :=
+      regexp_instr(in_clob, in_delim_ptrn, l_start_pos, 1, 0, in_regexp_mdfr);
 
     if nvl(l_end_pos, 0) = 0 then
-      l_end_pos := l_length + 1;
+      l_end_pos := c_length + 1;
     end if;
 
     if l_start_pos < l_end_pos then
       l_tmp := create_temporary();
       dbms_lob.copy(l_tmp, in_clob, l_end_pos - l_start_pos, 1, l_start_pos);
-      if in_trim_spaces then
-        l_tmp := trim_spaces(l_tmp);
+      if in_trim_lines then
+        l_tmp := trim_blank_lines(l_tmp);
       end if;
       if dbms_lob.getlength(l_tmp) > 0 then
         l_res.extend();
@@ -184,10 +215,11 @@ begin
       end if;
     end if;
 
-    exit when l_end_pos > l_length;
+    exit when l_end_pos > c_length;
 
-    l_start_pos := l_end_pos + length(in_delim);
-    exit when l_start_pos >= l_length;
+    l_start_pos :=
+      regexp_instr(in_clob, in_delim_ptrn, l_start_pos, 1, 1, in_regexp_mdfr);
+    exit when l_start_pos >= c_length;
   end loop;
 
   return l_res;

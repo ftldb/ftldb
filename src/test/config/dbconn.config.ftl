@@ -15,12 +15,7 @@
     limitations under the License.
 
 -->
--- ${template_name()} START --
-Passed arguments:
-<#list template_args as arg>
-  arg[${arg?index}] = "${arg}"
-</#list>
-
-Save them to the shared hash as the key "v".
-<#assign void = shared_hash.put("v", template_args)>
--- ${template_name()} END --
+<@template name = "dbconn.config.ftl"/>
+<#function new_conn>
+<#return new_connection("jdbc:oracle:thin:@//localhost:1521/orcl11", "scott", "tiger")/>
+</#function>

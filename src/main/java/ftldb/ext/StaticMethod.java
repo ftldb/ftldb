@@ -53,7 +53,7 @@ public class StaticMethod implements TemplateMethodModelEx {
         Object classNameObj = args.get(0);
         if (!(classNameObj instanceof TemplateScalarModel)) {
             throw new TemplateModelException("Illegal type of argument #1: "
-                    + "expected Scalar, got " + classNameObj.getClass().getName());
+                    + "expected string, got " + classNameObj.getClass().getName());
         }
 
         return new BeansWrapperBuilder(Configurator.getConfiguration().getIncompatibleImprovements()).build()

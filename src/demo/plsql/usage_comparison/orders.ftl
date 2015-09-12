@@ -22,16 +22,16 @@
   )
 />
 
-<#assign
-  partitions = conn.query(
-    "select " +
-      "t.region name, " +
-      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " +
-    "from shops t " +
-    "group by t.region " +
-    "order by t.region"
-  )
-/>
+<#assign partitions_sql>
+  select
+    t.region name,
+    listagg(t.shop_id, ', ') within group (order by t.shop_id) vals
+  from shops t
+  group by t.region
+  order by t.region
+</#assign>
+
+<#assign partitions = conn.query(partitions_sql)/>
 
 create table orders (
   order_id integer not null primary key,
@@ -45,9 +45,9 @@ partition by list(shop_id) (
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
-/
+${"/"}
 
 comment on table orders is 'Orders partitioned by region.'
-/
+${"/"}
 
 <#assign void = conn.close()/>

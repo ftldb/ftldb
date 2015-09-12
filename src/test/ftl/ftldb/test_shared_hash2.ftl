@@ -15,9 +15,11 @@
     limitations under the License.
 
 -->
+<@template name = "ftldb/test_shared_hash2.ftl"/>
 -- ${template_name()} START --
-java.lang.System.currentTimeMillis() = ${static("java.lang.System").currentTimeMillis()?c}
-java.lang.Math.sqrt(123) = ${static("java.lang.Math").sqrt(123)?c}
-java.lang.Math.pow(3, 5) = ${static("java.lang.Math").pow(3, 5)?c}
-java.math.RoundingMode.UP = ${static("java.math.RoundingMode").UP}
+Get key "v" from the shared hash.
+<#assign v = shared_hash.get("v")>
+Content of V: [<#list v as i>"${i}"<#sep>, </#list>]
+Clean up the shared_hash.
+<#assign void = shared_hash.clear()>
 -- ${template_name()} END --

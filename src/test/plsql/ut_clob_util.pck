@@ -81,7 +81,7 @@ is
   l_clob clob := ftldb_clob_util.create_temporary('ABC');
 begin
   ftldb_clob_util.put(l_clob, 'DEF', 2);
-  if l_clob != 'ABC  DEF' then
+  if l_clob != 'ABC' || chr(10) || '  DEF' then
     dbms_output.put_line(l_clob);
     raise_application_error(-20000, 'Created clob is not as expected');
   end if;
@@ -93,7 +93,7 @@ is
   l_clob clob := ftldb_clob_util.create_temporary('ABC');
 begin
   ftldb_clob_util.put_line(l_clob, 'DEF', 2);
-  if l_clob != 'ABC  DEF' || chr(10) then
+  if l_clob != 'ABC' || chr(10) || '  DEF' || chr(10) then
     dbms_output.put_line(l_clob);
     raise_application_error(-20000, 'Created clob is not as expected');
   end if;
@@ -131,9 +131,9 @@ begin
     raise_application_error(-20000, 'Joined clob is not as expected');
   end if;
 
-  l_clobs := ftldb_clob_nt(' ABC    ', '  DEF   ', '   GHI    ');
+  l_clobs := ftldb_clob_nt('ABC', ' DEF' || chr(10), 'GHI ');
   l_join := ftldb_clob_util.join(l_clobs, '/', true, true);
-  if l_join != replace('ABC$/$DEF$/$GHI$/', '$', chr(10)) then
+  if l_join != replace('ABC$/$ DEF$/$GHI $/', '$', chr(10)) then
     dbms_output.put_line(l_join);
     raise_application_error(-20000, 'Joined clob is not as expected');
   end if;
@@ -175,10 +175,10 @@ is
     '//';
   l_clobs ftldb_clob_nt;
 begin
-  l_clobs := ftldb_clob_util.split_into_pieces(l_clob, '//', true);
+  l_clobs := ftldb_clob_util.split_into_pieces(l_clob, '\s*//\s*');
   if not (
     l_clobs.count() = 2 and
-    l_clobs(1) = 'ABC' || chr(10) || 'DEF' and
+    l_clobs(1) = '  ABC' || chr(10) || 'DEF' and
     l_clobs(2) = 'GHI' || chr(10) || 'JKL'
   ) then
     for l_i in 1..l_clobs.count() loop

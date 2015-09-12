@@ -36,13 +36,12 @@ end script_ot;
 
 
 constructor function script_ot(
-  in_clob in clob,
-  in_stmt_delim in varchar2 := '/'
+  in_clob in clob
 ) return self as result
 is
 begin
-  self := script_ot(
-    clob_util.split_into_pieces(in_clob, in_stmt_delim, in_trim_spaces => true)
+  self.statements := clob_util.split_into_pieces(
+    in_clob, '^[ ' || chr(9) || ']*/[ ' || chr(9) || ']*$', 'm', true
   );
   return;
 end script_ot;
@@ -57,7 +56,7 @@ begin
   return
     clob_util.join(
       self.statements, in_stmt_delim, in_final_delim => true,
-      in_refine_spaces => true
+      in_refine_lines => true
     );
 end to_clob;
 

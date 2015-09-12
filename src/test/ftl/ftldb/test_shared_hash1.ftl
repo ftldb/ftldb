@@ -15,20 +15,13 @@
     limitations under the License.
 
 -->
+<@template name = "ftldb/test_shared_hash1.ftl"/>
 -- ${template_name()} START --
-Open connection.
-<#import "dbconn.config.ftl" as conf>
-<#assign conn = conf.new_conn()/>
+Passed arguments:
+<#list template_args as arg>
+  arg[${arg?index}] = "${arg}"
+</#list>
 
-Override default DB connection.
-<#assign void = set_default_connection(conn)/>
-
-Execute query via default connection.
-<#assign result = default_connection().query("select sys_context('userenv', 'db_name') db_name, sysdate dt from dual")/>
-
-Print result:
-${result}
-
-Close connection.
-<#assign void = conn.close()/>
+Save them to the shared hash as the key "v".
+<#assign void = shared_hash.put("v", template_args)>
 -- ${template_name()} END --

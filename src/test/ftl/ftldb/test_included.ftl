@@ -15,6 +15,5 @@
     limitations under the License.
 
 -->
-<#function new_conn>
-<#return new_connection("jdbc:oracle:thin:@//localhost:1521/orcl11", "scott", "tiger")/>
-</#function>
+<@template name = "ftldb/test_included.ftl"/>
+::: INSIDE ${template_name()} :::

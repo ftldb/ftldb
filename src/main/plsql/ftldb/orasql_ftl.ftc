@@ -14,17 +14,17 @@
 -- limitations under the License.
 --
 
-create or replace package standard_ftl authid current_user as
+create or replace package orasql_ftl authid current_user as
 /**
- * This package is a PL/SQL container for the "standard.ftl" macro library.
+ * This package is a PL/SQL container for the "ftldb/orasql.ftl" macro library.
  * @headcom
  */
 
 $if false $then
 
-@ftl/standard.ftl
+@ftl/ftldb/orasql.ftl
 
 $end
 
-end standard_ftl;
+end orasql_ftl;
 /
