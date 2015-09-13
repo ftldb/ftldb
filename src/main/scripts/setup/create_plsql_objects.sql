@@ -69,11 +69,11 @@ show errors package body ftldb_api
 
 prompt Create STD_FTL package.
 @plsql/ftldb/std_ftl.ftc
-show errors package standard_ftl
+show errors package std_ftl
 
 prompt Create ORASQL_FTL package.
 @plsql/ftldb/orasql_ftl.ftc
-show errors package sql_ftl
+show errors package orasql_ftl
 
 prompt Check for compilation errors.
 declare
