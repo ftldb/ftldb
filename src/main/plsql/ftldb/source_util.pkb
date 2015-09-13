@@ -673,7 +673,7 @@ function extract_named_section(
   in_occurrence in positiven := 1
 ) return clob
 is
-  c_section_name constant varchar2(100) := escape_section_name(in_section_name);
+  c_section_name constant varchar2(60) := escape_section_name(in_section_name);
 begin
   return
     extract_section_from_obj_src(
@@ -820,7 +820,7 @@ function replace_named_section_in_clob(
   in_occurrence in positiven := 1
 ) return clob
 is
-  c_section_name constant varchar2(100) := escape_section_name(in_section_name);
+  c_section_name constant varchar2(60) := escape_section_name(in_section_name);
 begin
   return
     replace_section_in_clob(

@@ -23,22 +23,14 @@ function gen_ftldb_config_xml_func return ftldb_script_ot;
 function drop_ftldb_config_xml_func return ftldb_script_ot;
 
 
-procedure template_resolver(
+procedure template_finder(
   in_templ_name in varchar2,
-  out_owner out varchar2,
-  out_name out varchar2,
-  out_sec_name out varchar2,
-  out_dblink out varchar2,
-  out_type out varchar2
+  out_locator_xml out varchar2
 );
 
 
 procedure template_loader(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_sec_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2,
+  in_locator_xml in varchar2,
   out_body out clob
 );
 
@@ -67,10 +59,10 @@ as
   l_pkg_name varchar2(70) :=
     '"${schema}"."${package}"';
 
-  l_resolver_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.template_resolver(?, ?, ?, ?, ?, ?)}';
+  l_finder_call varchar2(4000) :=
+    '{call ' || l_pkg_name || '.template_finder(?, ?)}';
   l_loader_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.template_loader(?, ?, ?, ?, ?, ?)}';
+    '{call ' || l_pkg_name || '.template_loader(?, ?)}';
 
   l_config varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
@@ -78,7 +70,7 @@ as
       <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
           <object class="ftldb.oracle.DatabaseTemplateLoader">
-            <string>' || utl_i18n.escape_reference(l_resolver_call) || '</string>
+            <string>' || utl_i18n.escape_reference(l_finder_call) || '</string>
             <string>' || utl_i18n.escape_reference(l_loader_call) || '</string>
           </object>
         </void>
@@ -105,36 +97,28 @@ begin
 end;
 
 
-procedure template_resolver(
+procedure template_finder(
   in_templ_name in varchar2,
-  out_owner out varchar2,
-  out_name out varchar2,
-  out_sec_name out varchar2,
-  out_dblink out varchar2,
-  out_type out varchar2
+  out_locator_xml out varchar2
 )
 is
 begin
-   dbms_output.put_line('--TEST: user defined template resolver -- OK');
-   ftldb_api.default_template_resolver(
-     in_templ_name, out_owner, out_name, out_sec_name, out_dblink, out_type
+   dbms_output.put_line('--TEST: user defined template finder -- OK');
+   ftldb_api.default_template_finder(
+     in_templ_name, out_locator_xml
    );
 end;
 
 
 procedure template_loader(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_sec_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2,
+  in_locator_xml in varchar2,
   out_body out clob
 )
 is
 begin
    dbms_output.put_line('--TEST: user defined template loader -- OK');
    ftldb_api.default_template_loader(
-     in_owner, in_name, in_sec_name, in_dblink, in_type, out_body
+     in_locator_xml, out_body
    );
 end;
 

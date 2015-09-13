@@ -24,31 +24,27 @@ import java.sql.*;
 
 
 /**
- * This class resolves, checks and loads templates from an Oracle database executing registered
+ * This class finds, checks and loads templates from an Oracle database executing registered
  * {@link CallableStatement}s. An instance is constructed with three specified calls:
  * <ul>
- *     <li>{@code templateResolverCall} resolves a template's name into a full DB object description</li>
+ *     <li>{@code templateFinderCall} finds a template by its name</li>
  *     <li>{@code templateLoaderCall} loads the template's source from the database</li>
  *     <li>{@code templateCheckerCall} checks the template's freshness - optional</li>
  * </ul>
  *
- * <p>The resolver call looks as:
+ * <p>The finder call looks as:
  * <pre>
  * {@code
- * {call ftldb_api.default_template_resolver(?, ?, ?, ?, ?, ?)}
+ * {call ftldb_api.default_template_finder(?, ?)}
  * }
  * </pre>
  *
- * <p>where the specification of the {@code default_template_resolver} procedure in the {@code ftldb_api} package is:
+ * <p>where the specification of the {@code default_template_finder} procedure in the {@code ftldb_api} package is:
  * <pre>
  * {@code
- * procedure default_template_resolver(
+ * procedure default_template_finder(
  *   in_templ_name in varchar2,
- *   out_owner out varchar2,
- *   out_name out varchar2,
- *   out_sec_name out varchar2,
- *   out_dblink out varchar2,
- *   out_type out varchar2
+ *   out_locator_xml out varchar2
  * );
  * }
  * </pre>
@@ -56,7 +52,7 @@ import java.sql.*;
  * <p>The loader call looks as:
  * <pre>
  * {@code
- * {call ftldb_api.default_template_loader(?, ?, ?, ?, ?, ?)}
+ * {call ftldb_api.default_template_loader(?, ?)}
  * }
  * </pre>
  *
@@ -64,11 +60,7 @@ import java.sql.*;
  * <pre>
  * {@code
  * procedure default_template_loader(
- *   in_owner in varchar2,
- *   in_name in varchar2,
- *   in_sec_name in varchar2,
- *   in_dblink in varchar2,
- *   in_type in varchar2,
+ *   in_locator_xml in varchar2,
  *   out_body out clob
  * );
  * }
@@ -77,7 +69,7 @@ import java.sql.*;
  * <p>The checker call looks as:
  * <pre>
  * {@code
- * {call ftldb_api.default_template_checker(?, ?, ?, ?, ?, ?)}
+ * {call ftldb_api.default_template_checker(?, ?)}
  * }
  * </pre>
  *
@@ -85,11 +77,7 @@ import java.sql.*;
  * <pre>
  * {@code
  * procedure default_template_checker(
- *   in_owner in varchar2,
- *   in_name in varchar2,
- *   in_sec_name in varchar2,
- *   in_dblink in varchar2,
- *   in_type in varchar2,
+ *   in_locator_xml in varchar2,
  *   out_timestamp out integer
  * );
  * }
@@ -102,10 +90,10 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
 
 
     private final Connection connection;
-    private final String templateResolverCall;
+    private final String templateFinderCall;
     private final String templateLoaderCall;
     private final String templateCheckerCall;
-    private CallableStatement templateResolverCS;
+    private CallableStatement templateFinderCS;
     private CallableStatement templateLoaderCS;
     private CallableStatement templateCheckerCS;
 
@@ -114,14 +102,14 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Creates an instance of {@link StatefulTemplateLoader} for working in a database.
      *
      * @param connection an opened connection to a database
-     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateFinderCall a call to the database that finds a template by its name
      * @param templateLoaderCall a call to the database that returns a template's source
      * @param templateCheckerCall a call to the database that gets a template's timestamp - optional (nullable)
      */
-    public DatabaseTemplateLoader(Connection connection, String templateResolverCall, String templateLoaderCall,
+    public DatabaseTemplateLoader(Connection connection, String templateFinderCall, String templateLoaderCall,
                                   String templateCheckerCall ) {
         this.connection = connection;
-        this.templateResolverCall = templateResolverCall;
+        this.templateFinderCall = templateFinderCall;
         this.templateLoaderCall = templateLoaderCall;
         this.templateCheckerCall = (templateCheckerCall == null || "".equals(templateCheckerCall.trim()))
                                     ? null
@@ -133,15 +121,15 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Creates an instance of {@link StatefulTemplateLoader} for working in a database via the default driver's
      * connection.
      *
-     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateFinderCall a call to the database that finds a template by its name
      * @param templateLoaderCall a call to the database that returns a template's source
      * @param templateCheckerCall a call to the database that gets a template's timestamp - optional (nullable)
      * @throws SQLException if a database access error occurs
      */
-    public DatabaseTemplateLoader(String templateResolverCall, String templateLoaderCall, String templateCheckerCall)
+    public DatabaseTemplateLoader(String templateFinderCall, String templateLoaderCall, String templateCheckerCall)
             throws SQLException {
         this(DriverManager.getConnection("jdbc:default:connection"),
-                templateResolverCall, templateLoaderCall, templateCheckerCall);
+                templateFinderCall, templateLoaderCall, templateCheckerCall);
     }
 
 
@@ -149,20 +137,20 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Creates an instance of {@link StatefulTemplateLoader} for working in a database via the default driver's
      * connection with disabled template timestamp checking.
      *
-     * @param templateResolverCall a call to the database that resolves a template's name
+     * @param templateFinderCall a call to the database that finds a template by its name
      * @param templateLoaderCall a call to the database that returns a template's source
      * @throws SQLException if a database access error occurs
      */
-    public DatabaseTemplateLoader(String templateResolverCall, String templateLoaderCall) throws SQLException {
-        this(templateResolverCall, templateLoaderCall, null);
+    public DatabaseTemplateLoader(String templateFinderCall, String templateLoaderCall) throws SQLException {
+        this(templateFinderCall, templateLoaderCall, null);
     }
 
 
-    private CallableStatement getTemplateResolverCS() throws SQLException {
-        if (templateResolverCS == null) {
-            templateResolverCS = connection.prepareCall(templateResolverCall);
+    private CallableStatement getTemplateFinderCS() throws SQLException {
+        if (templateFinderCS == null) {
+            templateFinderCS = connection.prepareCall(templateFinderCall);
         }
-        return templateResolverCS;
+        return templateFinderCS;
     }
 
 
@@ -188,12 +176,12 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Closes the inner {@link CallableStatement}s that are used for getting template sources.
      */
     public synchronized void resetState() {
-        if (templateResolverCS != null) {
+        if (templateFinderCS != null) {
             try {
-                templateResolverCS.close();
+                templateFinderCS.close();
             } catch (SQLException ignored) {
             } finally {
-                templateResolverCS = null;
+                templateFinderCS = null;
             }
         }
         if (templateLoaderCS != null) {
@@ -216,33 +204,20 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
 
 
     /**
-     * Executes the inner resolver {@link CallableStatement} and gets the sought template's location.
+     * Executes the inner finder {@link CallableStatement} and gets the sought template's location.
      *
      * @param name the template's name
-     * @return the template's location description
+     * @return the template's locator
      * @throws IOException if a database access error occurs
      */
     public synchronized Object findTemplateSource(String name) throws IOException {
         try {
-            CallableStatement tr = getTemplateResolverCS();
+            CallableStatement tr = getTemplateFinderCS();
             tr.setString(1, name);
-            tr.registerOutParameter(2, Types.VARCHAR); //owner
-            tr.registerOutParameter(3, Types.VARCHAR); //object
-            tr.registerOutParameter(4, Types.VARCHAR); //section
-            tr.registerOutParameter(5, Types.VARCHAR); //dblink
-            tr.registerOutParameter(6, Types.VARCHAR); //type
+            tr.registerOutParameter(2, Types.VARCHAR); //locator as an XML string
             tr.execute();
 
-            String owner = tr.getString(2);
-            String object = tr.getString(3);
-            String section = tr.getString(4);
-            String dblink = tr.getString(5);
-            String type = tr.getString(6);
-
-            // If name is not resolved
-            if (owner == null || object == null || type == null) return null;
-
-            return new TemplateLocator(name, owner, object, section, dblink, type);
+            return tr.getString(2);
         } catch (SQLException e) {
             throw (IOException) new IOException("Unable to find template named " + name).initCause(e);
         }
@@ -253,27 +228,22 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Executes the inner checker {@link CallableStatement} (if set) and gets the sought template's timestamp as a long
      * value. If the checker call is not set, returns current time.
      *
-     * @param o the object storing the template's location description
+     * @param o the object storing the template's locator
      * @return the template's timestamp
      */
     public long getLastModified(Object o) {
         if (templateCheckerCall == null) return System.currentTimeMillis();
 
-        TemplateLocator t = (TemplateLocator) o;
+        String locator = (String) o;
 
         try {
             CallableStatement tc = getTemplateCheckerCS();
-            tc.setString(1, t.owner);
-            tc.setString(2, t.object);
-            tc.setString(3, t.section);
-            tc.setString(4, t.dblink);
-            tc.setString(5, t.type);
-            tc.registerOutParameter(6, Types.BIGINT);
+            tc.setString(1, locator);
+            tc.registerOutParameter(2, Types.BIGINT);
             tc.execute();
-            return tc.getLong(6);
+            return tc.getLong(2);
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to check timestamp for template container "
-                    + t.getFullNameWithType(), e);
+            throw new RuntimeException("Unable to check timestamp for template container", e);
         }
     }
 
@@ -286,20 +256,16 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * @throws IOException if a database access error occurs
      */
     public synchronized Reader getReader(Object o, String encoding) throws IOException {
-        TemplateLocator t = (TemplateLocator) o;
+        String locator = (String) o;
 
         try {
             CallableStatement tl = getTemplateLoaderCS();
-            tl.setString(1, t.owner);
-            tl.setString(2, t.object);
-            tl.setString(3, t.section);
-            tl.setString(4, t.dblink);
-            tl.setString(5, t.type);
-            tl.registerOutParameter(6, Types.CLOB);
+            tl.setString(1, locator);
+            tl.registerOutParameter(2, Types.CLOB);
             tl.execute();
-            return tl.getClob(6).getCharacterStream();
+            return tl.getClob(2).getCharacterStream();
         } catch (SQLException e) {
-            throw (IOException) new IOException("Unable to load template from " + t.getFullNameWithType()).initCause(e);
+            throw (IOException) new IOException("Unable to load template").initCause(e);
         }
     }
 
@@ -328,72 +294,9 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * @return the class name and the database calls
      */
     public String toString() {
-        return this.getClass().getName() + "(templateResolverCall=" + formatCall(templateResolverCall) + "; "
+        return this.getClass().getName() + "(templateFinderCall=" + formatCall(templateFinderCall) + "; "
                 + "templateLoaderCall=" + formatCall(templateLoaderCall) + "; "
                 + "templateCheckerCall=" + formatCall(templateCheckerCall) + ")";
-    }
-
-
-    /**
-     * This class represents a template's container description.
-     */
-    public static final class TemplateLocator {
-        final String name;
-
-        final String owner;
-        final String object;
-        final String section;
-        final String dblink;
-        final String type;
-
-        TemplateLocator(String name, String owner, String object, String section, String dblink, String type) {
-            if (name == null || "".equals(name)) {
-                throw new IllegalArgumentException("Template name is not specified");
-            }
-            if (owner == null || "".equals(owner)) {
-                throw new IllegalArgumentException("Object owner is not specified");
-            }
-            if (object == null || "".equals(object)) {
-                throw new IllegalArgumentException("Object name is not specified");
-            }
-            if (type == null || "".equals(type.trim())) {
-                throw new IllegalArgumentException("Object type is not specified");
-            }
-
-            this.name = name;
-            this.owner = owner;
-            this.object = object;
-            this.section = (section == null) ? "" : section.toUpperCase(); // may be empty, case-insensitive
-            this.dblink = (dblink == null) ? "" : dblink.toUpperCase(); // may be empty, case-insensitive
-            this.type = type.toUpperCase(); // case-insensitive
-        }
-
-        String getFullName() {
-            return ((owner.toUpperCase().equals(owner)) ? owner : "\"" + owner + "\"") + "."
-                    + ((object.toUpperCase().equals(object)) ? object : "\"" + object + "\"")
-                    + ((section.length() > 0) ? '%' + section : "")
-                    + ((dblink.length() > 0) ? '@' + dblink : "");
-        }
-
-        String getFullNameWithType() {
-            return getFullName() + " (" + type + ")";
-        }
-
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof TemplateLocator))
-                return false;
-
-            TemplateLocator other = (TemplateLocator) o;
-            return owner.equals(other.owner) && object.equals(other.object) && section.equals(other.section) &&
-                    dblink.equals(other.dblink) && type.equals(other.type);
-        }
-
-        public int hashCode() {
-            return owner.hashCode() ^ object.hashCode() ^ section.hashCode() ^ dblink.hashCode() ^ type.hashCode();
-        }
-
     }
 
 

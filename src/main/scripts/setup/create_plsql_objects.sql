@@ -45,6 +45,12 @@ show errors type script_ot
 @plsql/ftldb/script_ot.tpb
 show errors type body script_ot
 
+prompt Create SRC_TEMPLATE_LOCATOR_OT type.
+@plsql/ftldb/src_template_locator_ot.tps
+show errors type src_template_locator_ot
+@plsql/ftldb/src_template_locator_ot.tpb
+show errors type body src_template_locator_ot
+
 prompt Create SOURCE_UTIL package.
 @plsql/ftldb/source_util.pks
 show errors package source_util
@@ -100,6 +106,8 @@ grant execute on varchar2_nt to &&grantee.
 grant execute on clob_nt to &&grantee.
 /
 grant execute on script_ot to &&grantee.
+/
+grant execute on src_template_locator_ot to &&grantee.
 /
 grant execute on std_ftl to &&grantee.
 /

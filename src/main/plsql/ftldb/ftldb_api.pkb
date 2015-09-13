@@ -32,47 +32,46 @@ begin
 end get_this_schema;
 
 
-procedure default_template_resolver(
+procedure default_template_finder(
   in_templ_name in varchar2,
-  out_owner out varchar2,
-  out_name out varchar2,
-  out_sec_name out varchar2,
-  out_dblink out varchar2,
-  out_type out varchar2
+  out_locator_xml out varchar2
 )
 is
 begin
-  source_util.resolve_templ_name(
-    in_templ_name, out_owner, out_name, out_sec_name, out_dblink, out_type
-  );
-exception
-  -- freemarker.cache.TemplateLoader needs null-object in order to process
-  -- the "template not found" error correctly
-  when source_util.e_name_not_resolved then null;
-end default_template_resolver;
+  if in_templ_name like 'src:%' or in_templ_name like '%' then
+    declare
+      l_src_locator src_template_locator_ot;
+    begin
+      source_template_finder(in_templ_name, l_src_locator);
+      out_locator_xml :=
+        case
+          when l_src_locator is null then null
+          else xmltype(l_src_locator).getstringval()
+        end;
+    end;
+  else
+    out_locator_xml := null; --not found
+  end if;
+end default_template_finder;
 
 
 procedure default_template_loader(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_sec_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2,
+  in_locator_xml in varchar2,
   out_body out clob
 )
 is
+  c_locator_xmlt xmltype := xmltype(in_locator_xml);
 begin
-  out_body :=
-    case
-      when in_sec_name is null then
-        source_util.extract_noncompiled_section(
-          in_owner, in_name, in_dblink, in_type
-        )
-      else
-        source_util.extract_named_section(
-          in_owner, in_name, in_dblink, in_type, in_sec_name
-        )
+  if c_locator_xmlt.existsnode('/' || src_template_locator_ot.class()) = 1 then
+    declare
+      l_src_locator src_template_locator_ot;
+    begin
+      c_locator_xmlt.toobject(l_src_locator);
+      source_template_loader(l_src_locator, out_body);
     end;
+  else
+    raise value_error;
+  end if;
 end default_template_loader;
 
 
@@ -94,19 +93,90 @@ end timestamp2millis;
 
 
 procedure default_template_checker(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_sec_name in varchar2, --not used
-  in_dblink in varchar2,
-  in_type in varchar2,
+  in_locator_xml in varchar2,
+  out_millis out integer
+)
+is
+  c_locator_xmlt xmltype := xmltype(in_locator_xml);
+begin
+  if c_locator_xmlt.existsnode('/' || src_template_locator_ot.class()) = 1 then
+    declare
+      l_src_locator src_template_locator_ot;
+    begin
+      c_locator_xmlt.toobject(l_src_locator);
+      source_template_checker(l_src_locator, out_millis);
+    end;
+  else
+    raise value_error;
+  end if;
+end default_template_checker;
+
+
+procedure source_template_finder(
+  in_templ_name in varchar2,
+  out_locator out src_template_locator_ot
+)
+is
+  l_search_templ_name varchar2(256);
+  l_owner varchar2(30);
+  l_obj_name varchar2(30);
+  l_sec_name varchar2(30);
+  l_dblink varchar2(128);
+  l_type varchar2(30);
+begin
+  if in_templ_name like 'src:%' then
+    l_search_templ_name := substr(in_templ_name, 5);
+  else
+    l_search_templ_name := in_templ_name;
+  end if;
+
+  source_util.resolve_templ_name(
+    l_search_templ_name, l_owner, l_obj_name, l_sec_name, l_dblink, l_type
+  );
+
+  out_locator := src_template_locator_ot(
+    in_templ_name, l_owner, l_obj_name, l_sec_name, l_dblink, l_type
+  );
+exception
+  when source_util.e_name_not_resolved then
+    out_locator := null;
+end source_template_finder;
+
+
+procedure source_template_loader(
+  in_locator in src_template_locator_ot,
+  out_body out clob
+)
+is
+begin
+  out_body :=
+    case
+      when in_locator.sec_name is null then
+        source_util.extract_noncompiled_section(
+          in_locator.owner, in_locator.obj_name, in_locator.dblink,
+          in_locator.type
+        )
+      else
+        source_util.extract_named_section(
+          in_locator.owner, in_locator.obj_name, in_locator.dblink,
+          in_locator.type, in_locator.sec_name
+        )
+    end;
+end source_template_loader;
+
+
+procedure source_template_checker(
+  in_locator in src_template_locator_ot,
   out_millis out integer
 )
 is
 begin
   out_millis := timestamp2millis(
-    source_util.get_obj_timestamp(in_owner, in_name, in_dblink, in_type)
+    source_util.get_obj_timestamp(
+      in_locator.owner, in_locator.obj_name, in_locator.dblink, in_locator.type
+    )
   );
-end default_template_checker;
+end source_template_checker;
 
 
 function default_config_xml return xmltype
@@ -114,12 +184,12 @@ is
   c_pkg_name constant varchar2(70) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"';
 
-  c_resolver_call constant varchar2(4000) :=
-    '{call ' || c_pkg_name || '.default_template_resolver(?, ?, ?, ?, ?, ?)}';
+  c_finder_call constant varchar2(4000) :=
+    '{call ' || c_pkg_name || '.default_template_finder(?, ?)}';
   c_loader_call constant varchar2(4000) :=
-    '{call ' || c_pkg_name || '.default_template_loader(?, ?, ?, ?, ?, ?)}';
+    '{call ' || c_pkg_name || '.default_template_loader(?, ?)}';
   c_checker_call constant varchar2(4000) :=
-    '{call ' || c_pkg_name || '.default_template_checker(?, ?, ?, ?, ?, ?)}';
+    '{call ' || c_pkg_name || '.default_template_checker(?, ?)}';
 
   c_config constant varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
@@ -127,7 +197,7 @@ is
       <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
           <object class="ftldb.oracle.DatabaseTemplateLoader">
-            <string>' || utl_i18n.escape_reference(c_resolver_call) || '</string>
+            <string>' || utl_i18n.escape_reference(c_finder_call) || '</string>
             <string>' || utl_i18n.escape_reference(c_loader_call) || '</string>
             <string>' || utl_i18n.escape_reference(c_checker_call) || '</string>
           </object>
@@ -151,7 +221,7 @@ is
   l_name varchar2(30);
   l_dblink varchar2(128);
   l_type varchar2(30);
-  c_default_config_func_name varchar2(70) :=
+  c_default_config_func_name constant varchar2(100) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"' ||
     '.default_config_xml';
 begin

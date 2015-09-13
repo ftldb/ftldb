@@ -22,62 +22,78 @@ create or replace package ftldb_api authid current_user as
 
 
 /**
- * Default template resolver. Resolves a template by its name. If resolution
- * fails, returns null values.
+ * Default template finder. Passes an external call to a specific finder
+ * depending on the template's name prefix. Returns an XML locator as a string.
+ * If the search fails, returns null.
  *
- * @param  in_templ_name  the template's name
- * @param  out_owner      the referenced object's owner
- * @param  out_name       the referenced object's name
- * @param  out_sec_name   the referenced section's name
- * @param  out_dblink     the referenced object's dblink
- * @param  out_type       the referenced object's type
+ * @param  in_templ_name    the template's name
+ * @param  out_locator_xml  the template's locator
  */
-procedure default_template_resolver(
+procedure default_template_finder(
   in_templ_name in varchar2,
-  out_owner out varchar2,
-  out_name out varchar2,
-  out_sec_name out varchar2,
-  out_dblink out varchar2,
-  out_type out varchar2
+  out_locator_xml out varchar2
 );
 
 
 /**
- * Default template loader. Loads a template from its container object.
+ * Default template loader. Passes an external call to a specific loader
+ * depending on the template's locator. Returns the template's body.
  *
- * @param  in_owner     the container object's owner
- * @param  in_name      the container object's name
- * @param  in_sec_name  the container section's name
- * @param  in_dblink    the container object's dblink
- * @param  in_type      the container object's type
- * @param  out_body     the loaded template as a CLOB
+ * @param  in_locator_xml  the template's locator
+ * @param  out_body        the loaded template as a CLOB
  */
 procedure default_template_loader(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_sec_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2,
+  in_locator_xml in varchar2,
   out_body out clob
 );
 
 
 /**
- * Default template checker. Checks a template for its last modification time.
+ * Default template checker. Passes an external call to a specific checker
+ * depending on the template's locator. Returns the template's timestamp.
  *
- * @param  in_owner     the container object's owner
- * @param  in_name      the container object's name
- * @param  in_sec_name  the container section's name
- * @param  in_dblink    the container object's dblink
- * @param  in_type      the container object's type
- * @param  out_millis   the container object's milliseconds since Unix Epoch
+ * @param  in_locator_xml  the template's locator
+ * @param  out_millis      the template's age in milliseconds since Unix Epoch
  */
 procedure default_template_checker(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_sec_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2,
+  in_locator_xml in varchar2,
+  out_millis out integer
+);
+
+
+/**
+ * Source template finder. Seeks a template in stored objects' source. Returns
+ * a SRC_TEMPLATE_LOCATOR_OT object.
+ *
+ * @param  in_templ_name  the template's name
+ * @param  out_locator    the template's locator
+ */
+procedure source_template_finder(
+  in_templ_name in varchar2,
+  out_locator out src_template_locator_ot
+);
+
+
+/**
+ * Source template loader. Loads a template from its container object's source.
+ *
+ * @param  in_locator  the template's locator
+ * @param  out_body    the loaded template as a CLOB
+ */
+procedure source_template_loader(
+  in_locator in src_template_locator_ot,
+  out_body out clob
+);
+
+
+/**
+ * Source template checker. Checks a template for its last modification time.
+ *
+ * @param  in_locator  the template's locator
+ * @param  out_millis  the container object's milliseconds since Unix Epoch
+ */
+procedure source_template_checker(
+  in_locator in src_template_locator_ot,
   out_millis out integer
 );
 
@@ -86,7 +102,7 @@ procedure default_template_checker(
  * Returns the default configuration XML.
  *
  * Uses 'ftldb.oracle.DatabaseTemplateLoader' class as a template loader with
- * the default resolver, loader and checker calls.
+ * the default finder, loader and checker calls.
  * Uses 'freemarker.cache.MruCacheStorage' class as a cache storage with 20 hard
  * references and 200 soft references (actually Oracle cleans them immediately).
  *

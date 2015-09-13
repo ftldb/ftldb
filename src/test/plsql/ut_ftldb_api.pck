@@ -42,21 +42,11 @@ create or replace package body ut_ftldb_api is
 
 function default_template_loader(in_templ_name varchar2) return clob
 is
-  l_owner varchar2(30);
-  l_name varchar2(30);
-  l_sec_name varchar2(30);
-  l_dblink varchar2(128);
-  l_type varchar2(30);
+  l_locator varchar2(32767);
   l_src clob;
 begin
-  ftldb_api.default_template_resolver(
-    in_templ_name,
-    l_owner, l_name, l_sec_name, l_dblink, l_type
-  );
-  ftldb_api.default_template_loader(
-    l_owner, l_name, l_sec_name, l_dblink, l_type,
-    l_src
-  );
+  ftldb_api.default_template_finder(in_templ_name, l_locator);
+  ftldb_api.default_template_loader(l_locator, l_src);
   return l_src;
 end default_template_loader;
 
