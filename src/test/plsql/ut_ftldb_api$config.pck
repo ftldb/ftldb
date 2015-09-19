@@ -23,16 +23,10 @@ function gen_ftldb_config_xml_func return ftldb_script_ot;
 function drop_ftldb_config_xml_func return ftldb_script_ot;
 
 
-procedure template_finder(
-  in_templ_name in varchar2,
-  out_locator_xml out varchar2
-);
+function template_finder(in_templ_name varchar2) return varchar2;
 
 
-procedure template_loader(
-  in_locator_xml in varchar2,
-  out_body out clob
-);
+function template_loader(in_locator in varchar2) return clob;
 
 
 end ut_ftldb_api$config;
@@ -56,22 +50,22 @@ $if null $then
 
 create or replace function ftldb_config_xml return xmltype
 as
-  l_pkg_name varchar2(70) :=
+  c_pkg_name constant varchar2(70) :=
     '"${schema}"."${package}"';
 
-  l_finder_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.template_finder(?, ?)}';
-  l_loader_call varchar2(4000) :=
-    '{call ' || l_pkg_name || '.template_loader(?, ?)}';
+  c_finder_func constant varchar2(100) :=
+    c_pkg_name || '.template_finder';
+  c_loader_func constant varchar2(100) :=
+    c_pkg_name || '.template_loader';
 
-  l_config varchar2(32767) :=
+  c_config constant varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
     <java version="1.0" class="java.beans.XMLDecoder">
       <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
           <object class="ftldb.oracle.DatabaseTemplateLoader">
-            <string>' || utl_i18n.escape_reference(l_finder_call) || '</string>
-            <string>' || utl_i18n.escape_reference(l_loader_call) || '</string>
+            <string>' || utl_i18n.escape_reference(c_finder_func) || '</string>
+            <string>' || utl_i18n.escape_reference(c_loader_func) || '</string>
           </object>
         </void>
         <void property="cacheStorage">
@@ -80,7 +74,7 @@ as
       </object>
     </java>';
 begin
-  return xmltype(l_config);
+  return xmltype(c_config);
 end ftldb_config_xml;
 ${"/"}
 
@@ -97,29 +91,19 @@ begin
 end;
 
 
-procedure template_finder(
-  in_templ_name in varchar2,
-  out_locator_xml out varchar2
-)
+function template_finder(in_templ_name varchar2) return varchar2
 is
 begin
    dbms_output.put_line('--TEST: user defined template finder -- OK');
-   ftldb_api.default_template_finder(
-     in_templ_name, out_locator_xml
-   );
+   return ftldb_api.get_templ_locator_xmlstr(in_templ_name);
 end;
 
 
-procedure template_loader(
-  in_locator_xml in varchar2,
-  out_body out clob
-)
+function template_loader(in_locator in varchar2) return clob
 is
 begin
    dbms_output.put_line('--TEST: user defined template loader -- OK');
-   ftldb_api.default_template_loader(
-     in_locator_xml, out_body
-   );
+   return ftldb_api.get_templ_body(in_locator);
 end;
 
 

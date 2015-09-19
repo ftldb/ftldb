@@ -25,65 +25,25 @@ import java.sql.*;
 
 /**
  * This class finds, checks and loads templates from an Oracle database executing registered
- * {@link CallableStatement}s. An instance is constructed with three specified calls:
+ * {@link CallableStatement}s. An instance is constructed with three specified functions:
  * <ul>
- *     <li>{@code templateFinderCall} finds a template by its name</li>
- *     <li>{@code templateLoaderCall} loads the template's source from the database</li>
- *     <li>{@code templateCheckerCall} checks the template's freshness - optional</li>
+ *     <li>{@code templateFinderFunc} finds a template by its name and returns its string locator</li>
+ *     <li>{@code templateLoaderFunc} loads the template's source from the database by its locator</li>
+ *     <li>{@code templateCheckerFunc} checks the template's freshness by its locator (optional)</li>
  * </ul>
  *
- * <p>The finder call looks as:
+ * <p>In the default implementation the following functions from the FTLDB_API package are used:
  * <pre>
  * {@code
- * {call ftldb_api.default_template_finder(?, ?)}
+ * function get_templ_locator_xmlstr(in_templ_name in varchar2) return varchar2;
+ * function get_templ_body(in_locator_xmlstr in varchar2) return clob;
+ * function get_templ_last_modified(in_locator_xmlstr in varchar2) return integer;
  * }
  * </pre>
  *
- * <p>where the specification of the {@code default_template_finder} procedure in the {@code ftldb_api} package is:
- * <pre>
- * {@code
- * procedure default_template_finder(
- *   in_templ_name in varchar2,
- *   out_locator_xml out varchar2
- * );
- * }
- * </pre>
+ * <p>Where locator is an XML encoded PL/SQL object instance of a TEMPL_LOCATOR_OT subtype.
  *
- * <p>The loader call looks as:
- * <pre>
- * {@code
- * {call ftldb_api.default_template_loader(?, ?)}
- * }
- * </pre>
- *
- * <p>where the specification of the {@code default_template_loader} procedure in the {@code ftldb_api} package is:
- * <pre>
- * {@code
- * procedure default_template_loader(
- *   in_locator_xml in varchar2,
- *   out_body out clob
- * );
- * }
- * </pre>
- *
- * <p>The checker call looks as:
- * <pre>
- * {@code
- * {call ftldb_api.default_template_checker(?, ?)}
- * }
- * </pre>
- *
- * <p>where the specification of the {@code default_template_checker} procedure in the {@code ftldb_api} package is:
- * <pre>
- * {@code
- * procedure default_template_checker(
- *   in_locator_xml in varchar2,
- *   out_timestamp out integer
- * );
- * }
- * </pre>
- *
- * <p>If the checker call is not set, {@link #getLastModified} always returns {@code System.currentTimeMillis()}.
+ * <p>If the checker function is not set, {@link #getLastModified} always returns {@code System.currentTimeMillis()}.
  *
  */
 public class DatabaseTemplateLoader implements StatefulTemplateLoader {
@@ -102,18 +62,18 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Creates an instance of {@link StatefulTemplateLoader} for working in a database.
      *
      * @param connection an opened connection to a database
-     * @param templateFinderCall a call to the database that finds a template by its name
-     * @param templateLoaderCall a call to the database that returns a template's source
-     * @param templateCheckerCall a call to the database that gets a template's timestamp - optional (nullable)
+     * @param templateFinderFunc a database function that finds a template by its name and returns its locator
+     * @param templateLoaderFunc a database function that returns a template's source
+     * @param templateCheckerFunc a database function that gets a template's timestamp - optional (nullable)
      */
-    public DatabaseTemplateLoader(Connection connection, String templateFinderCall, String templateLoaderCall,
-                                  String templateCheckerCall ) {
+    public DatabaseTemplateLoader(Connection connection, String templateFinderFunc, String templateLoaderFunc,
+                                  String templateCheckerFunc ) {
         this.connection = connection;
-        this.templateFinderCall = templateFinderCall;
-        this.templateLoaderCall = templateLoaderCall;
-        this.templateCheckerCall = (templateCheckerCall == null || "".equals(templateCheckerCall.trim()))
+        this.templateFinderCall = "{? = call " + templateFinderFunc + "(?)}";
+        this.templateLoaderCall = "{? = call " + templateLoaderFunc + "(?)}";
+        this.templateCheckerCall = (templateCheckerFunc == null || "".equals(templateCheckerFunc.trim()))
                                     ? null
-                                    : templateCheckerCall;
+                                    : "{? = call " + templateCheckerFunc + "(?)}";
     }
 
 
@@ -121,15 +81,15 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Creates an instance of {@link StatefulTemplateLoader} for working in a database via the default driver's
      * connection.
      *
-     * @param templateFinderCall a call to the database that finds a template by its name
-     * @param templateLoaderCall a call to the database that returns a template's source
-     * @param templateCheckerCall a call to the database that gets a template's timestamp - optional (nullable)
+     * @param templateFinderFunc a database function that finds a template by its name and returns its locator
+     * @param templateLoaderFunc a database function that returns a template's source
+     * @param templateCheckerFunc a database function that gets a template's timestamp - optional (nullable)
      * @throws SQLException if a database access error occurs
      */
-    public DatabaseTemplateLoader(String templateFinderCall, String templateLoaderCall, String templateCheckerCall)
+    public DatabaseTemplateLoader(String templateFinderFunc, String templateLoaderFunc, String templateCheckerFunc)
             throws SQLException {
         this(DriverManager.getConnection("jdbc:default:connection"),
-                templateFinderCall, templateLoaderCall, templateCheckerCall);
+                templateFinderFunc, templateLoaderFunc, templateCheckerFunc);
     }
 
 
@@ -137,12 +97,12 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      * Creates an instance of {@link StatefulTemplateLoader} for working in a database via the default driver's
      * connection with disabled template timestamp checking.
      *
-     * @param templateFinderCall a call to the database that finds a template by its name
-     * @param templateLoaderCall a call to the database that returns a template's source
+     * @param templateFinderFunc a database function that finds a template by its name and returns its locator
+     * @param templateLoaderFunc a database function that returns a template's source
      * @throws SQLException if a database access error occurs
      */
-    public DatabaseTemplateLoader(String templateFinderCall, String templateLoaderCall) throws SQLException {
-        this(templateFinderCall, templateLoaderCall, null);
+    public DatabaseTemplateLoader(String templateFinderFunc, String templateLoaderFunc) throws SQLException {
+        this(templateFinderFunc, templateLoaderFunc, null);
     }
 
 
@@ -212,12 +172,12 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
      */
     public synchronized Object findTemplateSource(String name) throws IOException {
         try {
-            CallableStatement tr = getTemplateFinderCS();
-            tr.setString(1, name);
-            tr.registerOutParameter(2, Types.VARCHAR); //locator as an XML string
-            tr.execute();
+            CallableStatement tf = getTemplateFinderCS();
+            tf.registerOutParameter(1, Types.VARCHAR); //locator as an XML string
+            tf.setString(2, name);
+            tf.execute();
 
-            return tr.getString(2);
+            return tf.getString(1);
         } catch (SQLException e) {
             throw (IOException) new IOException("Unable to find template named " + name).initCause(e);
         }
@@ -238,12 +198,12 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
 
         try {
             CallableStatement tc = getTemplateCheckerCS();
-            tc.setString(1, locator);
-            tc.registerOutParameter(2, Types.BIGINT);
+            tc.registerOutParameter(1, Types.BIGINT);
+            tc.setString(2, locator);
             tc.execute();
-            return tc.getLong(2);
+            return tc.getLong(1);
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to check timestamp for template container", e);
+            throw new RuntimeException("Unable to check timestamp for template locator " + locator, e);
         }
     }
 
@@ -260,12 +220,12 @@ public class DatabaseTemplateLoader implements StatefulTemplateLoader {
 
         try {
             CallableStatement tl = getTemplateLoaderCS();
-            tl.setString(1, locator);
-            tl.registerOutParameter(2, Types.CLOB);
+            tl.registerOutParameter(1, Types.CLOB);
+            tl.setString(2, locator);
             tl.execute();
-            return tl.getClob(2).getCharacterStream();
+            return tl.getClob(1).getCharacterStream();
         } catch (SQLException e) {
-            throw (IOException) new IOException("Unable to load template").initCause(e);
+            throw (IOException) new IOException("Unable to load template from locator " + locator).initCause(e);
         }
     }
 

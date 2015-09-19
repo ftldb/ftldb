@@ -44,7 +44,9 @@ drop package source_util
 /
 drop package clob_util
 /
-drop type src_template_locator_ot
+drop type src_templ_locator_ot
+/
+drop type templ_locator_ot
 /
 drop type script_ot
 /

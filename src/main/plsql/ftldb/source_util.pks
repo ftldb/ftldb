@@ -134,36 +134,6 @@ procedure resolve_templ_name(
 
 
 /**
- * Returns an object's full name.
- *
- * @param  in_owner   the object's owner
- * @param  in_name    the object's name
- * @param  in_dblink  the object's dblink
- */
-function get_full_name(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_dblink in varchar2
-) return varchar2;
-
-
-/**
- * Returns an object's full name and type.
- *
- * @param  in_owner   the object's owner
- * @param  in_name    the object's name
- * @param  in_dblink  the object's dblink
- * @param  in_type    the object's type
- */
-function get_full_name(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2
-) return varchar2;
-
-
-/**
  * Returns the specified object's last modification time.
  *
  * @param  in_owner   the object's owner (case-sensitive)

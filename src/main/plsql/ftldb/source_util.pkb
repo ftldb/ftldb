@@ -146,6 +146,9 @@ begin
 end a;
 
 
+/**
+ * Returns an object's full name.
+ */
 function get_full_name(
   in_owner in varchar2,
   in_name in varchar2,
@@ -153,20 +156,13 @@ function get_full_name(
 ) return varchar2
 is
 begin
-  return
-    case
-      when in_owner = upper(in_owner) then in_owner
-      else '"' || in_owner || '"'
-    end ||
-    '.' ||
-    case
-      when in_name = upper(in_name) then in_name
-      else '"' || in_name || '"'
-    end ||
-    a(in_dblink);
+  return '"' || in_owner || '"."' || in_name || '"' || a(in_dblink);
 end get_full_name;
 
 
+/**
+ * Returns an object's full name and type.
+ */
 function get_full_name(
   in_owner in varchar2,
   in_name in varchar2,
@@ -347,13 +343,13 @@ is
   c_type constant varchar2(30) := upper(in_type);
   -- ALL_OBJECTS returns the TIMESTAMP column as a string
   c_all_objects_query constant varchar2(32767) :=
-    'select' || chr(10) ||
-    '  max(to_timestamp(o.timestamp, ''yyyy-mm-dd:hh24:mi:ss''))' || chr(10) ||
-    'from all_objects%dblink% o' || chr(10) ||
-    'where' || chr(10) ||
-    '  o.owner = :owner and' || chr(10) ||
-    '  o.object_name = :name and' || chr(10) ||
-    '  o.object_type in (:type, :type || '' BODY'')' || chr(10) ||
+    'select' || gc_lf ||
+    '  max(to_timestamp(o.timestamp, ''yyyy-mm-dd:hh24:mi:ss''))' || gc_lf ||
+    'from all_objects%dblink% o' || gc_lf ||
+    'where' || gc_lf ||
+    '  o.owner = :owner and' || gc_lf ||
+    '  o.object_name = :name and' || gc_lf ||
+    '  o.object_type in (:type, :type || '' BODY'')' || gc_lf ||
     'group by null';
   l_timestamp timestamp;
 begin
@@ -404,8 +400,11 @@ function get_view_source(
 ) return clob
 is
   c_all_views_query constant varchar2(32767) :=
-    'select v.text from all_views%dblink% v ' ||
-    'where v.owner = :owner and v.view_name = :name';
+    'select v.text' || gc_lf ||
+    'from all_views%dblink% v' || gc_lf ||
+    'where' || gc_lf ||
+    '  v.owner = :owner and' || gc_lf ||
+    '  v.view_name = :name';
 begin
   return
     long2clob(
@@ -423,15 +422,15 @@ function get_program_unit_source(
 ) return clob
 is
   c_all_source_query constant varchar2(32767) :=
-    'select s.text' || chr(10) ||
-    'from all_source%dblink% s' || chr(10) ||
-    'where' || chr(10) ||
-    '  s.owner = :owner and' || chr(10) ||
-    '  s.name = :name and' || chr(10) ||
-    '  s.type in (:type, :type || '' BODY'')' || chr(10) ||
+    'select s.text' || gc_lf ||
+    'from all_source%dblink% s' || gc_lf ||
+    'where' || gc_lf ||
+    '  s.owner = :owner and' || gc_lf ||
+    '  s.name = :name and' || gc_lf ||
+    '  s.type in (:type, :type || '' BODY'')' || gc_lf ||
     'order by s.type, s.line';
   c_eol constant varchar2(1) :=
-    case when in_type = 'JAVA SOURCE' then chr(10) end;
+    case when in_type = 'JAVA SOURCE' then gc_lf end;
   l_src_lines dbms_sql.varchar2a;
   l_src clob;
 begin
@@ -653,7 +652,7 @@ function escape_section_name(
 ) return varchar2
 is
 begin
-  if not nvl(regexp_like(in_section_name, '^[[:alnum:]_#$]+$'), false) then
+  if not nvl(regexp_like(in_section_name, '^[[:alpha:]][[:alnum:]_#$]*$'), false) then
     raise_application_error(
       gc_invalid_argument_num,
       'section name "' || in_section_name ||

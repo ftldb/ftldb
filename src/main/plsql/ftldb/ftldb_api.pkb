@@ -32,151 +32,49 @@ begin
 end get_this_schema;
 
 
-procedure default_template_finder(
-  in_templ_name in varchar2,
-  out_locator_xml out varchar2
-)
+function new_templ_locator(in_templ_name in varchar2) return templ_locator_ot
 is
 begin
-  if in_templ_name like 'src:%' or in_templ_name like '%' then
-    declare
-      l_src_locator src_template_locator_ot;
-    begin
-      source_template_finder(in_templ_name, l_src_locator);
-      out_locator_xml :=
-        case
-          when l_src_locator is null then null
-          else xmltype(l_src_locator).getstringval()
-        end;
-    end;
-  else
-    out_locator_xml := null; --not found
-  end if;
-end default_template_finder;
-
-
-procedure default_template_loader(
-  in_locator_xml in varchar2,
-  out_body out clob
-)
-is
-  c_locator_xmlt xmltype := xmltype(in_locator_xml);
-begin
-  if c_locator_xmlt.existsnode('/' || src_template_locator_ot.class()) = 1 then
-    declare
-      l_src_locator src_template_locator_ot;
-    begin
-      c_locator_xmlt.toobject(l_src_locator);
-      source_template_loader(l_src_locator, out_body);
-    end;
-  else
-    raise value_error;
-  end if;
-end default_template_loader;
-
-
-/**
- * Converts Oracle timestamp to milliseconds since Unix Epoch.
- */
-function timestamp2millis(in_timestamp timestamp) return integer
-is
-  c_interval constant interval day(9) to second(3) :=
-    sys_extract_utc(in_timestamp) - timestamp '1970-01-01 00:00:00';
-begin
-  return 1000 * (
-    extract(day from c_interval) * 86400 +
-    extract(hour from c_interval) * 3600 +
-    extract(minute from c_interval) * 60 +
-    extract(second from c_interval)
-  );
-end timestamp2millis;
-
-
-procedure default_template_checker(
-  in_locator_xml in varchar2,
-  out_millis out integer
-)
-is
-  c_locator_xmlt xmltype := xmltype(in_locator_xml);
-begin
-  if c_locator_xmlt.existsnode('/' || src_template_locator_ot.class()) = 1 then
-    declare
-      l_src_locator src_template_locator_ot;
-    begin
-      c_locator_xmlt.toobject(l_src_locator);
-      source_template_checker(l_src_locator, out_millis);
-    end;
-  else
-    raise value_error;
-  end if;
-end default_template_checker;
-
-
-procedure source_template_finder(
-  in_templ_name in varchar2,
-  out_locator out src_template_locator_ot
-)
-is
-  l_search_templ_name varchar2(256);
-  l_owner varchar2(30);
-  l_obj_name varchar2(30);
-  l_sec_name varchar2(30);
-  l_dblink varchar2(128);
-  l_type varchar2(30);
-begin
-  if in_templ_name like 'src:%' then
-    l_search_templ_name := substr(in_templ_name, 5);
-  else
-    l_search_templ_name := in_templ_name;
-  end if;
-
-  source_util.resolve_templ_name(
-    l_search_templ_name, l_owner, l_obj_name, l_sec_name, l_dblink, l_type
-  );
-
-  out_locator := src_template_locator_ot(
-    in_templ_name, l_owner, l_obj_name, l_sec_name, l_dblink, l_type
-  );
-exception
-  when source_util.e_name_not_resolved then
-    out_locator := null;
-end source_template_finder;
-
-
-procedure source_template_loader(
-  in_locator in src_template_locator_ot,
-  out_body out clob
-)
-is
-begin
-  out_body :=
+  return
     case
-      when in_locator.sec_name is null then
-        source_util.extract_noncompiled_section(
-          in_locator.owner, in_locator.obj_name, in_locator.dblink,
-          in_locator.type
-        )
-      else
-        source_util.extract_named_section(
-          in_locator.owner, in_locator.obj_name, in_locator.dblink,
-          in_locator.type, in_locator.sec_name
-        )
+      when in_templ_name like 'src:%' then
+        src_templ_locator_ot.new(in_templ_name)
+      when in_templ_name like '%' then
+        src_templ_locator_ot.new(in_templ_name)
     end;
-end source_template_loader;
+end new_templ_locator;
 
 
-procedure source_template_checker(
-  in_locator in src_template_locator_ot,
-  out_millis out integer
-)
+function get_templ_locator_xmlstr(in_templ_name in varchar2) return varchar2
+is
+  c_locator constant templ_locator_ot := new_templ_locator(in_templ_name);
+begin
+  if c_locator is null then
+    return null;
+  end if;
+    
+  return c_locator.xml_encode().getstringval();
+end get_templ_locator_xmlstr;
+
+
+function get_templ_body(in_locator_xmlstr in varchar2) return clob
+is  
+begin
+  return
+    templ_locator_ot
+      .xml_decode(xmltype(in_locator_xmlstr))
+      .get_templ_body();
+end get_templ_body;
+
+
+function get_templ_last_modified(in_locator_xmlstr in varchar2) return integer
 is
 begin
-  out_millis := timestamp2millis(
-    source_util.get_obj_timestamp(
-      in_locator.owner, in_locator.obj_name, in_locator.dblink, in_locator.type
-    )
-  );
-end source_template_checker;
+  return
+    templ_locator_ot
+      .xml_decode(xmltype(in_locator_xmlstr))
+      .get_last_modified();
+end get_templ_last_modified;
 
 
 function default_config_xml return xmltype
@@ -184,28 +82,37 @@ is
   c_pkg_name constant varchar2(70) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"';
 
-  c_finder_call constant varchar2(4000) :=
-    '{call ' || c_pkg_name || '.default_template_finder(?, ?)}';
-  c_loader_call constant varchar2(4000) :=
-    '{call ' || c_pkg_name || '.default_template_loader(?, ?)}';
-  c_checker_call constant varchar2(4000) :=
-    '{call ' || c_pkg_name || '.default_template_checker(?, ?)}';
-
+  c_finder_func_name constant varchar2(100) :=
+    c_pkg_name || '.get_templ_locator_xmlstr';
+  c_loader_func_name constant varchar2(100) :=
+    c_pkg_name || '.get_templ_body';
+  c_checker_func_name constant varchar2(100) :=
+    c_pkg_name || '.get_templ_last_modified';
+  
+  c_mru_strong_ref_count constant pls_integer := 20;
+  c_mru_soft_ref_count constant pls_integer := 200;
+  
   c_config constant varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
     <java version="1.4.0" class="java.beans.XMLDecoder">
       <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
           <object class="ftldb.oracle.DatabaseTemplateLoader">
-            <string>' || utl_i18n.escape_reference(c_finder_call) || '</string>
-            <string>' || utl_i18n.escape_reference(c_loader_call) || '</string>
-            <string>' || utl_i18n.escape_reference(c_checker_call) || '</string>
+            <string>' ||
+              utl_i18n.escape_reference(c_finder_func_name) ||
+            '</string>
+            <string>' ||
+              utl_i18n.escape_reference(c_loader_func_name) ||
+            '</string>
+            <string>' ||
+              utl_i18n.escape_reference(c_checker_func_name) ||
+            '</string>
           </object>
         </void>
         <void property="cacheStorage">
           <object class="freemarker.cache.MruCacheStorage">
-            <int>20</int>
-            <int>200</int>
+            <int>' || c_mru_strong_ref_count || '</int>
+            <int>' || c_mru_soft_ref_count || '</int>
           </object>
         </void>
       </object>
@@ -217,23 +124,14 @@ end default_config_xml;
 
 function get_config_func_name return varchar2
 is
-  l_owner varchar2(30);
-  l_name varchar2(30);
-  l_dblink varchar2(128);
-  l_type varchar2(30);
+  c_custom_config_func_name constant varchar2(100) := 'ftldb_config_xml';
   c_default_config_func_name constant varchar2(100) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"' ||
-    '.default_config_xml';
+    '.default_config_xml';  
 begin
-  source_util.resolve_ora_name(
-    'ftldb_config_xml', l_owner, l_name, l_dblink, l_type
-  );
-  if l_type != 'FUNCTION' then
-    return c_default_config_func_name;
-  end if;
-  return source_util.get_full_name(l_owner, l_name, l_dblink);
+  return dbms_assert.sql_object_name(c_custom_config_func_name);
 exception
-  when source_util.e_name_not_resolved then
+  when dbms_assert.invalid_object_name then
     return c_default_config_func_name;
 end get_config_func_name;
 

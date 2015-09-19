@@ -22,89 +22,42 @@ create or replace package ftldb_api authid current_user as
 
 
 /**
- * Default template finder. Passes an external call to a specific finder
- * depending on the template's name prefix. Returns an XML locator as a string.
- * If the search fails, returns null.
- *
- * @param  in_templ_name    the template's name
- * @param  out_locator_xml  the template's locator
- */
-procedure default_template_finder(
-  in_templ_name in varchar2,
-  out_locator_xml out varchar2
-);
-
-
-/**
- * Default template loader. Passes an external call to a specific loader
- * depending on the template's locator. Returns the template's body.
- *
- * @param  in_locator_xml  the template's locator
- * @param  out_body        the loaded template as a CLOB
- */
-procedure default_template_loader(
-  in_locator_xml in varchar2,
-  out_body out clob
-);
-
-
-/**
- * Default template checker. Passes an external call to a specific checker
- * depending on the template's locator. Returns the template's timestamp.
- *
- * @param  in_locator_xml  the template's locator
- * @param  out_millis      the template's age in milliseconds since Unix Epoch
- */
-procedure default_template_checker(
-  in_locator_xml in varchar2,
-  out_millis out integer
-);
-
-
-/**
- * Source template finder. Seeks a template in stored objects' source. Returns
- * a SRC_TEMPLATE_LOCATOR_OT object.
+ * Default template finder function. Returns the sought template's XML locator
+ * as a string. If the search fails, returns null.
  *
  * @param  in_templ_name  the template's name
- * @param  out_locator    the template's locator
+ * @return                the template's locator as an XML string
  */
-procedure source_template_finder(
-  in_templ_name in varchar2,
-  out_locator out src_template_locator_ot
-);
+function get_templ_locator_xmlstr(in_templ_name in varchar2) return varchar2;
 
 
 /**
- * Source template loader. Loads a template from its container object's source.
+ * Default template loader function. Gets a locator and returns the template's
+ * body.
  *
- * @param  in_locator  the template's locator
- * @param  out_body    the loaded template as a CLOB
+ * @param  in_locator_xmlstr  the template's locator serialized as a string
+ * @return                    the loaded template as a CLOB
  */
-procedure source_template_loader(
-  in_locator in src_template_locator_ot,
-  out_body out clob
-);
+function get_templ_body(in_locator_xmlstr in varchar2) return clob;
 
 
 /**
- * Source template checker. Checks a template for its last modification time.
+ * Default template checker function. Gets a locator and returns the template's
+ * timestamp.
  *
- * @param  in_locator  the template's locator
- * @param  out_millis  the container object's milliseconds since Unix Epoch
+ * @param  in_locator_xmlstr  the template's locator serialized as a string
+ * @return                    the template's timestamp as a comparable integer
  */
-procedure source_template_checker(
-  in_locator in src_template_locator_ot,
-  out_millis out integer
-);
+function get_templ_last_modified(in_locator_xmlstr in varchar2) return integer;
 
 
 /**
  * Returns the default configuration XML.
  *
  * Uses 'ftldb.oracle.DatabaseTemplateLoader' class as a template loader with
- * the default finder, loader and checker calls.
- * Uses 'freemarker.cache.MruCacheStorage' class as a cache storage with 20 hard
- * references and 200 soft references (actually Oracle cleans them immediately).
+ * the default finder, loader and checker functions.
+ * Uses 'freemarker.cache.MruCacheStorage' class as a cache storage with 20
+ * strong references and 200 soft references.
  *
  * @return  the configuration XML
  */
