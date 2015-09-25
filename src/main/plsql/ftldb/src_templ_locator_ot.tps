@@ -17,11 +17,15 @@
 create or replace type src_templ_locator_ot authid current_user
 under templ_locator_ot (
 /**
- * This type is a locator of a template stored in an Oracle object's source.
+ * This type is a locator of a template stored in an Oracle object's source
+ * either in a non-compiled PLSQLCC section or in a named section bounded by
+ * special comment lines.
  * 
- * The template name may start with 'src:' prefix or have no prefix. It may be
- * any valid Oracle function, procedure, package, type, trigger, view or java
- * source name. It must match the [SCHEMA.]OBJNAME[%SECNAME][@DBLINK] mask.
+ * The template name may start with 'src:' prefix. It may be any valid Oracle
+ * function, procedure, package, type, trigger, view or java source name. It
+ * must match the [SCHEMA.]OBJNAME[%SECNAME][@DBLINK] mask.
+ *
+ * The template name may also be a Java long name without a prefix.
  *
  * See {%link SOURCE_UTIL} package.
  * @headcom

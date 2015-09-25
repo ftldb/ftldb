@@ -313,7 +313,7 @@ $if null $then
 --%end java_hlp_methods3
 
 --%begin std
-<#import "ftldb_std_ftl" as std>
+<#import "/ftldb/std.ftl" as std>
 
 <#assign a = std.least(5, 3, 7, 9)>
 <#assign b = std.greatest(5, 3, 17, 9)>
@@ -453,8 +453,8 @@ column4, column5
 
 
 --%begin orasql
-  <#import "ftldb_std_ftl" as std>
-  <#import "ftldb_orasql_ftl" as sql>
+  <#import "/ftldb/std.ftl" as std>
+  <#import "/ftldb/orasql.ftl" as sql>
 
   <#assign res = sql.scalar("add_months", ['20-01-2000'?date['dd-MM-yyyy'], 1])>
   ${res?string["dd.MM.yyyy"]}

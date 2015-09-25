@@ -32,16 +32,21 @@ begin
 end get_this_schema;
 
 
+/**
+ * This is a locator factory method. It takes a template name and creates
+ * a locator of the corresponding type.
+ */
 function new_templ_locator(in_templ_name in varchar2) return templ_locator_ot
 is
 begin
-  return
-    case
-      when in_templ_name like 'src:%' then
-        src_templ_locator_ot.new(in_templ_name)
-      when in_templ_name like '%' then
-        src_templ_locator_ot.new(in_templ_name)
-    end;
+  case
+    when in_templ_name like 'src:_%' then
+      return src_templ_locator_ot.new(in_templ_name);
+    when in_templ_name like '_%' then
+      return src_templ_locator_ot.new(in_templ_name);
+    else
+      return null;
+  end case;
 end new_templ_locator;
 
 
@@ -52,13 +57,13 @@ begin
   if c_locator is null then
     return null;
   end if;
-    
+
   return c_locator.xml_encode().getstringval();
 end get_templ_locator_xmlstr;
 
 
 function get_templ_body(in_locator_xmlstr in varchar2) return clob
-is  
+is
 begin
   return
     templ_locator_ot
@@ -88,10 +93,10 @@ is
     c_pkg_name || '.get_templ_body';
   c_checker_func_name constant varchar2(100) :=
     c_pkg_name || '.get_templ_last_modified';
-  
+
   c_mru_strong_ref_count constant pls_integer := 20;
   c_mru_soft_ref_count constant pls_integer := 200;
-  
+
   c_config constant varchar2(32767) :=
     '<?xml version="1.0" encoding="UTF-8"?>
     <java version="1.4.0" class="java.beans.XMLDecoder">
@@ -127,7 +132,7 @@ is
   c_custom_config_func_name constant varchar2(100) := 'ftldb_config_xml';
   c_default_config_func_name constant varchar2(100) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"' ||
-    '.default_config_xml';  
+    '.default_config_xml';
 begin
   return dbms_assert.sql_object_name(c_custom_config_func_name);
 exception
@@ -148,7 +153,9 @@ is
   l_config_xml xmltype;
 begin
   execute immediate
-    'call ' || dbms_assert.sql_object_name(in_config_func_name) || '() into :1'
+    'begin' ||
+    ' :1 := ' || dbms_assert.sql_object_name(in_config_func_name) || '(); ' ||
+    'end;'
   using out l_config_xml;
 
   init(l_config_xml);

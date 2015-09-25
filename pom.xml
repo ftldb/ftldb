@@ -66,6 +66,10 @@
     <build>
         <resources>
             <resource>
+                <directory>src/main/ftl</directory>
+            </resource>
+
+            <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
                     <exclude>ftldb/version.properties</exclude>

@@ -24,16 +24,19 @@ is
   l_locator src_templ_locator_ot :=
     src_templ_locator_ot(in_templ_name, null, null, null, null, null);
 begin
-  source_util.resolve_templ_name(
-    case
-      when in_templ_name like 'src:%' then
-        substr(in_templ_name, 5)
-      else
-        in_templ_name
-    end,
-    l_locator.owner, l_locator.obj_name, l_locator.sec_name, l_locator.dblink,
-    l_locator.type
-  );
+  if in_templ_name like 'src:_%' then
+    source_util.resolve_templ_name(
+      substr(in_templ_name, 5),
+      l_locator.owner, l_locator.obj_name, l_locator.sec_name, l_locator.dblink,
+      l_locator.type
+    );
+  else
+    source_util.resolve_long_name(
+      in_templ_name,
+      l_locator.owner, l_locator.obj_name, l_locator.dblink,
+      l_locator.type
+    );
+  end if;
   return l_locator;
 exception
   when source_util.e_name_not_resolved then
@@ -46,13 +49,17 @@ is
 begin
   return
     case
-      when self.sec_name is null then
-        source_util.extract_noncompiled_section(
+      when self.sec_name is not null then
+        source_util.extract_named_section(
+          self.owner, self.obj_name, self.dblink, self.type, self.sec_name
+        )
+      when self.type in ('JAVA RESOURCE') then
+        source_util.get_obj_source(
           self.owner, self.obj_name, self.dblink, self.type
         )
       else
-        source_util.extract_named_section(
-          self.owner, self.obj_name, self.dblink, self.type, self.sec_name
+        source_util.extract_noncompiled_section(
+          self.owner, self.obj_name, self.dblink, self.type
         )
     end;
 end get_templ_body;

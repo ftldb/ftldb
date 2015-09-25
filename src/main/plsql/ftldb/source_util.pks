@@ -23,7 +23,8 @@ create or replace package source_util authid current_user as
 
 -- The list of object types where templates can be stored and extracted from.
 gc_supported_obj_types constant varchar2_nt := varchar2_nt(
-  'FUNCTION', 'PROCEDURE', 'PACKAGE', 'VIEW', 'TYPE', 'TRIGGER', 'JAVA SOURCE'
+  'FUNCTION', 'PROCEDURE', 'PACKAGE', 'VIEW', 'TYPE', 'TRIGGER', 'JAVA SOURCE',
+  'JAVA RESOURCE'
 );
 
 -- The exception raised when an argument value is invalid.
@@ -37,6 +38,10 @@ pragma exception_init(e_name_not_resolved, -20101);
 gc_name_not_resolved_num constant number := -20101;
 gc_name_not_resolved_msg constant varchar2(2000) :=
   'name %s cannot be resolved';
+gc_looping_synonym_chain_msg constant varchar2(2000) :=
+  'synonym %s references to a looping chain';
+gc_dblink_over_dblink_msg constant varchar2(2000) :=
+  'remote synonym %s references to another remote database %s';
 
 -- The exception raised when an object is not found.
 e_object_not_found exception;
@@ -89,36 +94,33 @@ function long2clob(
 
 /**
  * Resolves the specified full name to the referenced object's owner, name,
- * dblink (if any) and type. Wraps DMBS_UTILITY.NAME_RESOLVE and hides the
- * complexity of using its context parameter. Loops through the list of
- * supported context values (from most to least possible) and tries to resolve
- * the specified name with them. Also works correctly with remote names.
+ * dblink (if any) and type.
  *
  * @param  in_ora_name  the name to be resolved (case-sensitive when quoted)
  * @param  out_owner    the referenced object's owner
- * @param  out_name     the referenced object's name
+ * @param  out_obj_name the referenced object's name
  * @param  out_dblink   the referenced object's dblink
  * @param  out_type     the referenced object's type
  *
- * @throws  e_invalid_argument   if the name doesn't match the pattern:
- *                               [SCHEMA.]NAME[@DBLINK]
+ * @throws  e_invalid_argument   if the name is not a correct Oracle name
  * @throws  e_name_not_resolved  if the name cannot be resolved
  */
 procedure resolve_ora_name(
   in_ora_name in varchar2,
   out_owner out varchar2,
-  out_name out varchar2,
+  out_obj_name out varchar2,
   out_dblink out varchar2,
   out_type out varchar2
 );
 
 
 /**
- * Resolves the specified template name.
+ * Resolves the specified template name, which is similar to an Oracle name, but
+ * may contain a section part: [SCHEMA.]OBJNAME[%SECNAME][@DBLINK].
  *
  * @param  in_templ_name  the name to be resolved (case-sensitive when quoted)
  * @param  out_owner      the referenced object's owner
- * @param  out_name       the referenced object's name
+ * @param  out_obj_name   the referenced object's name
  * @param  out_sec_name   the referenced section's name
  * @param  out_dblink     the referenced object's dblink
  * @param  out_type       the referenced object's type
@@ -126,8 +128,27 @@ procedure resolve_ora_name(
 procedure resolve_templ_name(
   in_templ_name in varchar2,
   out_owner out varchar2,
-  out_name out varchar2,
+  out_obj_name out varchar2,
   out_sec_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
+);
+
+
+/**
+ * Resolves the specified long name. Converts it to a short name, then resolves
+ * as an Oracle name.
+ *
+ * @param  in_long_name   the name to be resolved (case-sensitive, not quoted)
+ * @param  out_owner      the referenced object's owner
+ * @param  out_obj_name   the referenced object's name
+ * @param  out_dblink     the referenced object's dblink
+ * @param  out_type       the referenced object's type
+ */
+procedure resolve_long_name(
+  in_long_name in varchar2,
+  out_owner out varchar2,
+  out_obj_name out varchar2,
   out_dblink out varchar2,
   out_type out varchar2
 );
@@ -136,11 +157,11 @@ procedure resolve_templ_name(
 /**
  * Returns the specified object's last modification time.
  *
- * @param  in_owner   the object's owner (case-sensitive)
- * @param  in_name    the object's name (case-sensitive)
- * @param  in_dblink  the object's dblink (case-insensitive)
- * @param  in_type    the object's type (case-insensitive)
- * @return            the object's last modification time
+ * @param  in_owner     the object's owner (case-sensitive)
+ * @param  in_obj_name  the object's name (case-sensitive)
+ * @param  in_dblink    the object's dblink (case-insensitive)
+ * @param  in_type      the object's type (case-insensitive)
+ * @return              the object's last modification time
  *
  * @throws  e_invalid_argument  if the object's owner, name or type is not
  *                              specified or the type is not supported
@@ -149,7 +170,7 @@ procedure resolve_templ_name(
  */
 function get_obj_timestamp(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return timestamp;
@@ -160,11 +181,11 @@ function get_obj_timestamp(
  * is an analog of DBMS_METADATA.GET_DDL, but doesn't need SELECT_CATALOG_ROLE
  * to access objects in different schemas.
  *
- * @param  in_owner   the object's owner (case-sensitive)
- * @param  in_name    the object's name (case-sensitive)
- * @param  in_dblink  the object's dblink (case-insensitive)
- * @param  in_type    the object's type (case-insensitive)
- * @return            the object's source as a CLOB
+ * @param  in_owner     the object's owner (case-sensitive)
+ * @param  in_obj_name  the object's name (case-sensitive)
+ * @param  in_dblink    the object's dblink (case-insensitive)
+ * @param  in_type      the object's type (case-insensitive)
+ * @return              the object's source as a CLOB
  *
  * @throws  e_invalid_argument  if the object's owner, name or type is not
  *                              specified or the type is not supported
@@ -173,7 +194,7 @@ function get_obj_timestamp(
  */
 function get_obj_source(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return clob;
@@ -210,7 +231,7 @@ function extract_section_from_clob(
  * the specified object's source.
  *
  * @param  in_owner            the object's owner (case-sensitive)
- * @param  in_name             the objects's name (case-sensitive)
+ * @param  in_obj_name         the objects's name (case-sensitive)
  * @param  in_dblink           the object's name (case-insensitive)
  * @param  in_type             the object's name (case-insensitive)
  * @param  in_start_pattern    the starting boundary regexp pattern
@@ -226,7 +247,7 @@ function extract_section_from_clob(
  */
 function extract_section_from_obj_src(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2,
   in_start_ptrn in varchar2,
@@ -273,17 +294,17 @@ function extract_section_from_obj_src(
  * </pre>
  * The syntax is case- and space-insensitive. The search is greedy.
  *
- * @param  in_owner   the object's owner (case-sensitive)
- * @param  in_name    the objects's name (case-sensitive)
- * @param  in_dblink  the object's name (case-insensitive)
- * @param  in_type    the object's name (case-insensitive)
- * @return            the sought section without boundaries as a CLOB
+ * @param  in_owner     the object's owner (case-sensitive)
+ * @param  in_obj_name  the objects's name (case-sensitive)
+ * @param  in_dblink    the object's name (case-insensitive)
+ * @param  in_type      the object's name (case-insensitive)
+ * @return              the sought section without boundaries as a CLOB
  *
  * @throws  e_section_not_found  if the section is not found
  */
 function extract_noncompiled_section(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return clob;
@@ -320,7 +341,7 @@ function extract_noncompiled_section(
  * The syntax is case- and space-insensitive. The search is lazy.
  *
  * @param  in_owner         the object's owner (case-sensitive)
- * @param  in_name          the objects's name (case-sensitive)
+ * @param  in_obj_name      the objects's name (case-sensitive)
  * @param  in_dblink        the object's name (case-insensitive)
  * @param  in_type          the object's name (case-insensitive)
  * @param  in_section_name  the section's name (case-insensitive)
@@ -331,7 +352,7 @@ function extract_noncompiled_section(
  */
 function extract_named_section(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2,
   in_section_name in varchar2,

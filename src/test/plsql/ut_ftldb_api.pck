@@ -42,9 +42,15 @@ create or replace package body ut_ftldb_api is
 
 function default_template_loader(in_templ_name varchar2) return clob
 is
+  l_locator varchar2(32767);
 begin
-  return
-    ftldb_api.get_templ_body(ftldb_api.get_templ_locator_xmlstr(in_templ_name));
+  l_locator := ftldb_api.get_templ_locator_xmlstr(in_templ_name);
+  if l_locator is null then
+    raise_application_error(
+      -20000, 'Template "' || in_templ_name || '" is not found'
+    );
+  end if;
+  return ftldb_api.get_templ_body(l_locator);
 end default_template_loader;
 
 
@@ -62,7 +68,7 @@ begin
   </#if>
   $end
 
-  l_tmpl := default_template_loader('ut_ftldb_api');
+  l_tmpl := default_template_loader('src:ut_ftldb_api');
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_tmpl);
@@ -88,7 +94,7 @@ begin
   */
 
   l_tmpl := default_template_loader(
-    'ut_ftldb_api%ut_dflt_templ_loader#sect'
+    'src:ut_ftldb_api%ut_dflt_templ_loader#sect'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
@@ -104,11 +110,11 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%args', ftldb_varchar2_nt('x', 'y', 'z')
+    'src:ut_ftldb_api$process%args', ftldb_varchar2_nt('x', 'y', 'z')
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%args_res'
+    'src:ut_ftldb_api$process%args_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
@@ -124,12 +130,12 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_body_to_clob(
-    '<#import "ftldb_std_ftl" as std/>' || chr(10) ||
-    '<@std.include "ut_ftldb_api$process%args", ["x", "y", "z"]/>'
+    '<#import "/ftldb/std.ftl" as std/>' || chr(10) ||
+    '<@std.include "/src:ut_ftldb_api$process%args", ["x", "y", "z"]/>'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%args_res'
+    'src:ut_ftldb_api$process%args_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
@@ -145,11 +151,11 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%java_binds'
+    'src:ut_ftldb_api$process%java_binds'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%java_binds_res' ||
+    'src:ut_ftldb_api$process%java_binds_res' ||
     case when dbms_db_version.version < 11 then '_ora10' end
   );
 
@@ -166,11 +172,11 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%java_hlp_methods1'
+    'src:ut_ftldb_api$process%java_hlp_methods1'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%java_hlp_methods1_res'
+    'src:ut_ftldb_api$process%java_hlp_methods1_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
@@ -186,16 +192,16 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%java_hlp_methods2_beg'
+    'src:ut_ftldb_api$process%java_hlp_methods2_beg'
   );
 
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%java_hlp_methods2_end'
+    'src:ut_ftldb_api$process%java_hlp_methods2_end'
   );
 
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%java_hlp_methods2_res'
+    'src:ut_ftldb_api$process%java_hlp_methods2_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
@@ -211,11 +217,11 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_body_to_clob(
-    '<#include "ut_ftldb_api$process%java_hlp_methods3">'
+    '<#include "src:ut_ftldb_api$process%java_hlp_methods3">'
   );
 
   l_etalon :=
-    '  template_name = "ut_ftldb_api$process%java_hlp_methods3"' || chr(10);
+    '  template_name = "src:ut_ftldb_api$process%java_hlp_methods3"' || chr(10);
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
     ftldb_clob_util.show(l_tmpl);
@@ -230,11 +236,11 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%std'
+    'src:ut_ftldb_api$process%std'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%std_res'
+    'src:ut_ftldb_api$process%std_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then
@@ -250,11 +256,11 @@ is
   l_etalon clob;
 begin
   l_tmpl := ftldb_api.process_to_clob(
-    'ut_ftldb_api$process%orasql'
+    'src:ut_ftldb_api$process%orasql'
   );
 
   l_etalon := default_template_loader(
-    'ut_ftldb_api$process%orasql_res'
+    'src:ut_ftldb_api$process%orasql_res'
   );
 
   if not nvl(dbms_lob.compare(l_tmpl, l_etalon) = 0, false) then

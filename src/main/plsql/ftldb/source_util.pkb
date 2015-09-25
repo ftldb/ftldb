@@ -137,53 +137,94 @@ end long2clob;
 
 
 /**
- * Prefixes '@' to the given dblink.
+ * Quotes the given dblink and prefixes @ to it.
  */
 function a(in_dblink in varchar2) return varchar2
 is
 begin
-  return case when in_dblink is not null then '@' || in_dblink end;
+  return case when in_dblink is not null then '@"' || in_dblink || '"' end;
 end a;
 
 
-/**
- * Returns an object's full name.
+/** 
+ * Validates an Oracle name and splits it into 3 parts.
  */
-function get_full_name(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_dblink in varchar2
-) return varchar2
-is
-begin
-  return '"' || in_owner || '"."' || in_name || '"' || a(in_dblink);
-end get_full_name;
-
-
-/**
- * Returns an object's full name and type.
- */
-function get_full_name(
-  in_owner in varchar2,
-  in_name in varchar2,
-  in_dblink in varchar2,
-  in_type in varchar2
-) return varchar2
-is
-begin
-  return get_full_name(in_owner, in_name, in_dblink) || ' (' || in_type || ')';
-end get_full_name;
-
-
-function try_to_resolve_ora_name(
-  in_local_name in varchar2,
-  in_dblink in varchar2,
+procedure tokenize_ora_name(
+  in_ora_name in varchar2,
   out_owner out varchar2,
-  out_name out varchar2,
-  out_dblink out varchar2,
+  out_obj_name out varchar2,
+  out_dblink out varchar2
+)
+is
+  l_a varchar2(30);
+  l_b varchar2(30);
+  l_c varchar2(30);
+  l_dblink varchar2(128);
+  l_nextpos pls_integer;
+begin
+  begin
+    dbms_utility.name_tokenize(
+      in_ora_name, l_a, l_b, l_c, l_dblink, l_nextpos
+    );
+  exception
+    when others then
+      raise_application_error(
+        gc_invalid_argument_num,
+        'failed to parse Oracle name "' || in_ora_name || '": ' ||
+        regexp_replace(sqlerrm, 'ORA-\d+: ')
+      );
+  end;
+  
+  if l_c is not null then
+    raise_application_error(
+      gc_invalid_argument_num,
+      'failed to parse Oracle name "' || in_ora_name || '": ' ||
+      'subprograms are not supported'
+    );
+  end if;
+  
+  if l_b is not null then
+    out_owner := l_a;
+    out_obj_name := l_b;
+  else
+    out_obj_name := l_a;
+  end if;
+  
+  out_dblink := l_dblink;
+end tokenize_ora_name;
+
+
+/**
+ * Concatenates an Oracle name from parts.
+ */
+function concat_ora_name(
+  in_owner in varchar2,
+  in_obj_name in varchar2,
+  in_dblink in varchar2 := null,
+  in_type in varchar2 := null 
+) return varchar2
+is
+begin
+  return
+    case when in_owner is not null then '"' || in_owner || '".' end ||
+    '"' || in_obj_name || '"' ||
+    a(in_dblink) ||
+    case when in_type is not null then ' (' || upper(in_type) || ')' end;
+end concat_ora_name;
+
+
+/**
+ * Resolves a tokenized Oracle name with DBMS_UTILITY.NAME_RESOLVE.
+ */
+function resolve_ora_name_with_context(
+  io_owner in out varchar2,
+  io_obj_name in out varchar2,
+  io_dblink in out varchar2,
   out_type out varchar2
 ) return boolean
 is
+  l_local_name varchar2(70) := concat_ora_name(io_owner, io_obj_name);
+
   e_incompatible_context exception;
   pragma exception_init(e_incompatible_context, -4047);
 
@@ -194,98 +235,230 @@ is
   c_supported_ctx_values constant number_nt :=
     number_nt(
       1 /*function, procedure, package*/, 2 /*view*/, 7 /*type*/,
-      3 /*trigger*/, 4 /*java source*/
+      3 /*trigger*/, 4 /*java source*/, 5 /*java resource*/
     );
   l_i pls_integer;
-
-  procedure resolved(in_type in varchar2, in_name in varchar2)
-  is
-  begin
-    out_type := in_type;
-    out_name := in_name;
-  end resolved;
-
-  function try_to_resolve_ora_name_by_ctx(in_context number) return boolean
-  is
-    l_part1 varchar2(30);
-    l_part2 varchar2(30);
-    l_part1_type number;
-    l_obj_num number;
-  begin
-    execute immediate
-      'call dbms_utility.name_resolve' || a(in_dblink) ||
-      '(:1, :2, :3, :4, :5, :6, :7, :8)'
-    using
-      in in_local_name, in in_context, out out_owner, out l_part1,
-      out l_part2, out out_dblink, out l_part1_type, out l_obj_num;
-
-    if in_dblink is not null and out_dblink is null then
-      out_dblink := in_dblink;
-    end if;
-
-    case l_part1_type
-      when 8 then resolved('FUNCTION', l_part2);
-      when 7 then resolved('PROCEDURE', l_part2);
-      when 9 then
-        if l_part2 is not null then
-          return false;
-        end if;
-        resolved('PACKAGE', l_part1);
-      when 4 then resolved('VIEW', l_part1);
-      when 13 then resolved('TYPE', l_part1);
-      when 12 then resolved('TRIGGER', l_part1);
-      when 28 then resolved('JAVA SOURCE', l_part1);
-      else return false;
-    end case;
-
-    return true;
-  end try_to_resolve_ora_name_by_ctx;
+  
+  l_owner varchar2(30);
+  l_part1 varchar2(30);
+  l_part2 varchar2(30);
+  l_dblink varchar2(128);
+  l_part1_type number;
+  l_obj_num number;
 
 begin
   l_i := c_supported_ctx_values.first();
+  
   while l_i is not null loop
     begin
-      return try_to_resolve_ora_name_by_ctx(c_supported_ctx_values(l_i));
+      execute immediate
+        'call dbms_utility.name_resolve' || a(io_dblink) ||
+        '(:1, :2, :3, :4, :5, :6, :7, :8)'
+      using
+        in l_local_name, in c_supported_ctx_values(l_i), out l_owner,
+        out l_part1, out l_part2, out l_dblink, out l_part1_type, out l_obj_num;
+      
+      exit;  
     exception
       when e_incompatible_context or e_object_not_exist then
         l_i := c_supported_ctx_values.next(l_i);
     end;
   end loop;
+  
+  if l_i is null then
+    return false;
+  end if;
 
-  return false;
-end try_to_resolve_ora_name;
+  if l_part1 is not null and l_part2 is not null then
+    return false;
+  end if;
+  
+  if l_dblink is not null then
+    if io_dblink is not null then
+      raise_application_error(
+        gc_name_not_resolved_num,
+        utl_lms.format_message(
+          gc_dblink_over_dblink_msg, l_local_name || a(io_dblink), l_dblink
+        )
+      );
+    end if;
+    io_dblink := l_dblink;
+  end if;
+  
+  out_type := 
+    case l_part1_type
+      when 8 then 'FUNCTION'
+      when 7 then 'PROCEDURE'
+      when 9 then 'PACKAGE'
+      when 4 then 'VIEW'
+      when 13 then 'TYPE'
+      when 12 then 'TRIGGER'
+      when 28 then 'JAVA SOURCE'
+      when 30 then 'JAVA RESOURCE'
+    end;
+
+  io_obj_name := coalesce(l_part1, l_part2);
+  io_owner := l_owner;
+  
+  return true;
+end resolve_ora_name_with_context;
+
+
+/**
+ * Resolves a tokenized Oracle name with direct queries to the data dictionary.
+ */
+function resolve_ora_name_with_datadict(
+  io_owner in out varchar2,
+  io_obj_name in out varchar2,
+  io_dblink in out varchar2,
+  out_type out varchar2
+) return boolean
+is
+  -- The bag of the recursively found synonyms, protects against looping chains.
+  type number_ht is table of number index by varchar2(190);
+  l_bag number_ht;
+
+  c_user_users_query constant varchar2(32767) :=
+    'select u.username from user_users%dblink% u';
+
+  c_all_objects_query constant varchar2(32767) :=
+    'select o.object_type' || gc_lf ||
+    'from all_objects%dblink% o' || gc_lf ||
+    'where' || gc_lf ||
+    '  o.owner = :owner and' || gc_lf ||
+    '  o.object_name = :name and' || gc_lf ||
+    '  o.object_type member of :types';
+
+  c_all_synonyms_query constant varchar2(32767) :=
+    'select' || gc_lf ||
+    '  max(s.owner) keep (dense_rank first order by' || gc_lf ||
+    '       decode(s.owner, ''PUBLIC'', 2, 1)),' || gc_lf ||
+    '  max(s.table_owner) keep (dense_rank first order by' || gc_lf ||
+    '       decode(s.owner, ''PUBLIC'', 2, 1)),' || gc_lf ||
+    '  max(s.table_name) keep (dense_rank first order by' || gc_lf ||
+    '       decode(s.owner, ''PUBLIC'', 2, 1)),' || gc_lf ||
+    '  max(s.db_link) keep (dense_rank first order by' || gc_lf ||
+    '       decode(s.owner, ''PUBLIC'', 2, 1))' || gc_lf ||
+    'from all_synonyms%dblink% s' || gc_lf ||
+    'where' || gc_lf ||
+    '  s.owner in (:owner, ''PUBLIC'') and' || gc_lf ||
+    '  s.synonym_name = :name' || gc_lf ||
+    'group by null';
+
+  function recur_resolve_with_datadict(
+    io_owner in out varchar2,
+    io_obj_name in out varchar2,
+    io_dblink in out varchar2,
+    out_type out varchar2
+  ) return boolean
+  is
+    l_syn_full_name varchar2(190);
+    l_syn_owner varchar2(30);
+    l_ref_owner varchar2(30);
+    l_ref_name varchar2(30);
+    l_ref_dblink varchar2(128);
+  begin
+    -- Determine the name's owner, if omitted.
+    if io_owner is null then
+      -- If it's a local name, the owner is the current schema.
+      if io_dblink is null then
+        io_owner := sys_context('userenv', 'current_schema');
+      else
+      -- If it's a remote name, the owner is the connecting schema.
+        execute immediate replace(c_user_users_query, '%dblink%', a(io_dblink))
+        into io_owner;
+      end if;
+    end if;
+
+    -- Try to find the object and its type.
+    begin
+      execute immediate replace(c_all_objects_query, '%dblink%', a(io_dblink))
+      into out_type
+      using in io_owner, in io_obj_name, in gc_supported_obj_types;
+      
+      return true;
+    exception
+      when no_data_found then
+        null;
+    end;
+
+    -- The name may be a synonym (private or public), try to resolve it.
+    begin
+      execute immediate replace(c_all_synonyms_query, '%dblink%', a(io_dblink))
+      into l_syn_owner, l_ref_owner, l_ref_name, l_ref_dblink
+      using in io_owner, in io_obj_name;
+    exception
+      when no_data_found then
+        return false;
+    end;
+
+    l_syn_full_name := concat_ora_name(l_syn_owner, io_obj_name, a(io_dblink));
+
+    -- If a looping chain is detected, the synonym cannot be resolved.
+    if l_bag.exists(l_syn_full_name) then
+      raise_application_error(
+        gc_name_not_resolved_num,
+        utl_lms.format_message(gc_looping_synonym_chain_msg, l_syn_full_name)
+      );
+    end if;
+
+    -- Save the current synonym's full name to a bag.
+    l_bag(l_syn_full_name) := 1;
+
+    -- Set the referenced object's attributes.
+    io_owner := l_ref_owner;
+    io_obj_name := l_ref_name;
+
+    -- If the synonym references to a remote object...
+    if l_ref_dblink is not null then
+      -- If the synonym is itself remote and hence references to a remote
+      -- object on a different DB, exit with failure (too complex to resolve).
+      if io_dblink is not null then
+        raise_application_error(
+          gc_name_not_resolved_num,
+          utl_lms.format_message(
+            gc_dblink_over_dblink_msg, l_syn_full_name, l_ref_dblink
+          )
+        );
+      -- Otherwise set the dblink.
+      else
+        io_dblink := l_ref_dblink;
+      end if;
+    end if;
+
+    -- Try to resolve the referenced synonym.
+    return
+      recur_resolve_with_datadict(
+        io_owner, io_obj_name, io_dblink, out_type
+      );
+  end recur_resolve_with_datadict;
+
+begin
+  return
+    recur_resolve_with_datadict(io_owner, io_obj_name, io_dblink, out_type);
+end resolve_ora_name_with_datadict;
 
 
 procedure resolve_ora_name(
   in_ora_name in varchar2,
   out_owner out varchar2,
-  out_name out varchar2,
+  out_obj_name out varchar2,
   out_dblink out varchar2,
   out_type out varchar2
 )
 is
-  -- Regexp for the [SCHEMA.]NAME[@DBLINK] pattern.
-  c_full_name_ptrn constant varchar2(64) := '^(([^.]+\.)??[^.@]+)(@([^@]+))?$';
-
-  l_local_name varchar2(65);
-  l_dblink varchar2(128);
 begin
-  -- Validate the name.
-  if not nvl(regexp_like(in_ora_name, c_full_name_ptrn), false) then
-    raise_application_error(
-      gc_invalid_argument_num,
-      'name ' || in_ora_name || ' does not match [SCHEMA.]NAME[@DBLINK] pattern'
-    );
-  end if;
+  -- Tokenize the name into parts.
+  tokenize_ora_name(in_ora_name, out_owner, out_obj_name, out_dblink);
 
-  -- Split the name into two parts.
-  l_local_name := regexp_replace(in_ora_name, c_full_name_ptrn, '\1');
-  l_dblink := regexp_replace(in_ora_name, c_full_name_ptrn, '\4');
-
+  -- Try to resolve name with the native Oracle resolver, then with the custom.
   if
-    -- Try to resolve name with the Oracle native resolver.
-    not try_to_resolve_ora_name(
-      l_local_name, l_dblink, out_owner, out_name, out_dblink, out_type
+    not resolve_ora_name_with_context(
+      out_owner, out_obj_name, out_dblink, out_type
+    )
+  and
+    not resolve_ora_name_with_datadict(
+      out_owner, out_obj_name, out_dblink, out_type
     )
   then
     raise_application_error(
@@ -305,37 +478,70 @@ procedure split_templ_name(
   out_section_name out varchar2
 )
 is
+  c_simple_name constant varchar2(32) := '[[:alpha:]][[:alnum:]_$#]{0,29}';
+  c_quoted_name constant varchar2(32) := '"[^"]{1,30}"';
+  c_any_name constant varchar2(70) := c_simple_name || '|' || c_quoted_name;
+  c_templ_name_ptrn constant varchar2(300) :=
+    '^\s*' ||
+    '(' || c_any_name || ')' || --\1
+    '(\s*\.\s*(' || c_any_name ||'))?' || --\2 \3
+    '(\s*%\s*(' || c_simple_name ||'))?' || --\4 \5
+    '(\s*@\s*(' || c_any_name || '))?' || --\6 \7
+    '\s*$';
 begin
-  if in_templ_name like '%\%%' escape '\' then
-    out_container_name := regexp_replace(in_templ_name, '%[^%@]+');
-    out_section_name :=
-      regexp_replace(in_templ_name, '^([^%]+%?)([^%@]*)(@[^@]+)?$', '\2');
-  else
-    out_container_name := in_templ_name;
-    out_section_name := null;
+  if not nvl(regexp_like(in_templ_name, c_templ_name_ptrn), false) then
+    raise_application_error(
+      gc_invalid_argument_num,
+      'failed to parse template name "' || in_templ_name || '"'
+    );
   end if;
+
+  out_container_name :=
+    regexp_replace(in_templ_name, c_templ_name_ptrn, '\1\2\6');
+  out_section_name :=
+    regexp_replace(in_templ_name, c_templ_name_ptrn, '\5');
 end split_templ_name;
 
 
 procedure resolve_templ_name(
   in_templ_name in varchar2,
   out_owner out varchar2,
-  out_name out varchar2,
+  out_obj_name out varchar2,
   out_sec_name out varchar2,
   out_dblink out varchar2,
   out_type out varchar2
 )
 is
-  l_container_name varchar2(200);
+  l_container_name varchar2(4000);
 begin
   split_templ_name(in_templ_name, l_container_name, out_sec_name);
-  resolve_ora_name(l_container_name, out_owner, out_name, out_dblink, out_type);
+  resolve_ora_name(
+    l_container_name, out_owner, out_obj_name, out_dblink, out_type
+  );
 end resolve_templ_name;
+
+
+procedure resolve_long_name(
+  in_long_name in varchar2,
+  out_owner out varchar2,
+  out_obj_name out varchar2,
+  out_dblink out varchar2,
+  out_type out varchar2
+)
+is
+  l_short_name varchar2(30);
+begin
+  l_short_name := dbms_java.shortname(in_long_name);
+  
+  resolve_ora_name(
+    '"' || l_short_name || '"', out_owner, out_obj_name, out_dblink, out_type
+  );
+end resolve_long_name;
 
 
 function get_obj_timestamp(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return timestamp
@@ -359,7 +565,7 @@ begin
       raise_application_error(
         gc_invalid_argument_num, 'object owner is not specified'
       );
-    when in_name is null then
+    when in_obj_name is null then
       raise_application_error(
         gc_invalid_argument_num, 'object name is not specified'
       );
@@ -378,7 +584,7 @@ begin
   execute immediate
     replace(c_all_objects_query, '%dblink%', a(in_dblink))
   into l_timestamp
-  using in_owner, in_name, c_type, c_type;
+  using in_owner, in_obj_name, c_type, c_type;
 
   return l_timestamp;
 exception
@@ -387,7 +593,7 @@ exception
       gc_object_not_found_num,
       utl_lms.format_message(
         gc_object_not_found_msg,
-        get_full_name(in_owner, in_name, in_dblink), c_type
+        concat_ora_name(in_owner, in_obj_name, in_dblink), c_type
       )
     );
 end get_obj_timestamp;
@@ -395,7 +601,7 @@ end get_obj_timestamp;
 
 function get_view_source(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2
 ) return clob
 is
@@ -409,14 +615,44 @@ begin
   return
     long2clob(
       replace(c_all_views_query, '%dblink%', a(in_dblink)),
-      varchar2_nt(':owner', ':name'), varchar2_nt(in_owner, in_name)
+      varchar2_nt(':owner', ':name'), varchar2_nt(in_owner, in_obj_name)
     );
 end get_view_source;
 
 
+function get_java_resource(
+  in_owner in varchar2,
+  in_obj_name in varchar2,
+  in_dblink in varchar2
+) return clob
+is
+  l_clob clob := clob_util.create_temporary();
+begin
+  if in_dblink is not null then
+    raise_application_error(
+      gc_invalid_argument_num,
+      'loading Java resources over dblink is not supported'
+    );
+  end if;
+
+  begin
+    dbms_java.export_resource(in_obj_name, in_owner, l_clob);
+  exception
+    when others then
+      if sqlerrm like '%no such java schema object%' then
+        raise no_data_found;
+      else
+        raise;
+      end if;    
+  end;
+  
+  return l_clob;
+end get_java_resource;
+
+
 function get_program_unit_source(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return clob
@@ -437,7 +673,7 @@ begin
   execute immediate
     replace(c_all_source_query, '%dblink%', a(in_dblink))
   bulk collect into l_src_lines
-  using in_owner, in_name, in_type, in_type;
+  using in_owner, in_obj_name, in_type, in_type;
 
   -- Check that the source is found.
   if l_src_lines.count() = 0 then
@@ -455,7 +691,7 @@ end get_program_unit_source;
 
 function get_obj_source(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return clob
@@ -468,7 +704,7 @@ begin
       raise_application_error(
         gc_invalid_argument_num, 'object owner is not specified'
       );
-    when in_name is null then
+    when in_obj_name is null then
       raise_application_error(
         gc_invalid_argument_num, 'object name is not specified'
       );
@@ -486,8 +722,12 @@ begin
 
   return
     case
-      when c_type = 'VIEW' then get_view_source(in_owner, in_name, in_dblink)
-      else get_program_unit_source(in_owner, in_name, in_dblink, c_type)
+      when c_type = 'VIEW' then
+        get_view_source(in_owner, in_obj_name, in_dblink)
+      when c_type = 'JAVA RESOURCE' then
+        get_java_resource(in_owner, in_obj_name, in_dblink)
+      else
+        get_program_unit_source(in_owner, in_obj_name, in_dblink, c_type)
     end;
 
 exception
@@ -496,7 +736,7 @@ exception
       gc_source_not_found_num,
       utl_lms.format_message(
         gc_source_not_found_msg,
-        get_full_name(in_owner, in_name, in_dblink), c_type
+        concat_ora_name(in_owner, in_obj_name, in_dblink), c_type
       )
     );
 end get_obj_source;
@@ -554,7 +794,7 @@ end extract_section_from_clob;
 
 function extract_section_from_obj_src(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2,
   in_start_ptrn in varchar2,
@@ -567,7 +807,7 @@ is
 begin
   return
     extract_section_from_clob(
-      get_obj_source(in_owner, in_name, in_dblink, in_type),
+      get_obj_source(in_owner, in_obj_name, in_dblink, in_type),
       in_start_ptrn, in_end_ptrn, in_keep_boundaries,
       in_lazy_search, in_occurrence
     );
@@ -578,7 +818,7 @@ exception
       utl_lms.format_message(
         gc_section_not_found_msg, in_occurrence,
         in_start_ptrn, in_end_ptrn,
-        get_full_name(in_owner, in_name, in_dblink, in_type)
+        concat_ora_name(in_owner, in_obj_name, in_dblink, in_type)
       )
     );
 end extract_section_from_obj_src;
@@ -594,15 +834,15 @@ function extract_section_from_obj_src(
 ) return clob
 is
   l_owner varchar2(30);
-  l_name varchar2(30);
+  l_obj_name varchar2(30);
   l_dblink varchar2(128);
   l_type varchar2(30);
 begin
-  resolve_ora_name(in_container_name, l_owner, l_name, l_dblink, l_type);
+  resolve_ora_name(in_container_name, l_owner, l_obj_name, l_dblink, l_type);
 
   return
     extract_section_from_obj_src(
-      l_owner, l_name, l_dblink, l_type,
+      l_owner, l_obj_name, l_dblink, l_type,
       in_start_ptrn, in_end_ptrn, in_keep_boundaries,
       in_lazy_search, in_occurrence
     );
@@ -611,7 +851,7 @@ end extract_section_from_obj_src;
 
 function extract_noncompiled_section(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2
 ) return clob
@@ -619,7 +859,7 @@ is
 begin
   return
     extract_section_from_obj_src(
-      in_owner, in_name, in_dblink, in_type,
+      in_owner, in_obj_name, in_dblink, in_type,
       gc_noncmp_section_start_ptrn, gc_noncmp_section_end_ptrn
     );
 exception
@@ -628,7 +868,7 @@ exception
       gc_section_not_found_num,
       utl_lms.format_message(
         gc_ncmp_section_not_found_msg,
-        get_full_name(in_owner, in_name, in_dblink, in_type)
+        concat_ora_name(in_owner, in_obj_name, in_dblink, in_type)
       )
     );
 end extract_noncompiled_section;
@@ -637,13 +877,13 @@ end extract_noncompiled_section;
 function extract_noncompiled_section(in_container_name in varchar2) return clob
 is
   l_owner varchar2(30);
-  l_name varchar2(30);
+  l_obj_name varchar2(30);
   l_dblink varchar2(128);
   l_type varchar2(30);
 begin
-  resolve_ora_name(in_container_name, l_owner, l_name, l_dblink, l_type);
+  resolve_ora_name(in_container_name, l_owner, l_obj_name, l_dblink, l_type);
 
-  return extract_noncompiled_section(l_owner, l_name, l_dblink, l_type);
+  return extract_noncompiled_section(l_owner, l_obj_name, l_dblink, l_type);
 end extract_noncompiled_section;
 
 
@@ -652,7 +892,11 @@ function escape_section_name(
 ) return varchar2
 is
 begin
-  if not nvl(regexp_like(in_section_name, '^[[:alpha:]][[:alnum:]_#$]*$'), false) then
+  if
+    not nvl(
+      regexp_like(in_section_name, '^[[:alpha:]][[:alnum:]_#$]{0,29}$'), false
+    )
+  then
     raise_application_error(
       gc_invalid_argument_num,
       'section name "' || in_section_name ||
@@ -665,7 +909,7 @@ end escape_section_name;
 
 function extract_named_section(
   in_owner in varchar2,
-  in_name in varchar2,
+  in_obj_name in varchar2,
   in_dblink in varchar2,
   in_type in varchar2,
   in_section_name in varchar2,
@@ -676,7 +920,7 @@ is
 begin
   return
     extract_section_from_obj_src(
-       in_owner, in_name, in_dblink, in_type,
+       in_owner, in_obj_name, in_dblink, in_type,
       replace(gc_named_section_start_ptrn, '%name%', c_section_name),
       replace(gc_named_section_end_ptrn, '%name%', c_section_name),
       false, true, in_occurrence
@@ -686,8 +930,8 @@ exception
     raise_application_error(
       gc_section_not_found_num,
       utl_lms.format_message(
-        gc_named_section_not_found_msg, in_occurrence,
-        in_section_name, get_full_name(in_owner, in_name, in_dblink, in_type)
+        gc_named_section_not_found_msg, in_occurrence, in_section_name,
+        concat_ora_name(in_owner, in_obj_name, in_dblink, in_type)
       )
     );
 end extract_named_section;
@@ -700,15 +944,15 @@ function extract_named_section(
 ) return clob
 is
   l_owner varchar2(30);
-  l_name varchar2(30);
+  l_obj_name varchar2(30);
   l_dblink varchar2(128);
   l_type varchar2(30);
 begin
-  resolve_ora_name(in_container_name, l_owner, l_name, l_dblink, l_type);
+  resolve_ora_name(in_container_name, l_owner, l_obj_name, l_dblink, l_type);
 
   return
     extract_named_section(
-      l_owner, l_name, l_dblink, l_type, in_section_name, in_occurrence
+      l_owner, l_obj_name, l_dblink, l_type, in_section_name, in_occurrence
     );
 end extract_named_section;
 
