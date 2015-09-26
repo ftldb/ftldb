@@ -159,8 +159,8 @@ end;
  */
 $if null $then
 --%begin local_ftl_macros
-<#import "ftldb_std_ftl" as std>
-<#import "ftldb_orasql_ftl" as sql>
+<#import "/ftldb/std.ftl" as std>
+<#import "/ftldb/orasql.ftl" as sql>
 
 <#function get_columns_info a_selectable>
   <#return
@@ -245,7 +245,7 @@ end;
 
 $if null $then
 --%begin gen_snap_tab_ftl
-<#import "demo_dtoch_gen%local_ftl_macros" as lm>
+<#import "src:demo_dtoch_gen%local_ftl_macros" as lm>
 <@lm.gen_snap_tab template_args[0], template_args[1]/>
 --%end gen_snap_tab_ftl
 $end
@@ -262,7 +262,7 @@ begin
       when true then ftldb_script_ot()
       else
         ftldb_api.process(
-          $$plsql_unit || '%gen_snap_tab_ftl',
+          'src:' || $$plsql_unit || '%gen_snap_tab_ftl',
           ftldb_varchar2_nt(in_snap_tab, in_src_selectable)
         )
     end
@@ -275,8 +275,8 @@ $if null $then
   <#assign a_err_log_tab = template_args[0]/>
   <#assign a_selectable = template_args[1]/>
 
-  <#import "ftldb_std_ftl" as std>
-  <#import "ftldb_orasql_ftl" as sql>
+  <#import "/ftldb/std.ftl" as std>
+  <#import "/ftldb/orasql.ftl" as sql>
 
   <#assign
     l_col_list =
@@ -324,8 +324,8 @@ begin
       when true then ftldb_script_ot()
       else
         ftldb_api.process(
-          $$plsql_unit || '%gen_err_log_table_ftl',
-            ftldb_varchar2_nt(in_err_log_tab, in_selectable)
+          'src:' || $$plsql_unit || '%gen_err_log_table_ftl',
+          ftldb_varchar2_nt(in_err_log_tab, in_selectable)
         )
     end
   ;
@@ -339,9 +339,9 @@ $if null $then
   <#assign a_selectable = template_args[1]/>
   <#assign a_snap = template_args[2]/>
 
-  <#import "ftldb_std_ftl" as std>
-  <#import "ftldb_orasql_ftl" as sql>
-  <#import "demo_dtoch_gen%local_ftl_macros" as lm>
+  <#import "/ftldb/std.ftl" as std>
+  <#import "/ftldb/orasql.ftl" as sql>
+  <#import "src:demo_dtoch_gen%local_ftl_macros" as lm>
 
   <#assign
     l_col_list =
@@ -422,7 +422,7 @@ begin
 
   return
     ftldb_api.process(
-      $$plsql_unit || '%gen_diff_view_ftl',
+      'src:' || $$plsql_unit || '%gen_diff_view_ftl',
       ftldb_varchar2_nt(in_diff_view, in_selectable, in_snap)
     )
   ;
@@ -444,9 +444,9 @@ end;
 $if null $then
 --%begin gen_dtoch_pck_ftl
 
-<#import "ftldb_std_ftl" as std>
-<#import "ftldb_orasql_ftl" as sql>
-<#import "demo_dtoch_gen%local_ftl_macros" as lm>
+<#import "/ftldb/std.ftl" as std>
+<#import "/ftldb/orasql.ftl" as sql>
+<#import "src:demo_dtoch_gen%local_ftl_macros" as lm>
 
 create or replace package demo_dtoch is
 
@@ -531,7 +531,7 @@ is
   l_ret ftldb_script_ot;
 begin
   g_gen_parm_list := in_param_list;
-  l_ret := ftldb_api.process($$plsql_unit || '%gen_dtoch_pck_ftl');
+  l_ret := ftldb_api.process('src:' || $$plsql_unit || '%gen_dtoch_pck_ftl');
   g_gen_parm_list := null;
   return l_ret;
 end;

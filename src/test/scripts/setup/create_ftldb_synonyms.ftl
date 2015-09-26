@@ -32,10 +32,6 @@ create or replace synonym ftldb_varchar2_nt for ${ftldb_schema}.varchar2_nt
 /
 create or replace synonym ftldb_clob_nt for ${ftldb_schema}.clob_nt
 /
-create or replace synonym ftldb_std_ftl for ${ftldb_schema}.std_ftl
-/
-create or replace synonym ftldb_orasql_ftl for ${ftldb_schema}.orasql_ftl
-/
 create or replace synonym "ftldb/std.ftl" for ${ftldb_schema}."ftldb/std.ftl"
 /
 create or replace synonym "ftldb/orasql.ftl" for ${ftldb_schema}."ftldb/orasql.ftl"

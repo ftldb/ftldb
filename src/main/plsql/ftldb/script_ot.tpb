@@ -39,9 +39,12 @@ constructor function script_ot(
   in_clob in clob
 ) return self as result
 is
+  c_blank constant varchar2(2) := ' ' || chr(9);
+  c_cr constant varchar2(1) := chr(13); 
 begin
   self.statements := clob_util.split_into_pieces(
-    in_clob, '^[ ' || chr(9) || ']*/[ ' || chr(9) || ']*$', 'm', true
+    in_clob,
+    '^[' || c_blank || ']*/[' || c_blank || ']*' || c_cr || '?$', 'm', true
   );
   return;
 end script_ot;

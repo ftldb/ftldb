@@ -16,16 +16,23 @@
 
 create or replace package body source_util as
 
+
 -- Blank characters: space and tab.
 gc_blank constant varchar2(2) := ' ' || chr(9);
 
--- LF character.
+-- LF character (*nix EOL).
 gc_lf constant varchar2(1) := chr(10);
+
+-- CRLF characters (Win EOL).
+gc_crlf constant varchar2(2) := chr(13) || chr(10);
+
+-- EOL pattern: LF or CRLF.
+gc_eol constant varchar2(6) := '(' || gc_lf || '|' || gc_crlf || ')';
+
 
 -- The regexp pattern for the beginning of a non-compiled section.
 gc_noncmp_section_start_ptrn constant varchar2(128) :=
-  '\$if\s+(false|null)\s+\$then[' || gc_blank || ']*' ||
-  gc_lf || '?';
+  '\$if\s+(false|null)\s+\$then[' || gc_blank || ']*' || gc_eol || '?';
 
 -- The regexp pattern for the ending of a non-compiled section.
 gc_noncmp_section_end_ptrn constant varchar2(128) :=
@@ -36,14 +43,14 @@ gc_noncmp_section_end_ptrn constant varchar2(128) :=
 gc_named_section_start_ptrn constant varchar2(128) :=
   '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%begin' ||
   '[' || gc_blank || ']+' || '%name%' ||
-  '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
+  '([' || gc_blank || '][^' || gc_crlf || ']*)?' || gc_eol;
 
 -- The regexp pattern for the ending of a named section. The %name%
 -- placeholder should be replaced with the section name.
 gc_named_section_end_ptrn constant varchar2(128) :=
   '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%end' ||
   '[' || gc_blank || ']+' || '%name%' ||
-  '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
+  '([' || gc_blank || '][^' || gc_crlf || ']*)?' || gc_eol;
 
 
 function long2clob(

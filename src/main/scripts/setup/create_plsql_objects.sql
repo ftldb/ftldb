@@ -73,14 +73,6 @@ show errors package ftldb_api
 @plsql/ftldb/ftldb_api.pkb
 show errors package body ftldb_api
 
-prompt Create STD_FTL package.
-@plsql/ftldb/std_ftl.ftc
-show errors package std_ftl
-
-prompt Create ORASQL_FTL package.
-@plsql/ftldb/orasql_ftl.ftc
-show errors package orasql_ftl
-
 prompt Check for compilation errors.
 declare
   l_err_flg integer;
@@ -116,10 +108,6 @@ grant execute on script_ot to &&grantee.
 grant execute on templ_locator_ot to &&grantee.
 /
 grant execute on src_templ_locator_ot to &&grantee.
-/
-grant execute on std_ftl to &&grantee.
-/
-grant execute on orasql_ftl to &&grantee.
 /
 grant execute on source_util to &&grantee.
 /

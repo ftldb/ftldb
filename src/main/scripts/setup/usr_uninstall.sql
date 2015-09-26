@@ -32,10 +32,6 @@ spool &&logfile.
 prompt SQL*Plus script started.
 
 prompt Drop FTLDB objects.
-drop package orasql_ftl
-/
-drop package std_ftl
-/
 drop package ftldb_api
 /
 drop package ftldb_wrapper

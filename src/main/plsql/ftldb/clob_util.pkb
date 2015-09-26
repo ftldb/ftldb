@@ -20,8 +20,14 @@ create or replace package body clob_util as
 -- Blank characters: space and tab.
 gc_blank constant varchar2(2) := ' ' || chr(9);
 
--- LF character.
+-- LF character (*nix EOL).
 gc_lf constant varchar2(1) := chr(10);
+
+-- CRLF characters (Win EOL).
+gc_crlf constant varchar2(2) := chr(13) || chr(10);
+
+-- EOL pattern: LF or CRLF.
+gc_eol constant varchar2(6) := '(' || gc_lf || '|' || gc_crlf || ')';
 
 
 function create_temporary(in_content in varchar2 := '') return clob
@@ -97,9 +103,9 @@ end append;
 function trim_blank_lines(in_clob in clob) return clob
 is
   c_blank_line_ptrn constant varchar2(64) :=
-    '[' || gc_blank ||']*' || gc_lf;
+    '[' || gc_blank ||']*' || gc_eol;
   c_filled_line_ptrn constant varchar2(64) :=
-    '[^[:space:]]+[' || gc_blank ||']*' || gc_lf;
+    '[^[:space:]]+[' || gc_blank ||']*' || gc_eol;
   c_leading_lines_ptrn constant varchar2(64) :=
     '^(' || c_blank_line_ptrn || ')*';
   c_trailing_lines_ptrn constant varchar2(64) :=
@@ -148,30 +154,31 @@ end join;
 
 function split_into_lines(in_clob in clob) return dbms_sql.varchar2a
 is
-  l_length pls_integer := dbms_lob.getlength(in_clob);
-  l_start_pos pls_integer;
+  c_length constant pls_integer := dbms_lob.getlength(in_clob);
+  l_start_pos pls_integer := 1;
   l_eol_pos pls_integer;
   l_lines dbms_sql.varchar2a;
-  l_no pls_integer := 1;
+  l_no pls_integer := 0;
 begin
-  l_start_pos := 1;
+  if in_clob is null or c_length = 0 then
+    return l_lines;
+  end if;
+
   loop
-    l_eol_pos := dbms_lob.instr(in_clob, gc_lf, l_start_pos);
+    l_eol_pos := regexp_instr(in_clob, gc_eol, l_start_pos, 1, 0, 'n');
 
-    l_lines(l_no) :=
-      dbms_lob.substr(
-        in_clob,
-        case
-          when l_eol_pos > 0 then l_eol_pos - l_start_pos
-          else l_length - l_start_pos + 1
-        end,
-        l_start_pos
-      );
+    if l_eol_pos = 0 then
+      l_eol_pos := c_length + 1;
+    end if;
 
-    exit when l_eol_pos = 0 or l_eol_pos = l_length;
-
-    l_start_pos := l_eol_pos + 1;
     l_no := l_no + 1;
+    l_lines(l_no) :=
+      dbms_lob.substr(in_clob, l_eol_pos - l_start_pos, l_start_pos);
+
+    exit when l_eol_pos > c_length;
+
+    l_start_pos := regexp_instr(in_clob, gc_eol, l_start_pos, 1, 1, 'n');
+    exit when l_start_pos >= c_length;
   end loop;
 
   return l_lines;
