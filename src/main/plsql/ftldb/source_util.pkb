@@ -22,28 +22,24 @@ gc_blank constant varchar2(2) := ' ' || chr(9);
 -- LF character.
 gc_lf constant varchar2(1) := chr(10);
 
--- The regexp pattern for the beginning of a non-compiled section. Used in
--- {%link extract_noncompiled_section}.
+-- The regexp pattern for the beginning of a non-compiled section.
 gc_noncmp_section_start_ptrn constant varchar2(128) :=
   '\$if\s+(false|null)\s+\$then[' || gc_blank || ']*' ||
   gc_lf || '?';
 
--- The regexp pattern for the ending of a non-compiled section. Used in
--- {%link extract_noncompiled_section}.
+-- The regexp pattern for the ending of a non-compiled section.
 gc_noncmp_section_end_ptrn constant varchar2(128) :=
   '[' || gc_blank || ']*\$end';
 
 -- The regexp pattern for the beginning of a named section. The %name%
--- placeholder should be replaced with the section name. Used in
--- {%link extract_named_section}, {%link replace_named_section_in_clob}.
+-- placeholder should be replaced with the section name.
 gc_named_section_start_ptrn constant varchar2(128) :=
   '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%begin' ||
   '[' || gc_blank || ']+' || '%name%' ||
   '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
 
 -- The regexp pattern for the ending of a named section. The %name%
--- placeholder should be replaced with the section name. Used in
--- {%link extract_named_section}, {%link replace_named_section_in_clob}.
+-- placeholder should be replaced with the section name.
 gc_named_section_end_ptrn constant varchar2(128) :=
   '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%end' ||
   '[' || gc_blank || ']+' || '%name%' ||
@@ -226,9 +222,9 @@ end concat_ora_name;
 
 
 /**
- * Resolves a tokenized Oracle name with DBMS_UTILITY.NAME_RESOLVE.
+ * Resolves a tokenized Oracle name with the native resolver.
  */
-function resolve_ora_name_with_context(
+function resolve_ora_name_with_natrslvr(
   io_owner in out varchar2,
   io_obj_name in out varchar2,
   io_dblink in out varchar2,
@@ -313,7 +309,7 @@ begin
   io_owner := l_owner;
 
   return true;
-end resolve_ora_name_with_context;
+end resolve_ora_name_with_natrslvr;
 
 
 /**
@@ -465,7 +461,7 @@ begin
 
   -- Try to resolve name with the native Oracle resolver, then with the custom.
   if
-    not resolve_ora_name_with_context(
+    not resolve_ora_name_with_natrslvr(
       out_owner, out_obj_name, out_dblink, out_type
     )
   and
@@ -484,8 +480,8 @@ end resolve_ora_name;
 /**
  * Splits the full template name into a container name and a section name.
  */
-procedure split_templ_name(
-  in_templ_name in varchar2,
+procedure split_src_name(
+  in_src_name in varchar2,
   out_container_name out varchar2,
   out_section_name out varchar2
 )
@@ -493,7 +489,7 @@ is
   c_simple_name constant varchar2(32) := '[[:alpha:]][[:alnum:]_$#]{0,29}';
   c_quoted_name constant varchar2(32) := '"[^"]{1,30}"';
   c_any_name constant varchar2(70) := c_simple_name || '|' || c_quoted_name;
-  c_templ_name_ptrn constant varchar2(300) :=
+  c_src_name_ptrn constant varchar2(300) :=
     '^\s*' ||
     '(' || c_any_name || ')' || --\1
     '(\s*\.\s*(' || c_any_name ||'))?' || --\2 \3
@@ -501,22 +497,22 @@ is
     '(\s*@\s*(' || c_any_name || '))?' || --\6 \7
     '\s*$';
 begin
-  if not nvl(regexp_like(in_templ_name, c_templ_name_ptrn), false) then
+  if not nvl(regexp_like(in_src_name, c_src_name_ptrn), false) then
     raise_application_error(
       gc_invalid_argument_num,
-      'failed to parse template name ' || in_templ_name
+      'failed to parse template name ' || in_src_name
     );
   end if;
 
   out_container_name :=
-    regexp_replace(in_templ_name, c_templ_name_ptrn, '\1\2\6');
+    regexp_replace(in_src_name, c_src_name_ptrn, '\1\2\6');
   out_section_name :=
-    regexp_replace(in_templ_name, c_templ_name_ptrn, '\5');
-end split_templ_name;
+    regexp_replace(in_src_name, c_src_name_ptrn, '\5');
+end split_src_name;
 
 
-procedure resolve_templ_name(
-  in_templ_name in varchar2,
+procedure resolve_src_name(
+  in_src_name in varchar2,
   out_owner out varchar2,
   out_obj_name out varchar2,
   out_sec_name out varchar2,
@@ -526,11 +522,11 @@ procedure resolve_templ_name(
 is
   l_container_name varchar2(4000);
 begin
-  split_templ_name(in_templ_name, l_container_name, out_sec_name);
+  split_src_name(in_src_name, l_container_name, out_sec_name);
   resolve_ora_name(
     l_container_name, out_owner, out_obj_name, out_dblink, out_type
   );
-end resolve_templ_name;
+end resolve_src_name;
 
 
 procedure resolve_long_name(

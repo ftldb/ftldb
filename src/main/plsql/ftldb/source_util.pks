@@ -115,18 +115,18 @@ procedure resolve_ora_name(
 
 
 /**
- * Resolves the specified template name, which is similar to an Oracle name, but
- * may contain a section part: [SCHEMA.]OBJNAME[%SECNAME][@DBLINK].
+ * Resolves the specified source template name, which is similar to an Oracle
+ * name, but may contain a section part: [SCHEMA.]OBJNAME[%SECNAME][@DBLINK].
  *
- * @param  in_templ_name  the name to be resolved (case-sensitive when quoted)
+ * @param  in_src_name    the name to be resolved (case-sensitive when quoted)
  * @param  out_owner      the referenced object's owner
  * @param  out_obj_name   the referenced object's name
  * @param  out_sec_name   the referenced section's name
  * @param  out_dblink     the referenced object's dblink
  * @param  out_type       the referenced object's type
  */
-procedure resolve_templ_name(
-  in_templ_name in varchar2,
+procedure resolve_src_name(
+  in_src_name in varchar2,
   out_owner out varchar2,
   out_obj_name out varchar2,
   out_sec_name out varchar2,
@@ -288,7 +288,7 @@ function extract_section_from_obj_src(
  * Extracts a non-compiled section bounded between two conditional compilation
  * directives from the specified object's source. Example:
  * <pre>
- *   $if null $then
+ *   $if false $then
  *   the sought section
  *   $end
  * </pre>
@@ -314,7 +314,7 @@ function extract_noncompiled_section(
  * Extracts a non-compiled section bounded between two conditional compilation
  * directives from the specified container's source. Example:
  * <pre>
- *   $if null $then
+ *   $if false $then
  *   the sought section
  *   $end
  * </pre>
@@ -334,9 +334,9 @@ function extract_noncompiled_section(
  * Extracts a named section bounded between two special comments from the
  * specified object's source. Example:
  * <pre>
- *   --%begin <b>in_section_name</b>
+ *   --%begin my_template
  *   the sought section
- *   --%end <b>in_section_name</b>
+ *   --%end my_template
  * </pre>
  * The syntax is case- and space-insensitive. The search is lazy.
  *
@@ -364,9 +364,9 @@ function extract_named_section(
  * Extracts a named section bounded between two special comments from the
  * specified container's source. Example:
  * <pre>
- *   --%begin <b>in_section_name</b>
+ *   --%begin my_template
  *   the sought section
- *   --%end <b>in_section_name</b>
+ *   --%end my_template
  * </pre>
  * The syntax is case- and space-insensitive. The search is lazy.
  *
@@ -419,9 +419,9 @@ function replace_section_in_clob(
  * Seeks a named section bounded between two special comments in the specified
  * container and replaces it to the specified replacement. Example:
  * <pre>
- *   --%begin <b>in_section_name</b>
+ *   --%begin my_template
  *   the sought section
- *   --%end <b>in_section_name</b>
+ *   --%end my_template
  * </pre>
  * The syntax is case- and space-insensitive. The search is lazy.
  *
