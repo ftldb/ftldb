@@ -46,7 +46,7 @@ begin
   return
     xmltype('<LOCATOR/>')
       .appendchildxml(
-        '/*[1]', 
+        '/*[1]',
         xmltype(
           '<TYPE>' ||
             utl_i18n.escape_reference(get_type_name()) ||
@@ -68,7 +68,7 @@ is
     );
   c_xml_decoder_call constant varchar2(32767) :=
     'declare x xmltype := :1; v %type%; begin x.toobject(v); :2 := v; end;';
-  
+
   l_locator templ_locator_ot;
 
   c_type_ctx constant pls_integer := 7;
@@ -87,10 +87,10 @@ begin
 
   execute immediate replace(c_xml_decoder_call, '%type%', c_type_name)
   using in in_locator_xml.extract('/LOCATOR/INSTANCE/*[1]'), out l_locator;
-      
+
   return l_locator;
 end xml_decode;
-  
-  
+
+
 end;
 /

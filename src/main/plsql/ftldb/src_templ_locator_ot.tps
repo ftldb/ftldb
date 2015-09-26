@@ -20,7 +20,7 @@ under templ_locator_ot (
  * This type is a locator of a template stored in an Oracle object's source
  * either in a non-compiled PLSQLCC section or in a named section bounded by
  * special comment lines.
- * 
+ *
  * The template name may start with 'src:' prefix. It may be any valid Oracle
  * function, procedure, package, type, trigger, view or java source name. It
  * must match the [SCHEMA.]OBJNAME[%SECNAME][@DBLINK] mask.
@@ -61,7 +61,7 @@ static function new(
 /**
  * Loads the template's body from the container object's source.
  *
- * @return  the template's body 
+ * @return  the template's body
  */
 overriding member function get_templ_body return clob,
 
@@ -69,7 +69,7 @@ overriding member function get_templ_body return clob,
 /**
  * Gets the container object's timestamp.
  *
- * @return  the object's timestamp in 'YYYYMMDDHH24MISS' format 
+ * @return  the object's timestamp in 'YYYYMMDDHH24MISS' format
  */
 overriding member function get_last_modified return integer
 

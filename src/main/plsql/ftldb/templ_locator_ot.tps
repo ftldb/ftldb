@@ -32,7 +32,7 @@ templ_name varchar2(4000),
 /**
  * Returns the full name of a tempalte locator instance subtype.
  *
- * @return  the subtype name as "SCHEMA"."NAME" 
+ * @return  the subtype name as "SCHEMA"."NAME"
  */
 member function get_type_name return varchar2,
 
@@ -49,7 +49,7 @@ member function xml_encode return xmltype,
 /**
  * Deserializes an XML object to an instance of a template locator subtype.
  *
- * @return  the original instance as an abstract template locator 
+ * @return  the original instance as an abstract template locator
  */
 static function xml_decode(in_locator_xml xmltype) return templ_locator_ot,
 
@@ -57,7 +57,7 @@ static function xml_decode(in_locator_xml xmltype) return templ_locator_ot,
 /**
  * Loads the template's body from its location.
  *
- * @return  the template's body 
+ * @return  the template's body
  */
 not instantiable member function get_templ_body return clob,
 
@@ -66,7 +66,7 @@ not instantiable member function get_templ_body return clob,
  * Gets the last time of the template's modification. The timestamp may be in
  * any comparable digital format, e.g. Unix Epoch time or 'YYYYMMDDHH24MISSFF3'.
  *
- * @return  the template's timestamp as a comparable integer 
+ * @return  the template's timestamp as a comparable integer
  */
 not instantiable member function get_last_modified return integer
 

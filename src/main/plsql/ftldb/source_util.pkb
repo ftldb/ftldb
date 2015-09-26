@@ -37,15 +37,17 @@ gc_noncmp_section_end_ptrn constant varchar2(128) :=
 -- placeholder should be replaced with the section name. Used in
 -- {%link extract_named_section}, {%link replace_named_section_in_clob}.
 gc_named_section_start_ptrn constant varchar2(128) :=
-  '[' || gc_blank || ']*--[' || gc_blank || ']*%begin[' || gc_blank || ']+' ||
-  '%name%' || '([[' || gc_blank || ']][^' || gc_lf || ']*)?' || gc_lf;
+  '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%begin' ||
+  '[' || gc_blank || ']+' || '%name%' ||
+  '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
 
 -- The regexp pattern for the ending of a named section. The %name%
 -- placeholder should be replaced with the section name. Used in
 -- {%link extract_named_section}, {%link replace_named_section_in_clob}.
 gc_named_section_end_ptrn constant varchar2(128) :=
-  '[' || gc_blank || ']*--[' || gc_blank || ']*%end[' || gc_blank || ']+' ||
-  '%name%' || '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
+  '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%end' ||
+  '[' || gc_blank || ']+' || '%name%' ||
+  '([' || gc_blank || '][^' || gc_lf || ']*)?' || gc_lf;
 
 
 function long2clob(
@@ -137,16 +139,26 @@ end long2clob;
 
 
 /**
+ * Quotes the given name.
+ */
+function q(in_name in varchar2) return varchar2
+is
+begin
+  return '"' || in_name || '"';
+end q;
+
+
+/**
  * Quotes the given dblink and prefixes @ to it.
  */
 function a(in_dblink in varchar2) return varchar2
 is
 begin
-  return case when in_dblink is not null then '@"' || in_dblink || '"' end;
+  return case when in_dblink is not null then '@' || q(in_dblink) end;
 end a;
 
 
-/** 
+/**
  * Validates an Oracle name and splits it into 3 parts.
  */
 procedure tokenize_ora_name(
@@ -170,26 +182,26 @@ begin
     when others then
       raise_application_error(
         gc_invalid_argument_num,
-        'failed to parse Oracle name "' || in_ora_name || '": ' ||
+        'failed to parse Oracle name ' || in_ora_name || ': ' ||
         regexp_replace(sqlerrm, 'ORA-\d+: ')
       );
   end;
-  
+
   if l_c is not null then
     raise_application_error(
       gc_invalid_argument_num,
-      'failed to parse Oracle name "' || in_ora_name || '": ' ||
+      'failed to parse Oracle name ' || in_ora_name || ': ' ||
       'subprograms are not supported'
     );
   end if;
-  
+
   if l_b is not null then
     out_owner := l_a;
     out_obj_name := l_b;
   else
     out_obj_name := l_a;
   end if;
-  
+
   out_dblink := l_dblink;
 end tokenize_ora_name;
 
@@ -201,13 +213,13 @@ function concat_ora_name(
   in_owner in varchar2,
   in_obj_name in varchar2,
   in_dblink in varchar2 := null,
-  in_type in varchar2 := null 
+  in_type in varchar2 := null
 ) return varchar2
 is
 begin
   return
-    case when in_owner is not null then '"' || in_owner || '".' end ||
-    '"' || in_obj_name || '"' ||
+    case when in_owner is not null then q(in_owner) || '.' end ||
+    q(in_obj_name) ||
     a(in_dblink) ||
     case when in_type is not null then ' (' || upper(in_type) || ')' end;
 end concat_ora_name;
@@ -238,7 +250,7 @@ is
       3 /*trigger*/, 4 /*java source*/, 5 /*java resource*/
     );
   l_i pls_integer;
-  
+
   l_owner varchar2(30);
   l_part1 varchar2(30);
   l_part2 varchar2(30);
@@ -248,7 +260,7 @@ is
 
 begin
   l_i := c_supported_ctx_values.first();
-  
+
   while l_i is not null loop
     begin
       execute immediate
@@ -257,22 +269,18 @@ begin
       using
         in l_local_name, in c_supported_ctx_values(l_i), out l_owner,
         out l_part1, out l_part2, out l_dblink, out l_part1_type, out l_obj_num;
-      
-      exit;  
+
+      exit;
     exception
       when e_incompatible_context or e_object_not_exist then
         l_i := c_supported_ctx_values.next(l_i);
     end;
   end loop;
-  
+
   if l_i is null then
     return false;
   end if;
 
-  if l_part1 is not null and l_part2 is not null then
-    return false;
-  end if;
-  
   if l_dblink is not null then
     if io_dblink is not null then
       raise_application_error(
@@ -284,8 +292,12 @@ begin
     end if;
     io_dblink := l_dblink;
   end if;
-  
-  out_type := 
+
+  if l_part1 is not null and l_part2 is not null then
+    return false;
+  end if;
+
+  out_type :=
     case l_part1_type
       when 8 then 'FUNCTION'
       when 7 then 'PROCEDURE'
@@ -299,7 +311,7 @@ begin
 
   io_obj_name := coalesce(l_part1, l_part2);
   io_owner := l_owner;
-  
+
   return true;
 end resolve_ora_name_with_context;
 
@@ -327,7 +339,7 @@ is
     'where' || gc_lf ||
     '  o.owner = :owner and' || gc_lf ||
     '  o.object_name = :name and' || gc_lf ||
-    '  o.object_type member of :types';
+    '  o.object_type in (select value(t) from table(:types) t)';
 
   c_all_synonyms_query constant varchar2(32767) :=
     'select' || gc_lf ||
@@ -375,7 +387,7 @@ is
       execute immediate replace(c_all_objects_query, '%dblink%', a(io_dblink))
       into out_type
       using in io_owner, in io_obj_name, in gc_supported_obj_types;
-      
+
       return true;
     exception
       when no_data_found then
@@ -392,7 +404,7 @@ is
         return false;
     end;
 
-    l_syn_full_name := concat_ora_name(l_syn_owner, io_obj_name, a(io_dblink));
+    l_syn_full_name := concat_ora_name(l_syn_owner, io_obj_name, io_dblink);
 
     -- If a looping chain is detected, the synonym cannot be resolved.
     if l_bag.exists(l_syn_full_name) then
@@ -417,7 +429,7 @@ is
         raise_application_error(
           gc_name_not_resolved_num,
           utl_lms.format_message(
-            gc_dblink_over_dblink_msg, l_syn_full_name, l_ref_dblink
+            gc_dblink_over_dblink_msg, l_syn_full_name, q(l_ref_dblink)
           )
         );
       -- Otherwise set the dblink.
@@ -492,7 +504,7 @@ begin
   if not nvl(regexp_like(in_templ_name, c_templ_name_ptrn), false) then
     raise_application_error(
       gc_invalid_argument_num,
-      'failed to parse template name "' || in_templ_name || '"'
+      'failed to parse template name ' || in_templ_name
     );
   end if;
 
@@ -532,9 +544,9 @@ is
   l_short_name varchar2(30);
 begin
   l_short_name := dbms_java.shortname(in_long_name);
-  
+
   resolve_ora_name(
-    '"' || l_short_name || '"', out_owner, out_obj_name, out_dblink, out_type
+    q(l_short_name), out_owner, out_obj_name, out_dblink, out_type
   );
 end resolve_long_name;
 
@@ -643,9 +655,9 @@ begin
         raise no_data_found;
       else
         raise;
-      end if;    
+      end if;
   end;
-  
+
   return l_clob;
 end get_java_resource;
 
@@ -899,8 +911,7 @@ begin
   then
     raise_application_error(
       gc_invalid_argument_num,
-      'section name "' || in_section_name ||
-        '" contains characters that are not allowed'
+      'section name ' || in_section_name || ' is not valid'
     );
   end if;
   return replace(in_section_name, '$', '\$');
@@ -920,7 +931,7 @@ is
 begin
   return
     extract_section_from_obj_src(
-       in_owner, in_obj_name, in_dblink, in_type,
+      in_owner, in_obj_name, in_dblink, in_type,
       replace(gc_named_section_start_ptrn, '%name%', c_section_name),
       replace(gc_named_section_end_ptrn, '%name%', c_section_name),
       false, true, in_occurrence
@@ -957,38 +968,6 @@ begin
 end extract_named_section;
 
 
-function count_matched_parentheses(in_pattern in varchar2) return pls_integer
-is
-  c_parentheses constant varchar2(4000) := regexp_replace(
-    replace(replace(replace(in_pattern, '\\'), '\('), '\)'), '[^()]'
-  );
-  l_cnt pls_integer := 0;
-  l_balance pls_integer := 0;
-begin
-
-  for l_i in 1..nvl(length(c_parentheses), 0) loop
-
-    if substr(c_parentheses, l_i, 1) = '(' then
-      l_cnt := l_cnt + 1;
-      l_balance := l_balance + 1;
-    else
-      l_balance := l_balance - 1;
-    end if;
-
-    if l_balance < 0 then
-      return -1;
-    end if;
-
-  end loop;
-
-  return
-    case
-      when l_balance = 0 then l_cnt
-      else -1
-    end;
-end count_matched_parentheses;
-
-
 function replace_section_in_clob(
   in_container in clob,
   in_start_ptrn in varchar2,
@@ -999,7 +978,27 @@ function replace_section_in_clob(
   in_occurrence in positiven := 1
 ) return clob
 is
-  l_start_ptrn_par_count pls_integer;
+  l_start_pos integer;
+  l_end_pos integer;
+  l_prev_end_pos integer := 0;
+  l_offset integer := 1;
+  l_amount integer;
+  l_res clob := clob_util.create_temporary();
+
+  procedure assert_pos(in_pos pls_integer)
+  is
+  begin
+    if not nvl(in_pos > 0, false) then
+      raise_application_error(
+        gc_section_not_found_num,
+        utl_lms.format_message(
+          gc_section_not_found_msg, in_occurrence,
+          in_start_ptrn, in_end_ptrn, 'in_container'
+        )
+      );
+    end if;
+  end;
+
 begin
   -- Check the argument values.
   if not nvl(in_lazy_search, false) and in_occurrence > 1 then
@@ -1009,49 +1008,68 @@ begin
     );
   end if;
 
-  if in_keep_boundaries then
-    l_start_ptrn_par_count := count_matched_parentheses(in_start_ptrn);
-    if l_start_ptrn_par_count = -1 then
-      raise_application_error(
-        gc_invalid_argument_num,
-        'section start pattern "' || in_start_ptrn ||
-          '" contains unmatched parentheses'
+  if in_lazy_search then
+    l_start_pos :=
+      regexp_instr(
+        in_container, in_start_ptrn, 1, in_occurrence,
+        case when in_keep_boundaries then 1 else 0 end, 'in'
       );
-    elsif l_start_ptrn_par_count > 7 then
-      raise_application_error(
-        gc_invalid_argument_num,
-        'section start pattern "' || in_start_ptrn ||
-          '" contains more then 7 pairs of parantheses'
+    assert_pos(l_start_pos);
+
+    l_end_pos :=
+      regexp_instr(
+        in_container, in_end_ptrn, 1, in_occurrence,
+        case when in_keep_boundaries then 0 else 1 end, 'in'
       );
+    assert_pos(l_end_pos);
+
+  else
+    l_start_pos :=
+      regexp_instr(
+        in_container, in_start_ptrn, 1, 1,
+        case when in_keep_boundaries then 1 else 0 end, 'in'
+      );
+    assert_pos(l_start_pos);
+
+    if in_keep_boundaries then
+      loop
+        l_end_pos :=
+          regexp_instr(in_container, in_end_ptrn, l_offset, 1, 0, 'in');
+        exit when l_end_pos = 0;
+        l_offset :=
+          regexp_instr(in_container, in_end_ptrn, l_offset, 1, 1, 'in');
+        l_prev_end_pos := l_end_pos;
+      end loop;
+
+      l_end_pos := l_prev_end_pos;
+      assert_pos(l_end_pos);
+
+    else
+      l_end_pos :=
+        regexp_instr(in_container, '^.*' || in_end_ptrn, 1, 1, 1, 'in');
+      assert_pos(l_end_pos);
+
     end if;
   end if;
 
-  -- Check that the section exists.
-  if nvl(dbms_lob.getlength(regexp_substr(in_container,
-      in_start_ptrn || '.*?' || in_end_ptrn, 1, in_occurrence, 'in')), 0) = 0
-  then
-    raise_application_error(
-      gc_section_not_found_num,
-      utl_lms.format_message(
-        gc_section_not_found_msg, in_occurrence,
-        in_start_ptrn, in_end_ptrn, 'in_container'
-      )
-    );
+  -- Copy preceding part
+  l_amount := l_start_pos - 1;
+  if l_amount > 0 then
+    dbms_lob.copy(l_res, in_container, l_amount);
   end if;
 
-  return
-    regexp_replace(
-      in_container,
-      '(' || in_start_ptrn || ').*' ||
-        case when in_lazy_search then '?' end ||
-        '(' || in_end_ptrn || ')',
-      case when in_keep_boundaries then '\1' end ||
-        replace(in_replacement, '\', '\\') ||
-        case when in_keep_boundaries then
-          '\' || to_char(2 + l_start_ptrn_par_count)
-        end,
-      1, in_occurrence, 'in'
-    );
+  -- Copy replacement
+  dbms_lob.append(l_res, in_replacement);
+
+  -- Copy following part
+  l_amount := dbms_lob.getlength(in_container) - l_end_pos + 1;
+  if l_amount > 0 then
+    dbms_lob.copy(
+      l_res, in_container, l_amount, dbms_lob.getlength(l_res) + 1, l_end_pos
+     );
+  end if;
+
+  return l_res;
 end replace_section_in_clob;
 
 
