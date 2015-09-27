@@ -493,7 +493,7 @@ procedure split_src_name(
   out_section_name out varchar2
 )
 is
-  c_simple_name constant varchar2(32) := '[[:alpha:]][[:alnum:]_$#]{0,29}';
+  c_simple_name constant varchar2(32) := '[A-Za-z][0-9A-Za-z_$#]{0,29}';
   c_quoted_name constant varchar2(32) := '"[^"]{1,30}"';
   c_any_name constant varchar2(70) := c_simple_name || '|' || c_quoted_name;
   c_src_name_ptrn constant varchar2(300) :=
@@ -909,7 +909,7 @@ is
 begin
   if
     not nvl(
-      regexp_like(in_section_name, '^[[:alpha:]][[:alnum:]_#$]{0,29}$'), false
+      regexp_like(in_section_name, '^[A-Za-z][0-9A-Za-z_$#]{0,29}$'), false
     )
   then
     raise_application_error(
