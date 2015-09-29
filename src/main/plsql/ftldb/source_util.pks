@@ -96,11 +96,11 @@ function long2clob(
  * Resolves the specified full name to the referenced object's owner, name,
  * dblink (if any) and type.
  *
- * @param  in_ora_name  the name to be resolved (case-sensitive when quoted)
- * @param  out_owner    the referenced object's owner
- * @param  out_obj_name the referenced object's name
- * @param  out_dblink   the referenced object's dblink
- * @param  out_type     the referenced object's type
+ * @param  in_ora_name   the name to be resolved (case-sensitive when quoted)
+ * @param  out_owner     the referenced object's owner
+ * @param  out_obj_name  the referenced object's name
+ * @param  out_dblink    the referenced object's dblink
+ * @param  out_type      the referenced object's type
  *
  * @throws  e_invalid_argument   if the name is not a correct Oracle name
  * @throws  e_name_not_resolved  if the name cannot be resolved
@@ -118,12 +118,12 @@ procedure resolve_ora_name(
  * Resolves the specified source template name, which is similar to an Oracle
  * name, but may contain a section part: [SCHEMA.]OBJNAME[%SECNAME][@DBLINK].
  *
- * @param  in_src_name    the name to be resolved (case-sensitive when quoted)
- * @param  out_owner      the referenced object's owner
- * @param  out_obj_name   the referenced object's name
- * @param  out_sec_name   the referenced section's name
- * @param  out_dblink     the referenced object's dblink
- * @param  out_type       the referenced object's type
+ * @param  in_src_name   the name to be resolved (case-sensitive when quoted)
+ * @param  out_owner     the referenced object's owner
+ * @param  out_obj_name  the referenced object's name
+ * @param  out_sec_name  the referenced section's name
+ * @param  out_dblink    the referenced object's dblink
+ * @param  out_type      the referenced object's type
  */
 procedure resolve_src_name(
   in_src_name in varchar2,
@@ -139,11 +139,11 @@ procedure resolve_src_name(
  * Resolves the specified long name. Converts it to a short name, then resolves
  * as an Oracle name.
  *
- * @param  in_long_name   the name to be resolved (case-sensitive, not quoted)
- * @param  out_owner      the referenced object's owner
- * @param  out_obj_name   the referenced object's name
- * @param  out_dblink     the referenced object's dblink
- * @param  out_type       the referenced object's type
+ * @param  in_long_name  the name to be resolved (case-sensitive, not quoted)
+ * @param  out_owner     the referenced object's owner
+ * @param  out_obj_name  the referenced object's name
+ * @param  out_dblink    the referenced object's dblink
+ * @param  out_type      the referenced object's type
  */
 procedure resolve_long_name(
   in_long_name in varchar2,
@@ -152,6 +152,15 @@ procedure resolve_long_name(
   out_dblink out varchar2,
   out_type out varchar2
 );
+
+
+/**
+ * Returns a short name for the given long name.
+ *
+ * @param  in_long_name  the long name to be shortened
+ * @return               the short name
+ */
+function short_name(in_long_name in varchar2) return varchar2;
 
 
 /**

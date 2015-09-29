@@ -154,7 +154,7 @@ is
 begin
   execute immediate
     'begin' ||
-    ' :1 := ' || dbms_assert.sql_object_name(in_config_func_name) || '(); ' ||
+    ' :1 := ' || dbms_assert.sql_object_name(in_config_func_name) || '; ' ||
     'end;'
   using out l_config_xml;
 

@@ -267,8 +267,8 @@ begin
   while l_i is not null loop
     begin
       execute immediate
-        'call dbms_utility.name_resolve' || a(io_dblink) ||
-        '(:1, :2, :3, :4, :5, :6, :7, :8)'
+        'begin dbms_utility.name_resolve' || a(io_dblink) ||
+        '(:1, :2, :3, :4, :5, :6, :7, :8); end;'
       using
         in l_local_name, in c_supported_ctx_values(l_i), out l_owner,
         out l_part1, out l_part2, out l_dblink, out l_part1_type, out l_obj_num;
@@ -536,6 +536,49 @@ begin
 end resolve_src_name;
 
 
+/**
+ * Shortens long names that are not presented in the JAVASNM dictionary view.
+ */
+function gen_short_name(in_long_name varchar2) return varchar2
+is
+  l_prefix varchar2(10);
+begin
+  if
+    in_long_name is null or
+    instr(in_long_name, chr(0)) > 0 or
+    instr(in_long_name, '"') > 0 or
+    length(in_long_name) > 4000
+  then
+    raise value_error;
+  end if;
+
+  if length(in_long_name) <= 30 then
+    return in_long_name;
+  end if;
+  
+  select '/' || lower(to_char(ora_hash(in_long_name), 'fmxxxxxxxx')) || '_'
+  into l_prefix
+  from dual;
+  
+  return 
+    l_prefix ||
+    substr(
+      regexp_replace(
+        substr(in_long_name, instr(in_long_name, '/', -1)), '[^0-9A-Za-z_]'
+      ),
+      1, 30 - length(l_prefix)
+    );
+end gen_short_name;
+
+
+function short_name(in_long_name in varchar2) return varchar2
+is
+begin
+  return
+    coalesce(dbms_java.shortname(in_long_name), gen_short_name(in_long_name));
+end short_name;
+
+
 procedure resolve_long_name(
   in_long_name in varchar2,
   out_owner out varchar2,
@@ -544,12 +587,9 @@ procedure resolve_long_name(
   out_type out varchar2
 )
 is
-  l_short_name varchar2(30);
 begin
-  l_short_name := dbms_java.shortname(in_long_name);
-
   resolve_ora_name(
-    q(l_short_name), out_owner, out_obj_name, out_dblink, out_type
+    q(short_name(in_long_name)), out_owner, out_obj_name, out_dblink, out_type
   );
 end resolve_long_name;
 
