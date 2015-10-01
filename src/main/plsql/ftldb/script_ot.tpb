@@ -40,7 +40,7 @@ constructor function script_ot(
 ) return self as result
 is
   c_blank constant varchar2(2) := ' ' || chr(9);
-  c_cr constant varchar2(1) := chr(13); 
+  c_cr constant varchar2(1) := chr(13);
 begin
   self.statements := clob_util.split_into_pieces(
     in_clob,

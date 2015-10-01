@@ -246,10 +246,10 @@ is
   e_object_not_exist exception;
   pragma exception_init(e_object_not_exist, -6564);
 
-  -- Supported values for the context flag (from most to least possible).
+  -- Supported values for the context flag
   c_supported_ctx_values constant number_nt :=
     number_nt(
-      1 /*function, procedure, package*/, 2 /*view*/, 7 /*type*/,
+      1 /*procedure, function, package*/, 2 /*view*/, 7 /*type*/,
       3 /*trigger*/, 4 /*java source*/, 5 /*java resource*/
     );
   l_i pls_integer;
@@ -266,12 +266,20 @@ begin
 
   while l_i is not null loop
     begin
-      execute immediate
-        'begin dbms_utility.name_resolve' || a(io_dblink) ||
-        '(:1, :2, :3, :4, :5, :6, :7, :8); end;'
-      using
-        in l_local_name, in c_supported_ctx_values(l_i), out l_owner,
-        out l_part1, out l_part2, out l_dblink, out l_part1_type, out l_obj_num;
+      if io_dblink is null then
+        dbms_utility.name_resolve(
+          l_local_name, c_supported_ctx_values(l_i),
+          l_owner, l_part1, l_part2, l_dblink, l_part1_type, l_obj_num
+        );
+      else
+        execute immediate
+          'begin dbms_utility.name_resolve' || a(io_dblink) ||
+          '(:1, :2, :3, :4, :5, :6, :7, :8); end;'
+        using
+          in l_local_name, in c_supported_ctx_values(l_i),
+          out l_owner, out l_part1, out l_part2, out l_dblink, out l_part1_type,
+          out l_obj_num;
+      end if;
 
       exit;
     exception
@@ -302,8 +310,8 @@ begin
 
   out_type :=
     case l_part1_type
-      when 8 then 'FUNCTION'
       when 7 then 'PROCEDURE'
+      when 8 then 'FUNCTION'
       when 9 then 'PACKAGE'
       when 4 then 'VIEW'
       when 13 then 'TYPE'
@@ -337,23 +345,27 @@ is
     'select u.username from user_users%dblink% u';
 
   c_all_objects_query constant varchar2(32767) :=
-    'select o.object_type' || gc_lf ||
+    'select' || gc_lf ||
+    '  max(o.object_type) keep (dense_rank first order by' || gc_lf ||
+    '      decode(o.object_type, ''TRIGGER'', 1,' || gc_lf ||
+    '      ''JAVA SOURCE'', 2, ''JAVA RESOURCE'', 3, 0))' || gc_lf ||
     'from all_objects%dblink% o' || gc_lf ||
     'where' || gc_lf ||
     '  o.owner = :owner and' || gc_lf ||
     '  o.object_name = :name and' || gc_lf ||
-    '  o.object_type in (select value(t) from table(:types) t)';
+    '  o.object_type in (select value(t) from table(:types) t)' || gc_lf ||
+    'group by null';
 
   c_all_synonyms_query constant varchar2(32767) :=
     'select' || gc_lf ||
     '  max(s.owner) keep (dense_rank first order by' || gc_lf ||
-    '       decode(s.owner, ''PUBLIC'', 2, 1)),' || gc_lf ||
+    '      decode(s.owner, ''PUBLIC'', 1, 0)),' || gc_lf ||
     '  max(s.table_owner) keep (dense_rank first order by' || gc_lf ||
-    '       decode(s.owner, ''PUBLIC'', 2, 1)),' || gc_lf ||
+    '      decode(s.owner, ''PUBLIC'', 1, 0)),' || gc_lf ||
     '  max(s.table_name) keep (dense_rank first order by' || gc_lf ||
-    '       decode(s.owner, ''PUBLIC'', 2, 1)),' || gc_lf ||
+    '      decode(s.owner, ''PUBLIC'', 1, 0)),' || gc_lf ||
     '  max(s.db_link) keep (dense_rank first order by' || gc_lf ||
-    '       decode(s.owner, ''PUBLIC'', 2, 1))' || gc_lf ||
+    '      decode(s.owner, ''PUBLIC'', 1, 0))' || gc_lf ||
     'from all_synonyms%dblink% s' || gc_lf ||
     'where' || gc_lf ||
     '  s.owner in (:owner, ''PUBLIC'') and' || gc_lf ||
@@ -387,9 +399,23 @@ is
 
     -- Try to find the object and its type.
     begin
-      execute immediate replace(c_all_objects_query, '%dblink%', a(io_dblink))
-      into out_type
-      using in io_owner, in io_obj_name, in gc_supported_obj_types;
+      if io_dblink is null then
+        select
+          max(o.object_type) keep (dense_rank first order by
+              decode(o.object_type, 'TRIGGER', 1, 'JAVA SOURCE', 2,
+              'JAVA RESOURCE', 3, 0))
+        into out_type
+        from all_objects o
+        where
+          o.owner = io_owner and
+          o.object_name = io_obj_name and
+          o.object_type member of gc_supported_obj_types
+        group by null;
+      else
+        execute immediate replace(c_all_objects_query, '%dblink%', a(io_dblink))
+        into out_type
+        using in io_owner, in io_obj_name, in gc_supported_obj_types;
+      end if;
 
       return true;
     exception
@@ -399,9 +425,28 @@ is
 
     -- The name may be a synonym (private or public), try to resolve it.
     begin
-      execute immediate replace(c_all_synonyms_query, '%dblink%', a(io_dblink))
-      into l_syn_owner, l_ref_owner, l_ref_name, l_ref_dblink
-      using in io_owner, in io_obj_name;
+      if io_dblink is null then
+        select
+          max(s.owner) keep (dense_rank first order by
+              decode(s.owner, 'PUBLIC', 1, 0)),
+          max(s.table_owner) keep (dense_rank first order by
+              decode(s.owner, 'PUBLIC', 1, 0)),
+          max(s.table_name) keep (dense_rank first order by
+              decode(s.owner, 'PUBLIC', 1, 0)),
+          max(s.db_link) keep (dense_rank first order by
+              decode(s.owner, 'PUBLIC', 1, 0))
+        into l_syn_owner, l_ref_owner, l_ref_name, l_ref_dblink
+        from all_synonyms s
+        where
+          s.owner in (io_owner, 'PUBLIC') and
+          s.synonym_name = io_obj_name
+        group by null;
+      else
+        execute immediate
+          replace(c_all_synonyms_query, '%dblink%', a(io_dblink))
+        into l_syn_owner, l_ref_owner, l_ref_name, l_ref_dblink
+        using in io_owner, in io_obj_name;
+      end if;
     exception
       when no_data_found then
         return false;
@@ -555,12 +600,12 @@ begin
   if length(in_long_name) <= 30 then
     return in_long_name;
   end if;
-  
+
   select '/' || lower(to_char(ora_hash(in_long_name), 'fmxxxxxxxx')) || '_'
   into l_prefix
   from dual;
-  
-  return 
+
+  return
     l_prefix ||
     substr(
       regexp_replace(
@@ -636,10 +681,21 @@ begin
     else null;
   end case;
 
-  execute immediate
-    replace(c_all_objects_query, '%dblink%', a(in_dblink))
-  into l_timestamp
-  using in_owner, in_obj_name, c_type, c_type;
+  if in_dblink is null then
+    select max(to_timestamp(o.timestamp, 'yyyy-mm-dd:hh24:mi:ss'))
+    into l_timestamp
+    from all_objects o
+    where
+      o.owner = in_owner and
+      o.object_name = in_obj_name and
+      o.object_type in (c_type, c_type || ' BODY')
+    group by null;
+  else
+    execute immediate
+      replace(c_all_objects_query, '%dblink%', a(in_dblink))
+    into l_timestamp
+    using in_owner, in_obj_name, c_type, c_type;
+  end if;
 
   return l_timestamp;
 exception
@@ -725,10 +781,21 @@ is
   l_src_lines dbms_sql.varchar2a;
   l_src clob;
 begin
-  execute immediate
-    replace(c_all_source_query, '%dblink%', a(in_dblink))
-  bulk collect into l_src_lines
-  using in_owner, in_obj_name, in_type, in_type;
+  if in_dblink is null then
+    select s.text
+    bulk collect into l_src_lines
+    from all_source s
+    where
+      s.owner = in_owner and
+      s.name = in_obj_name and
+      s.type in (in_type, in_type || ' BODY')
+    order by s.type, s.line;
+  else
+    execute immediate
+      replace(c_all_source_query, '%dblink%', a(in_dblink))
+    bulk collect into l_src_lines
+    using in_owner, in_obj_name, in_type, in_type;
+  end if;
 
   -- Check that the source is found.
   if l_src_lines.count() = 0 then
