@@ -20,5 +20,5 @@ create or replace type varchar2_nt
  * @headcom
  */
 as
-table of varchar2(4000)
+table of varchar2(4000 byte)
 /

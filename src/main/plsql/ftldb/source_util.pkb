@@ -18,36 +18,36 @@ create or replace package body source_util as
 
 
 -- Blank characters: space and tab.
-gc_blank constant varchar2(2) := ' ' || chr(9);
+gc_blank constant varchar2(2 byte) := ' ' || chr(9);
 
 -- LF character (*nix EOL).
-gc_lf constant varchar2(1) := chr(10);
+gc_lf constant varchar2(1 byte) := chr(10);
 
 -- CRLF characters (Win EOL).
-gc_crlf constant varchar2(2) := chr(13) || chr(10);
+gc_crlf constant varchar2(2 byte) := chr(13) || chr(10);
 
 -- EOL pattern: LF or CRLF.
-gc_eol constant varchar2(6) := '(' || gc_lf || '|' || gc_crlf || ')';
+gc_eol constant varchar2(6 byte) := '(' || gc_lf || '|' || gc_crlf || ')';
 
 
 -- The regexp pattern for the beginning of a non-compiled section.
-gc_noncmp_section_start_ptrn constant varchar2(128) :=
+gc_noncmp_section_start_ptrn constant varchar2(128 byte) :=
   '\$if\s+(false|null)\s+\$then[' || gc_blank || ']*' || gc_eol || '?';
 
 -- The regexp pattern for the ending of a non-compiled section.
-gc_noncmp_section_end_ptrn constant varchar2(128) :=
+gc_noncmp_section_end_ptrn constant varchar2(128 byte) :=
   '[' || gc_blank || ']*\$end';
 
 -- The regexp pattern for the beginning of a named section. The %name%
 -- placeholder should be replaced with the section name.
-gc_named_section_start_ptrn constant varchar2(128) :=
+gc_named_section_start_ptrn constant varchar2(128 byte) :=
   '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%begin' ||
   '[' || gc_blank || ']+' || '%name%' ||
   '([' || gc_blank || '][^' || gc_crlf || ']*)?' || gc_eol;
 
 -- The regexp pattern for the ending of a named section. The %name%
 -- placeholder should be replaced with the section name.
-gc_named_section_end_ptrn constant varchar2(128) :=
+gc_named_section_end_ptrn constant varchar2(128 byte) :=
   '[' || gc_blank || ']*(--|//|#)[' || gc_blank || ']*%end' ||
   '[' || gc_blank || ']+' || '%name%' ||
   '([' || gc_blank || '][^' || gc_crlf || ']*)?' || gc_eol;
@@ -65,7 +65,7 @@ is
   l_offset pls_integer := 0;
   l_row_cnt pls_integer;
   c_piece_size constant pls_integer := 32767;
-  l_piece varchar2(32767);
+  l_piece varchar2(32767 byte);
   l_piece_len pls_integer;
   l_clob clob;
   c_long_type constant pls_integer :=
@@ -171,10 +171,10 @@ procedure tokenize_ora_name(
   out_dblink out varchar2
 )
 is
-  l_a varchar2(30);
-  l_b varchar2(30);
-  l_c varchar2(30);
-  l_dblink varchar2(128);
+  l_a varchar2(30 byte);
+  l_b varchar2(30 byte);
+  l_c varchar2(30 byte);
+  l_dblink varchar2(128 byte);
   l_nextpos pls_integer;
 begin
   begin
@@ -238,7 +238,7 @@ function resolve_ora_name_with_natrslvr(
   out_type out varchar2
 ) return boolean
 is
-  l_local_name varchar2(70) := concat_ora_name(io_owner, io_obj_name);
+  l_local_name varchar2(65 byte) := concat_ora_name(io_owner, io_obj_name);
 
   e_incompatible_context exception;
   pragma exception_init(e_incompatible_context, -4047);
@@ -254,10 +254,10 @@ is
     );
   l_i pls_integer;
 
-  l_owner varchar2(30);
-  l_part1 varchar2(30);
-  l_part2 varchar2(30);
-  l_dblink varchar2(128);
+  l_owner varchar2(30 byte);
+  l_part1 varchar2(30 byte);
+  l_part2 varchar2(30 byte);
+  l_dblink varchar2(128 byte);
   l_part1_type number;
   l_obj_num number;
 
@@ -338,13 +338,13 @@ function resolve_ora_name_with_datadict(
 ) return boolean
 is
   -- The bag of the recursively found synonyms, protects against looping chains.
-  type number_ht is table of number index by varchar2(190);
+  type number_ht is table of number index by varchar2(196 byte);
   l_bag number_ht;
 
-  c_user_users_query constant varchar2(32767) :=
+  c_user_users_query constant varchar2(32767 byte) :=
     'select u.username from user_users%dblink% u';
 
-  c_all_objects_query constant varchar2(32767) :=
+  c_all_objects_query constant varchar2(32767 byte) :=
     'select' || gc_lf ||
     '  max(o.object_type) keep (dense_rank first order by' || gc_lf ||
     '      decode(o.object_type, ''TRIGGER'', 1,' || gc_lf ||
@@ -356,7 +356,7 @@ is
     '  o.object_type in (select value(t) from table(:types) t)' || gc_lf ||
     'group by null';
 
-  c_all_synonyms_query constant varchar2(32767) :=
+  c_all_synonyms_query constant varchar2(32767 byte) :=
     'select' || gc_lf ||
     '  max(s.owner) keep (dense_rank first order by' || gc_lf ||
     '      decode(s.owner, ''PUBLIC'', 1, 0)),' || gc_lf ||
@@ -379,11 +379,11 @@ is
     out_type out varchar2
   ) return boolean
   is
-    l_syn_full_name varchar2(190);
-    l_syn_owner varchar2(30);
-    l_ref_owner varchar2(30);
-    l_ref_name varchar2(30);
-    l_ref_dblink varchar2(128);
+    l_syn_full_name varchar2(196 byte);
+    l_syn_owner varchar2(30 byte);
+    l_ref_owner varchar2(30 byte);
+    l_ref_name varchar2(30 byte);
+    l_ref_dblink varchar2(128 byte);
   begin
     -- Determine the name's owner, if omitted.
     if io_owner is null then
@@ -538,10 +538,11 @@ procedure split_src_name(
   out_section_name out varchar2
 )
 is
-  c_simple_name constant varchar2(32) := '[A-Za-z][0-9A-Za-z_$#]{0,29}';
-  c_quoted_name constant varchar2(32) := '"[^"]{1,30}"';
-  c_any_name constant varchar2(70) := c_simple_name || '|' || c_quoted_name;
-  c_src_name_ptrn constant varchar2(300) :=
+  c_simple_name constant varchar2(32 byte) := '[A-Za-z][0-9A-Za-z_$#]{0,29}';
+  c_quoted_name constant varchar2(32 byte) := '"[^"]{1,30}"';
+  c_any_name constant varchar2(64 byte) :=
+    c_simple_name || '|' || c_quoted_name;
+  c_src_name_ptrn constant varchar2(256 byte) :=
     '^\s*' ||
     '(' || c_any_name || ')' || --\1
     '(\s*\.\s*(' || c_any_name ||'))?' || --\2 \3
@@ -572,7 +573,7 @@ procedure resolve_src_name(
   out_type out varchar2
 )
 is
-  l_container_name varchar2(4000);
+  l_container_name varchar2(4000 byte);
 begin
   split_src_name(in_src_name, l_container_name, out_sec_name);
   resolve_ora_name(
@@ -586,18 +587,18 @@ end resolve_src_name;
  */
 function gen_short_name(in_long_name varchar2) return varchar2
 is
-  l_prefix varchar2(10);
+  l_prefix varchar2(10 byte);
 begin
   if
     in_long_name is null or
     instr(in_long_name, chr(0)) > 0 or
     instr(in_long_name, '"') > 0 or
-    length(in_long_name) > 4000
+    lengthb(in_long_name) > 4000
   then
     raise value_error;
   end if;
 
-  if length(in_long_name) <= 30 then
+  if lengthb(in_long_name) <= 30 then
     return in_long_name;
   end if;
 
@@ -646,9 +647,9 @@ function get_obj_timestamp(
   in_type in varchar2
 ) return timestamp
 is
-  c_type constant varchar2(30) := upper(in_type);
+  c_type constant varchar2(30 byte) := upper(in_type);
   -- ALL_OBJECTS returns the TIMESTAMP column as a string
-  c_all_objects_query constant varchar2(32767) :=
+  c_all_objects_query constant varchar2(32767 byte) :=
     'select' || gc_lf ||
     '  max(to_timestamp(o.timestamp, ''yyyy-mm-dd:hh24:mi:ss''))' || gc_lf ||
     'from all_objects%dblink% o' || gc_lf ||
@@ -716,7 +717,7 @@ function get_view_source(
   in_dblink in varchar2
 ) return clob
 is
-  c_all_views_query constant varchar2(32767) :=
+  c_all_views_query constant varchar2(32767 byte) :=
     'select v.text' || gc_lf ||
     'from all_views%dblink% v' || gc_lf ||
     'where' || gc_lf ||
@@ -768,7 +769,7 @@ function get_program_unit_source(
   in_type in varchar2
 ) return clob
 is
-  c_all_source_query constant varchar2(32767) :=
+  c_all_source_query constant varchar2(32767 byte) :=
     'select s.text' || gc_lf ||
     'from all_source%dblink% s' || gc_lf ||
     'where' || gc_lf ||
@@ -776,7 +777,7 @@ is
     '  s.name = :name and' || gc_lf ||
     '  s.type in (:type, :type || '' BODY'')' || gc_lf ||
     'order by s.type, s.line';
-  c_eol constant varchar2(1) :=
+  c_eol constant varchar2(1 byte) :=
     case when in_type = 'JAVA SOURCE' then gc_lf end;
   l_src_lines dbms_sql.varchar2a;
   l_src clob;
@@ -818,7 +819,7 @@ function get_obj_source(
   in_type in varchar2
 ) return clob
 is
-  c_type constant varchar2(30) := upper(in_type);
+  c_type constant varchar2(30 byte) := upper(in_type);
 begin
   -- Check the input argument values.
   case
@@ -955,10 +956,10 @@ function extract_section_from_obj_src(
   in_occurrence in positiven := 1
 ) return clob
 is
-  l_owner varchar2(30);
-  l_obj_name varchar2(30);
-  l_dblink varchar2(128);
-  l_type varchar2(30);
+  l_owner varchar2(30 byte);
+  l_obj_name varchar2(30 byte);
+  l_dblink varchar2(128 byte);
+  l_type varchar2(30 byte);
 begin
   resolve_ora_name(in_container_name, l_owner, l_obj_name, l_dblink, l_type);
 
@@ -998,10 +999,10 @@ end extract_noncompiled_section;
 
 function extract_noncompiled_section(in_container_name in varchar2) return clob
 is
-  l_owner varchar2(30);
-  l_obj_name varchar2(30);
-  l_dblink varchar2(128);
-  l_type varchar2(30);
+  l_owner varchar2(30 byte);
+  l_obj_name varchar2(30 byte);
+  l_dblink varchar2(128 byte);
+  l_type varchar2(30 byte);
 begin
   resolve_ora_name(in_container_name, l_owner, l_obj_name, l_dblink, l_type);
 
@@ -1037,7 +1038,8 @@ function extract_named_section(
   in_occurrence in positiven := 1
 ) return clob
 is
-  c_section_name constant varchar2(60) := escape_section_name(in_section_name);
+  c_section_name constant varchar2(60 byte) :=
+    escape_section_name(in_section_name);
 begin
   return
     extract_section_from_obj_src(
@@ -1064,10 +1066,10 @@ function extract_named_section(
   in_occurrence in positiven := 1
 ) return clob
 is
-  l_owner varchar2(30);
-  l_obj_name varchar2(30);
-  l_dblink varchar2(128);
-  l_type varchar2(30);
+  l_owner varchar2(30 byte);
+  l_obj_name varchar2(30 byte);
+  l_dblink varchar2(128 byte);
+  l_type varchar2(30 byte);
 begin
   resolve_ora_name(in_container_name, l_owner, l_obj_name, l_dblink, l_type);
 
@@ -1191,7 +1193,8 @@ function replace_named_section_in_clob(
   in_occurrence in positiven := 1
 ) return clob
 is
-  c_section_name constant varchar2(60) := escape_section_name(in_section_name);
+  c_section_name constant varchar2(60 byte) :=
+    escape_section_name(in_section_name);
 begin
   return
     replace_section_in_clob(

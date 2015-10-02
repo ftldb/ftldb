@@ -39,8 +39,8 @@ constructor function script_ot(
   in_clob in clob
 ) return self as result
 is
-  c_blank constant varchar2(2) := ' ' || chr(9);
-  c_cr constant varchar2(1) := chr(13);
+  c_blank constant varchar2(2 byte) := ' ' || chr(9);
+  c_cr constant varchar2(1 byte) := chr(13);
 begin
   self.statements := clob_util.split_into_pieces(
     in_clob,
@@ -128,12 +128,12 @@ member procedure exec(
 )
 is
   c_execution_error_num constant number := -20000;
-  c_execution_error_msg constant varchar2(2000) := 'error ' ||
+  c_execution_error_msg constant varchar2(2000 byte) := 'error ' ||
     case when in_suppress_errors then 'suppressed' else 'occurred' end ||
     ' in statement #%d (%s): %s';
   l_i pls_integer := self.statements.first();
-  l_statement_piece varchar2(200);
-  l_error_msg varchar2(4000);
+  l_statement_piece varchar2(500 byte);
+  l_error_msg varchar2(4000 byte);
 begin
   while l_i is not null loop
     begin

@@ -22,10 +22,10 @@ create or replace package body ftldb_api as
  */
 function get_this_schema return varchar2
 is
-  l_owner varchar2(30);
-  l_name varchar2(30);
+  l_owner varchar2(30 byte);
+  l_name varchar2(30 byte);
   l_line number;
-  l_type varchar2(30);
+  l_type varchar2(30 byte);
 begin
   owa_util.who_called_me(l_owner, l_name, l_line, l_type);
   return l_owner;
@@ -84,20 +84,20 @@ end get_templ_last_modified;
 
 function default_config_xml return xmltype
 is
-  c_pkg_name constant varchar2(70) :=
+  c_pkg_name constant varchar2(65 byte) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"';
 
-  c_finder_func_name constant varchar2(100) :=
+  c_finder_func_name constant varchar2(98 byte) :=
     c_pkg_name || '.get_templ_locator_xmlstr';
-  c_loader_func_name constant varchar2(100) :=
+  c_loader_func_name constant varchar2(98 byte) :=
     c_pkg_name || '.get_templ_body';
-  c_checker_func_name constant varchar2(100) :=
+  c_checker_func_name constant varchar2(98 byte) :=
     c_pkg_name || '.get_templ_last_modified';
 
   c_mru_strong_ref_count constant pls_integer := 20;
   c_mru_soft_ref_count constant pls_integer := 200;
 
-  c_config constant varchar2(32767) :=
+  c_config constant varchar2(32767 byte) :=
     '<?xml version="1.0" encoding="UTF-8"?>
     <java version="1.4.0" class="java.beans.XMLDecoder">
       <object class="ftldb.DefaultConfiguration">
@@ -129,8 +129,8 @@ end default_config_xml;
 
 function get_config_func_name return varchar2
 is
-  c_custom_config_func_name constant varchar2(100) := 'ftldb_config_xml';
-  c_default_config_func_name constant varchar2(100) :=
+  c_custom_config_func_name constant varchar2(98 byte) := 'ftldb_config_xml';
+  c_default_config_func_name constant varchar2(98 byte) :=
     '"' || get_this_schema() || '"."' || $$plsql_unit || '"' ||
     '.default_config_xml';
 begin
@@ -248,6 +248,11 @@ begin
 exception
   when others then
     dbms_session.modify_package_state(dbms_session.reinitialize);
-    raise_application_error(-20000, 'FTLDB initialization failed', true);
+    raise_application_error(
+      -20000,
+      'FTLDB initialization failed' || chr(10) || 
+      dbms_utility.format_error_stack() ||
+      dbms_utility.format_error_backtrace()
+    );
 end ftldb_api;
 /

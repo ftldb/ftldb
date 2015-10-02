@@ -36,37 +36,37 @@ gc_invalid_argument_num constant number := -20100;
 e_name_not_resolved exception;
 pragma exception_init(e_name_not_resolved, -20101);
 gc_name_not_resolved_num constant number := -20101;
-gc_name_not_resolved_msg constant varchar2(2000) :=
+gc_name_not_resolved_msg constant varchar2(2000 byte) :=
   'name %s cannot be resolved';
-gc_looping_synonym_chain_msg constant varchar2(2000) :=
+gc_looping_synonym_chain_msg constant varchar2(2000 byte) :=
   'synonym %s references to a looping chain';
-gc_dblink_over_dblink_msg constant varchar2(2000) :=
+gc_dblink_over_dblink_msg constant varchar2(2000 byte) :=
   'remote synonym %s references to another remote database %s';
 
 -- The exception raised when an object is not found.
 e_object_not_found exception;
 pragma exception_init(e_object_not_found, -20102);
 gc_object_not_found_num constant number := -20102;
-gc_object_not_found_msg constant varchar2(2000) :=
+gc_object_not_found_msg constant varchar2(2000 byte) :=
   'object %s of type %s is not found';
 
 -- The exception raised when a source for an object is not found.
 e_source_not_found exception;
 pragma exception_init(e_source_not_found, -20103);
 gc_source_not_found_num constant number := -20103;
-gc_source_not_found_msg constant varchar2(2000) :=
+gc_source_not_found_msg constant varchar2(2000 byte) :=
   'source for object %s of type %s is not found';
 
 -- The exception raised when a section in a container is not found.
 e_section_not_found exception;
 pragma exception_init(e_section_not_found, -20104);
 gc_section_not_found_num constant number := -20104;
-gc_section_not_found_msg constant varchar2(2000) :=
+gc_section_not_found_msg constant varchar2(2000 byte) :=
   '%d occurrence of section bounded between regular expressions "%s" and ' ||
   '"%s" is not found in container %s';
-gc_ncmp_section_not_found_msg constant varchar2(2000) :=
+gc_ncmp_section_not_found_msg constant varchar2(2000 byte) :=
   'non-compiled section is not found in container %s';
-gc_named_section_not_found_msg constant varchar2(2000) :=
+gc_named_section_not_found_msg constant varchar2(2000 byte) :=
   '%d occurrence of named section %s is not found in container %s';
 
 

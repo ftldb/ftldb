@@ -18,16 +18,16 @@ create or replace package body clob_util as
 
 
 -- Blank characters: space and tab.
-gc_blank constant varchar2(2) := ' ' || chr(9);
+gc_blank constant varchar2(2 byte) := ' ' || chr(9);
 
 -- LF character (*nix EOL).
-gc_lf constant varchar2(1) := chr(10);
+gc_lf constant varchar2(1 byte) := chr(10);
 
 -- CRLF characters (Win EOL).
-gc_crlf constant varchar2(2) := chr(13) || chr(10);
+gc_crlf constant varchar2(2 byte) := chr(13) || chr(10);
 
 -- EOL pattern: LF or CRLF.
-gc_eol constant varchar2(6) := '(' || gc_lf || '|' || gc_crlf || ')';
+gc_eol constant varchar2(6 byte) := '(' || gc_lf || '|' || gc_crlf || ')';
 
 
 function create_temporary(in_content in varchar2 := '') return clob
@@ -57,7 +57,7 @@ procedure put(
   in_indent in natural := null
 )
 is
-  c_indented_string constant varchar2(32767) :=
+  c_indented_string constant varchar2(32767 byte) :=
     rpad(' ', nvl(in_indent, 0), ' ') || in_string;
 begin
   if in_indent is not null then
@@ -86,7 +86,7 @@ procedure append(
   in_indent in natural := null
 )
 is
-  l_space varchar2(32767);
+  l_space varchar2(32767 byte);
 begin
   if in_indent is not null then
     ensure_trailing_lf(io_clob);
@@ -102,13 +102,13 @@ end append;
 
 function trim_blank_lines(in_clob in clob) return clob
 is
-  c_blank_line_ptrn constant varchar2(64) :=
+  c_blank_line_ptrn constant varchar2(64 byte) :=
     '[' || gc_blank ||']*' || gc_eol;
-  c_filled_line_ptrn constant varchar2(64) :=
+  c_filled_line_ptrn constant varchar2(64 byte) :=
     '[^[:space:]]+[' || gc_blank ||']*' || gc_eol;
-  c_leading_lines_ptrn constant varchar2(64) :=
+  c_leading_lines_ptrn constant varchar2(64 byte) :=
     '^(' || c_blank_line_ptrn || ')*';
-  c_trailing_lines_ptrn constant varchar2(64) :=
+  c_trailing_lines_ptrn constant varchar2(64 byte) :=
     '(' || c_filled_line_ptrn || ')?(' || c_blank_line_ptrn || ')*$';
 begin
   return
@@ -154,9 +154,9 @@ end join;
 
 function split_into_lines(in_clob in clob) return dbms_sql.varchar2a
 is
-  c_length constant pls_integer := dbms_lob.getlength(in_clob);
-  l_start_pos pls_integer := 1;
-  l_eol_pos pls_integer;
+  c_length constant integer := dbms_lob.getlength(in_clob);
+  l_start_pos integer := 1;
+  l_eol_pos integer;
   l_lines dbms_sql.varchar2a;
   l_no pls_integer := 0;
 begin
@@ -192,9 +192,9 @@ function split_into_pieces(
   in_trim_lines in boolean := false
 ) return clob_nt
 is
-  c_length constant pls_integer := dbms_lob.getlength(in_clob);
-  l_start_pos pls_integer := 1;
-  l_end_pos pls_integer;
+  c_length constant integer := dbms_lob.getlength(in_clob);
+  l_start_pos integer := 1;
+  l_end_pos integer;
   l_tmp clob;
   l_res clob_nt := clob_nt();
 begin
@@ -264,7 +264,7 @@ is
   l_lines dbms_sql.varchar2a;
   $if dbms_db_version.version < 11 $then
     l_clob_is_large boolean := false;
-    l_str varchar2(32767);
+    l_str varchar2(32767 byte);
     l_cur integer;
     l_res integer;
   $end

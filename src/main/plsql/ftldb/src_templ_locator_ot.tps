@@ -32,19 +32,19 @@ under templ_locator_ot (
  */
 
 -- The template container's owner.
-owner varchar2(30),
+owner varchar2(30 byte),
 
 -- The template container's object name.
-obj_name varchar2(30),
+obj_name varchar2(30 byte),
 
 -- The template container's section name.
-sec_name varchar2(30),
+sec_name varchar2(30 byte),
 
 -- The template container's dblink.
-dblink varchar2(128),
+dblink varchar2(128 byte),
 
 -- The template container's object type.
-type varchar2(30),
+type varchar2(30 byte),
 
 
 /**

@@ -26,9 +26,9 @@ is
   l_len pls_integer;
   l_csid pls_integer;
   l_csfrm pls_integer;
-  l_schema_name varchar2(30);
-  l_type_name varchar2(30);
-  l_version varchar2(30);
+  l_schema_name varchar2(30 byte);
+  l_type_name varchar2(30 byte);
+  l_version varchar2(45 byte);
   l_numelems pls_integer;
 begin
   l_type_code := anydata.convertobject(self).gettype(l_type);
@@ -62,21 +62,21 @@ end xml_encode;
 
 static function xml_decode(in_locator_xml xmltype) return templ_locator_ot
 is
-  c_type_name constant varchar2(65) :=
+  c_type_name constant varchar2(65 byte) :=
     utl_i18n.unescape_reference(
       in_locator_xml.extract('/LOCATOR/TYPE/text()').getstringval()
     );
-  c_xml_decoder_call constant varchar2(32767) :=
+  c_xml_decoder_call constant varchar2(128 byte) :=
     'declare x xmltype := :1; v %type%; begin x.toobject(v); :2 := v; end;';
 
   l_locator templ_locator_ot;
 
   c_type_ctx constant pls_integer := 7;
-  l_schema varchar2(30);
-  l_part1 varchar2(30);
-  l_part2 varchar2(30);
-  l_dblink varchar2(128);
-  l_part1_type varchar2(30);
+  l_schema varchar2(30 byte);
+  l_part1 varchar2(30 byte);
+  l_part2 varchar2(30 byte);
+  l_dblink varchar2(128 byte);
+  l_part1_type varchar2(30 byte);
   l_object_number number;
 begin
   -- Assert the decoded type exists

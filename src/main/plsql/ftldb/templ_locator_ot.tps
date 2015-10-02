@@ -26,7 +26,7 @@ create or replace type templ_locator_ot authid current_user as object (
  */
 
 -- The template's name
-templ_name varchar2(4000),
+templ_name varchar2(4000 byte),
 
 
 /**
