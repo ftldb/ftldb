@@ -180,7 +180,9 @@ is
   l_config_xml xmltype;
 begin
   execute immediate
-    'call ' || dbms_assert.sql_object_name(in_config_func_name) || '() into :1'
+    'begin' ||
+    '  :1 := ' || dbms_assert.sql_object_name(in_config_func_name) || '(); ' ||
+    'end;'
   using out l_config_xml;
 
   init(l_config_xml);
