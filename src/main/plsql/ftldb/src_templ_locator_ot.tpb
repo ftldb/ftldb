@@ -24,16 +24,16 @@ is
   l_locator src_templ_locator_ot :=
     src_templ_locator_ot(in_templ_name, null, null, null, null, null);
 begin
-  if in_templ_name like 'src:_%' then
-    source_util.resolve_src_name(
-      substr(in_templ_name, 5),
-      l_locator.owner, l_locator.obj_name, l_locator.sec_name, l_locator.dblink,
+  if in_templ_name like '@%' then
+    source_util.resolve_long_name(
+      substr(in_templ_name, 2),
+      l_locator.owner, l_locator.obj_name, l_locator.dblink,
       l_locator.type
     );
   else
-    source_util.resolve_long_name(
+    source_util.resolve_src_name(
       in_templ_name,
-      l_locator.owner, l_locator.obj_name, l_locator.dblink,
+      l_locator.owner, l_locator.obj_name, l_locator.sec_name, l_locator.dblink,
       l_locator.type
     );
   end if;

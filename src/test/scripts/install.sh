@@ -50,7 +50,7 @@ echo Log file: setup/$logfile
 
 echo
 echo Build SQL*Plus installation script.
-java -cp .:java/* ftldb.CommandLine setup/install.ftl \
+java -cp .:java/ftldb.jar:java/freemarker.jar ftldb.CommandLine @setup/install.ftl \
   $instance_tns_name $super_user $ftldb_schema $demo_schema \
   1> setup/$sqlfile 2> setup/$logfile
 

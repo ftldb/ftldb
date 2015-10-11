@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_shared_hash1.ftl"/>
+<@template name = "@ftldb/test_shared_hash1.ftl"/>
 -- ${template_name()} START --
 Passed arguments:
 <#list template_args as arg>

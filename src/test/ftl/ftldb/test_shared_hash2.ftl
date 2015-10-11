@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_shared_hash2.ftl"/>
+<@template name = "@ftldb/test_shared_hash2.ftl"/>
 -- ${template_name()} START --
 Get key "v" from the shared hash.
 <#assign v = shared_hash.get("v")>

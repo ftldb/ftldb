@@ -156,6 +156,7 @@
                         <include>src/**</include>
                     </includes>
                     <excludes>
+                        <exclude>src/main/java/freemarker/cache/TemplateNameFormat.java</exclude>
                         <exclude>src/main/resources/**</exclude>
                         <exclude>src/assembly/**</exclude>
                     </excludes>

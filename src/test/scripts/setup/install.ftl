@@ -57,18 +57,18 @@ spool &&logfile.
 prompt SQL*Plus script started.
 
 <#-- (Re)create demo schema and additional test schemas -->
-<#include "create_schemas.ftl"/>
+<#include "@@create_schemas.ftl"/>
 
 <@set_current demo_schema/>
 
 <#-- Create synonyms for FTLDB objects -->
-<#include "create_ftldb_synonyms.ftl"/>
+<#include "@@create_ftldb_synonyms.ftl"/>
 
 <#-- Create test packages and additional objects -->
-<#include "create_test_objects.ftl"/>
+<#include "@@create_test_objects.ftl"/>
 
 <#-- Run tests -->
-<#include "run_tests.sql"/>
+<#include "@@run_tests.sql"/>
 
 prompt SQL*Plus script finished.
 

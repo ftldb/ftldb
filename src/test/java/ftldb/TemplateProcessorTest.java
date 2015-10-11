@@ -44,24 +44,24 @@ public class TemplateProcessorTest {
 
     @Test
     public void testStatic() throws Exception {
-        process("/ftldb/test_static.ftl");
+        process("@ftldb/test_static.ftl");
     }
 
     @Test
     public void testTemplateLine() throws Exception {
-        process("/ftldb/test_template_line.ftl");
+        process("@ftldb/test_template_line.ftl");
     }
 
     @Test
     public void testSharedHash() throws Exception {
         CommandLine.main(new String[]{
-                "/ftldb/test_shared_hash1.ftl", "x", "y", "z", "!", "/ftldb/test_shared_hash2.ftl"
+                "@ftldb/test_shared_hash1.ftl", "x", "y", "z", "!", "@ftldb/test_shared_hash2.ftl"
         });
     }
 
     @Test
     public void testInclude() throws Exception {
-        process("/ftldb/test_include.ftl");
+        process("@ftldb/test_include.ftl");
     }
 
     @Test
@@ -72,24 +72,24 @@ public class TemplateProcessorTest {
     @Test
     public void testNewConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("/ftldb/test_new_connection.ftl");
+        process("@ftldb/test_new_connection.ftl");
     }
 
     @Test
     public void testDefaultConnection() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("/ftldb/test_default_connection.ftl");
+        process("@ftldb/test_default_connection.ftl");
     }
 
     @Test
     public void testQueryAndCallExecutors() throws Exception {
         Class.forName("oracle.jdbc.OracleDriver");
-        process("/ftldb/test_query_and_call.ftl");
+        process("@ftldb/test_query_and_call.ftl");
     }
 
     @Test
     public void testShellExec() throws Exception {
-        process("/ftldb/test_shell_exec.ftl");
+        process("@ftldb/test_shell_exec.ftl");
     }
 
 }

@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_shell_exec.ftl"/>
+<@template name = "@ftldb/test_shell_exec.ftl"/>
 -- ${template_name()} START --
 <#assign res = shell_exec("java -version")/>
 run "java -version":

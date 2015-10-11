@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/std.ftl"/>
+<@template name = "@ftldb/std.ftl"/>
 <#--
 -- This library contains standard functions and macros for usual purposes.
 -->

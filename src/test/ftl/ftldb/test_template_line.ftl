@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_template_line.ftl"/>
+<@template name = "@ftldb/test_template_line.ftl"/>
 -- ${template_name()} START --
 line 20
 line 21

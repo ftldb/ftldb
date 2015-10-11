@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/orasql.ftl"/>
+<@template name = "@ftldb/orasql.ftl"/>
 <#--
 -- This library contains functions and macros for working with SQL.
 --->

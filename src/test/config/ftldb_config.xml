@@ -19,10 +19,7 @@
 <java version="1.4.0" class="java.beans.XMLDecoder">
     <object class="ftldb.DefaultConfiguration">
         <void property="templateLoader">
-            <object class="freemarker.cache.ClassTemplateLoader">
-                <class>ftldb.CommandLine</class>
-                <string>/</string>
-            </object>
+            <object class="ftldb.ResourceTemplateLoader"/>
         </void>
         <void property="cacheStorage">
             <object class="freemarker.cache.NullCacheStorage"/>

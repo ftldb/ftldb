@@ -52,7 +52,7 @@ public class DefaultConfiguration extends Configuration {
         setObjectWrapper(new DefaultObjectWrapper(this.getIncompatibleImprovements()));
         setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         setLocalizedLookup(false);
-        setTemplateNameFormat(TemplateNameFormat.DEFAULT_2_3_0);
+        setTemplateNameFormat(TemplateNameFormat.FTLDB_NAME_FORMAT);
 
         // Register user-defined variables and methods
         registerUserDefinedVariablesAndMethods();

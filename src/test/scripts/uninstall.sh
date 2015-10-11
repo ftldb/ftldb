@@ -48,7 +48,7 @@ echo Log file: setup/$logfile
 
 echo
 echo Build SQL*Plus deinstallation script.
-java -cp .:java/* ftldb.CommandLine setup/uninstall.ftl \
+java -cp .:java/ftldb.jar:java/freemarker.jar ftldb.CommandLine @setup/uninstall.ftl \
   $instance_tns_name $super_user $demo_schema \
   1> setup/$sqlfile 2> setup/$logfile
 

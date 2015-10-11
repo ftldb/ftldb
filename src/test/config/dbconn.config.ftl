@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "dbconn.config.ftl"/>
+<@template name = "@dbconn.config.ftl"/>
 <#function new_conn>
 <#return new_connection("jdbc:oracle:thin:@//localhost:1521/orcl11", "scott", "tiger")/>
 </#function>

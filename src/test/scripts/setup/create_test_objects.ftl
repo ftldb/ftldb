@@ -16,30 +16,30 @@
 
 -->
 prompt Create additional objects in other schemas for Unit Tests.
-<#include "../plsql/ut_source_util$resolve_name.ftl">
+<#include "@@../plsql/ut_source_util$resolve_name.ftl">
 
 prompt Create UT_CLOB_UTIL package.
-<#include "../plsql/ut_clob_util.pck">
+<#include "@@../plsql/ut_clob_util.pck">
 show errors
 
 prompt Create UT_SOURCE_UTIL package and additional objects.
-<#include "../plsql/ut_source_util$long2clob$vw.sql">
+<#include "@@../plsql/ut_source_util$long2clob$vw.sql">
 show errors
-<#include "../plsql/ut_source_util$extract_sect.pks">
+<#include "@@../plsql/ut_source_util$extract_sect.pks">
 show errors
-<#include "../plsql/ut_source_util.pck">
+<#include "@@../plsql/ut_source_util.pck">
 show errors
 
 prompt Create UT_SCRIPT_OT package.
-<#include "../plsql/ut_script_ot.pck">
+<#include "@@../plsql/ut_script_ot.pck">
 show errors
 
 prompt Create UT_FTLDB_API package and additional objects.
-<#include "../plsql/ut_ftldb_api$process.pks" parse=false>
+<#include "@@../plsql/ut_ftldb_api$process.pks" parse=false>
 show errors
-<#include "../plsql/ut_ftldb_api$config.pck" parse=false>
+<#include "@@../plsql/ut_ftldb_api$config.pck" parse=false>
 show errors
-<#include "../plsql/ut_ftldb_api.pck" parse=false>
+<#include "@@../plsql/ut_ftldb_api.pck" parse=false>
 show errors
 
 prompt Check for compilation errors.

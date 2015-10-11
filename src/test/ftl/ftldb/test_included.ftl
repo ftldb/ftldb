@@ -15,5 +15,5 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_included.ftl"/>
+<@template name = "@ftldb/test_included.ftl"/>
 ::: INSIDE ${template_name()} :::

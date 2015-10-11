@@ -39,7 +39,7 @@ is
 begin
   return
     ftldb_api.process(
-      'src:' || $$plsql_unit || '%ftldb_config_xml',
+      $$plsql_unit || '%ftldb_config_xml',
       ftldb_varchar2_nt(sys_context('userenv', 'current_schema'), $$plsql_unit)
     );
 

@@ -40,8 +40,6 @@ function new_templ_locator(in_templ_name in varchar2) return templ_locator_ot
 is
 begin
   case
-    when in_templ_name like 'src:_%' then
-      return src_templ_locator_ot.new(in_templ_name);
     when in_templ_name like '_%' then
       return src_templ_locator_ot.new(in_templ_name);
     else
@@ -250,7 +248,7 @@ exception
     dbms_session.modify_package_state(dbms_session.reinitialize);
     raise_application_error(
       -20000,
-      'FTLDB initialization failed' || chr(10) || 
+      'FTLDB initialization failed' || chr(10) ||
       dbms_utility.format_error_stack() ||
       dbms_utility.format_error_backtrace()
     );

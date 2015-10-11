@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_static.ftl"/>
+<@template name = "@ftldb/test_static.ftl"/>
 -- ${template_name()} START --
 java.lang.System.currentTimeMillis() = ${static("java.lang.System").currentTimeMillis()?c}
 java.lang.Math.sqrt(123) = ${static("java.lang.Math").sqrt(123)?c}

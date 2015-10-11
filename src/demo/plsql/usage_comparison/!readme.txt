@@ -22,6 +22,6 @@ Demo from the main README.
 
 3. Run in the command line with proper FTL arguments (and possibly different classpath):
 
-    java -cp .:../../java/*:$ORACLE_HOME/jdbc/lib/ojdbc6.jar ftldb.CommandLine orders.ftl "localhost:1521/orcl" "scott" "tiger" 1> orders.sql
+    java -cp .:../../java/ftldb.jar:../../java/freemarker.jar:$ORACLE_HOME/jdbc/lib/ojdbc6.jar ftldb.CommandLine @orders.ftl "localhost:1521/orcl" "scott" "tiger" 1> orders.sql
 
 4. See the `orders.sql` file.

@@ -15,10 +15,10 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_query_and_call.ftl"/>
+<@template name = "@ftldb/test_query_and_call.ftl"/>
 -- ${template_name()} START --
 Open connection.
-<#import "/dbconn.config.ftl" as conf>
+<#import "@dbconn.config.ftl" as conf>
 <#assign conn = conf.new_conn()/>
 
 

@@ -59,7 +59,7 @@ public class CommandLine {
             skip += 2;
         } else {
             cfg = new DefaultConfiguration();
-            cfg.setTemplateLoader(new ClassTemplateLoader(CommandLine.class, "/"));
+            cfg.setTemplateLoader(new ResourceTemplateLoader());
         }
 
         List calls = getFtlCalls(args, skip);
@@ -117,9 +117,9 @@ public class CommandLine {
         }
         System.err.println("Usage: java " + CommandLine.class.getName()
                             + " [-c configXmlFile]"
-                            + " ftlFile1 arg1 ... argN [" + FTL_CALL_DELIM
-                            + " ftlFile2 arg1 ... argN [" + FTL_CALL_DELIM
-                            + " ftlFileN ...]]");
+                            + " @ftlFile1 arg1 ... argN [" + FTL_CALL_DELIM
+                            + " @ftlFile2 arg1 ... argN [" + FTL_CALL_DELIM
+                            + " @ftlFileN ...]]");
         System.exit(1);
     }
 

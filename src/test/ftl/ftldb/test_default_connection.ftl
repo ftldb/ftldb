@@ -15,10 +15,10 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_default_connection.ftl"/>
+<@template name = "@ftldb/test_default_connection.ftl"/>
 -- ${template_name()} START --
 Open connection.
-<#import "/dbconn.config.ftl" as conf>
+<#import "@dbconn.config.ftl" as conf>
 <#assign conn = conf.new_conn()/>
 
 Override default DB connection.

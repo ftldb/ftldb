@@ -15,8 +15,8 @@
     limitations under the License.
 
 -->
-<@template name = "ftldb/test_include.ftl"/>
+<@template name = "@ftldb/test_include.ftl"/>
 -- ${template_name()} START --
 Include another template:
-<#include "/ftldb/test_included.ftl">
+<#include "@@test_included.ftl">
 -- ${template_name()} END --
