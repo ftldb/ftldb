@@ -17,22 +17,15 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>java</outputDirectory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/test/plsql</directory>
+            <directory>${basedir}/src/test/plsql</directory>
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/demo/plsql</directory>
+            <directory>${basedir}/src/demo/plsql</directory>
             <outputDirectory>demo</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/test/scripts</directory>
+            <directory>${basedir}/src/test/scripts</directory>
             <outputDirectory>.</outputDirectory>
         </fileSet>
     </fileSets>

@@ -16,7 +16,6 @@
 package ftldb;
 
 
-import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 

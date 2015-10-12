@@ -46,7 +46,7 @@ public class DefaultConfiguration extends Configuration {
 
     public DefaultConfiguration() {
         // Set FreeMarker features up to the latest version
-        super(Configuration.getVersion());
+        super(getVersion());
 
         // Set default settings
         setObjectWrapper(new DefaultObjectWrapper(this.getIncompatibleImprovements()));

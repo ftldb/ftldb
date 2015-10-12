@@ -1,11 +1,10 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
-    <id>demo-linux</id>
+    <id>install-win</id>
     <formats>
-        <format>tar.gz</format>
+        <format>zip</format>
     </formats>
-    <baseDirectory>${project.build.finalName}-demo</baseDirectory>
     <dependencySets>
         <dependencySet>
             <scope>runtime</scope>
@@ -17,7 +16,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}</directory>
+            <directory>${main.basedir}</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>README*</include>
@@ -26,26 +25,23 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>java</outputDirectory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/test/plsql</directory>
+            <directory>${basedir}/src/main/plsql</directory>
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/demo/plsql</directory>
-            <outputDirectory>demo</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>src/test/scripts</directory>
+            <directory>${basedir}/src/main/scripts</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
-                <exclude>*.bat</exclude>
+                <exclude>*.sh</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${main.basedir}/ftldb/target/site/apidocs</directory>
+            <outputDirectory>doc/java</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/site/sql-apidocs</directory>
+            <outputDirectory>doc/plsql</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

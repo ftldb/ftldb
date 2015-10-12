@@ -1,9 +1,9 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
-    <id>demo-win</id>
+    <id>demo-linux</id>
     <formats>
-        <format>zip</format>
+        <format>tar.gz</format>
     </formats>
     <baseDirectory>${project.build.finalName}-demo</baseDirectory>
     <dependencySets>
@@ -17,7 +17,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}</directory>
+            <directory>${main.basedir}</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>README*</include>
@@ -26,25 +26,18 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>java</outputDirectory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>src/test/plsql</directory>
+            <directory>${basedir}/src/test/plsql</directory>
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/demo/plsql</directory>
+            <directory>${basedir}/src/demo/plsql</directory>
             <outputDirectory>demo</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>src/test/scripts</directory>
+            <directory>${basedir}/src/test/scripts</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
-                <exclude>*.sh</exclude>
+                <exclude>*.bat</exclude>
             </excludes>
         </fileSet>
     </fileSets>
