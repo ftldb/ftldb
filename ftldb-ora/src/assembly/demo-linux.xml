@@ -36,6 +36,14 @@
         <fileSet>
             <directory>${basedir}/src/test/scripts</directory>
             <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/src/test/scripts</directory>
+            <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>*.bat</exclude>
             </excludes>
