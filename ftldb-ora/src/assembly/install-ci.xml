@@ -17,12 +17,23 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>${basedir}/src/main/plsql</directory>
+            <directory>${project.basedir}/src/main/plsql</directory>
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${basedir}/src/main/scripts</directory>
             <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/src/main/scripts</directory>
+            <outputDirectory>.</outputDirectory>
+            <excludes>
+                <exclude>*.sh</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 </assembly>

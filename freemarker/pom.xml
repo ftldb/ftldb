@@ -3,19 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>ftldb</groupId>
-        <artifactId>ftldb-main</artifactId>
+        <artifactId>ftldb-root</artifactId>
         <version>1.5.0-nightly</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>freemarker</artifactId>
     <version>2.3.23</version>
     <name>FreeMarker (patched)</name>
 
     <properties>
-        <main.basedir>${project.parent.basedir}</main.basedir>
+        <root.basedir>${project.basedir}/..</root.basedir>
     </properties>
 
     <dependencies>
@@ -37,10 +38,10 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>${basedir}/src/**</include>
+                        <include>${project.basedir}/src/**</include>
                     </includes>
                     <excludes>
-                        <exclude>${basedir}/src/main/java/freemarker/cache/TemplateNameFormat*</exclude>
+                        <exclude>${project.basedir}/src/main/java/freemarker/cache/TemplateNameFormat*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -80,7 +81,7 @@
                                 <filter>
                                     <artifact>org.freemarker:freemarker</artifact>
                                     <excludes>
-                                        <exclude>freemarker/cache/TemplateNameFormat*.class</exclude>
+                                        <exclude>freemarker/cache/TemplateNameFormat*</exclude>
                                     </excludes>
                                 </filter>
                             </filters>

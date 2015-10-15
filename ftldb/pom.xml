@@ -3,18 +3,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>ftldb</groupId>
-        <artifactId>ftldb-main</artifactId>
+        <artifactId>ftldb-root</artifactId>
         <version>1.5.0-nightly</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ftldb</artifactId>
     <name>FTLDB Java library</name>
 
     <properties>
-        <main.basedir>${project.parent.basedir}</main.basedir>
+        <root.basedir>${project.basedir}/..</root.basedir>
     </properties>
 
     <dependencies>
@@ -40,18 +41,23 @@
     <build>
         <resources>
             <resource>
-                <directory>${basedir}/src/main/ftl</directory>
+                <directory>${project.basedir}/src/main/ftl</directory>
             </resource>
 
             <resource>
-                <directory>${basedir}/src/main/resources</directory>
+                <directory>${root.basedir}/src/license</directory>
+                <targetPath>META-INF</targetPath>
+            </resource>
+
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
                 <excludes>
                     <exclude>ftldb/version.properties</exclude>
                 </excludes>
             </resource>
 
             <resource>
-                <directory>${basedir}/src/main/resources</directory>
+                <directory>${project.basedir}/src/main/resources</directory>
                 <includes>
                     <include>ftldb/version.properties</include>
                 </includes>
@@ -69,11 +75,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <workingDirectory>${basedir}/src/test</workingDirectory>
+                    <workingDirectory>${project.basedir}/src/test</workingDirectory>
                     <additionalClasspathElements>
-                        <additionalClasspathElement>${basedir}/src/test/config</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/src/test/ftl</additionalClasspathElement>
-                        <additionalClasspathElement>${basedir}/src/main/ftl</additionalClasspathElement>
+                        <additionalClasspathElement>${project.basedir}/src/test/config</additionalClasspathElement>
+                        <additionalClasspathElement>${project.basedir}/src/test/ftl</additionalClasspathElement>
+                        <additionalClasspathElement>${project.basedir}/src/main/ftl</additionalClasspathElement>
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
@@ -83,10 +89,10 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>${basedir}/src/**</include>
+                        <include>${project.basedir}/src/**</include>
                     </includes>
                     <excludes>
-                        <exclude>${basedir}/src/main/resources/**</exclude>
+                        <exclude>${project.basedir}/src/main/resources/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

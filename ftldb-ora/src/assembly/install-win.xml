@@ -16,7 +16,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>${main.basedir}</directory>
+            <directory>${root.basedir}</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>README*</include>
@@ -25,18 +25,18 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/src/main/plsql</directory>
+            <directory>${project.basedir}/src/main/plsql</directory>
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/src/main/scripts</directory>
+            <directory>${project.basedir}/src/main/scripts</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>*.sh</exclude>
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>${main.basedir}/ftldb/target/site/apidocs</directory>
+            <directory>${root.basedir}/ftldb/target/site/apidocs</directory>
             <outputDirectory>doc/java</outputDirectory>
         </fileSet>
         <fileSet>

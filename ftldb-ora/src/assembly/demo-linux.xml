@@ -17,7 +17,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>${main.basedir}</directory>
+            <directory>${root.basedir}</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>README*</include>
@@ -26,17 +26,26 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/src/test/plsql</directory>
+            <directory>${project.basedir}/src/test/plsql</directory>
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/src/demo/plsql</directory>
+            <directory>${project.basedir}/src/demo/plsql</directory>
             <outputDirectory>demo</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${basedir}/src/test/scripts</directory>
             <outputDirectory>.</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>${basedir}/src/test/scripts</directory>
+            <outputDirectory>.</outputDirectory>
             <excludes>
+                <exclude>*.sh</exclude>
                 <exclude>*.bat</exclude>
             </excludes>
         </fileSet>

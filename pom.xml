@@ -6,9 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ftldb</groupId>
-    <artifactId>ftldb-main</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>ftldb-root</artifactId>
     <version>1.5.0-nightly</version>
+    <packaging>pom</packaging>
+
     <modules>
         <module>freemarker</module>
         <module>ftldb</module>
@@ -18,7 +19,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <freemarker.version>2.3.23</freemarker.version>
-        <main.basedir>${basedir}</main.basedir>
+        <root.basedir>${project.basedir}</root.basedir>
     </properties>
 
     <name>FTLDB</name>
@@ -112,7 +113,7 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>2.11</version>
                     <configuration>
-                        <header>${main.basedir}/ftldb/src/main/resources/META-INF/LICENSE</header>
+                        <header>${root.basedir}/src/license/LICENSE</header>
                         <mapping>
                             <java>SLASHSTAR_STYLE</java>
                             <sql>DOUBLEDASHES_STYLE</sql>
@@ -124,7 +125,6 @@
                             <typ>DOUBLEDASHES_STYLE</typ>
                             <tps>DOUBLEDASHES_STYLE</tps>
                             <tpb>DOUBLEDASHES_STYLE</tpb>
-                            <ftc>DOUBLEDASHES_STYLE</ftc>
                         </mapping>
                     </configuration>
                     <executions>

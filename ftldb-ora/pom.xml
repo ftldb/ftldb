@@ -3,19 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>ftldb</groupId>
-        <artifactId>ftldb-main</artifactId>
+        <artifactId>ftldb-root</artifactId>
         <version>1.5.0-nightly</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ftldb-ora</artifactId>
     <packaging>pom</packaging>
     <name>FTLDB for Oracle</name>
 
     <properties>
-        <main.basedir>${project.parent.basedir}</main.basedir>
+        <root.basedir>${project.basedir}/..</root.basedir>
     </properties>
 
     <dependencies>
@@ -39,10 +40,10 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>${basedir}/src/**</include>
+                        <include>${project.basedir}/src/**</include>
                     </includes>
                     <excludes>
-                        <exclude>${basedir}/src/assembly/**</exclude>
+                        <exclude>${project.basedir}/src/assembly/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -55,7 +56,7 @@
                     <applicationTitle>${parent.name} ${project.version} PL/SQL API</applicationTitle>
                     <fileSets>
                         <fileSet>
-                            <directory>${basedir}/src/main/plsql</directory>
+                            <directory>${project.basedir}/src/main/plsql</directory>
                             <includes>
                                 <include>**/*.pks</include>
                                 <include>**/*.typ</include>
@@ -63,7 +64,7 @@
                             </includes>
                         </fileSet>
                     </fileSets>
-                    <reportOutputDirectory>target/site</reportOutputDirectory>
+                    <reportOutputDirectory>${project.build.directory}/site</reportOutputDirectory>
                 </configuration>
                 <executions>
                     <execution>
