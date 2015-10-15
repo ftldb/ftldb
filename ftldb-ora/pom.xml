@@ -89,10 +89,10 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>${basedir}/src/assembly/install-win.xml</descriptor>
-                                <descriptor>${basedir}/src/assembly/install-linux.xml</descriptor>
-                                <descriptor>${basedir}/src/assembly/demo-win.xml</descriptor>
-                                <descriptor>${basedir}/src/assembly/demo-linux.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/install-win.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/install-linux.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/demo-win.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/demo-linux.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -106,8 +106,8 @@
                             <finalName>ci</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
-                                <descriptor>${basedir}/src/assembly/install-ci.xml</descriptor>
-                                <descriptor>${basedir}/src/assembly/demo-ci.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/install-ci.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/demo-ci.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>

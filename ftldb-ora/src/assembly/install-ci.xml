@@ -21,7 +21,7 @@
             <outputDirectory>plsql</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/src/main/scripts</directory>
+            <directory>${project.basedir}/src/main/scripts</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
                 <include>*.sh</include>
@@ -29,7 +29,7 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/src/main/scripts</directory>
+            <directory>${project.basedir}/src/main/scripts</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>*.sh</exclude>
