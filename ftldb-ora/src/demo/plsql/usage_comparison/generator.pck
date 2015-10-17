@@ -50,8 +50,7 @@ begin
     ')' || chr(10) ||
     'partition by list(shop_id) (';
 
-  for r in cur_partitions
-  loop
+  for r in cur_partitions loop
     l_scr := l_scr ||
       case when cur_partitions%rowcount > 1 then ',' end || chr(10) ||
       '  partition ' || r.name || ' values (' || r.vals || ')';
@@ -69,10 +68,10 @@ begin
   dbms_output.put_line('/');
   execute immediate l_scr;
 
-end;
+end gen_orders_plsql;
 
 
-$if null $then
+$if false $then
 --%begin orders_ftl
 
 <#assign conn = default_connection()/>
@@ -113,7 +112,7 @@ function gen_orders_ftldb return ftldb_script_ot
 is
 begin
   return ftldb_api.process($$plsql_unit || '%orders_ftl');
-end;
+end gen_orders_ftldb;
 
 
 end;

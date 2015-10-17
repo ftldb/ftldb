@@ -17,7 +17,7 @@ features.
 
 Not an Oracle user? No problem. FTLDB also suits for *client-side* code
 generation for [PostgreSQL](http://postgresql.org), [MySQL](http://mysql.com),
-[DB2](http://ibm.com/software/data/db2) and any other RDBMS providing a JDBC
+[DB2](http://ibm.com/software/data/db2) or any other RDBMS providing a JDBC
 driver.
 
 
@@ -135,18 +135,19 @@ A fragment of the `generator` package:
 ```sql
 create or replace package body generator as
 
-cursor cur_partitions is
-  select
-    t.region name,
-    listagg(t.shop_id, ', ')
-      within group (order by t.shop_id) vals
-  from shops t
-  group by t.region
-  order by t.region;
-
 procedure gen_orders_plsql
 is
   l_scr clob;
+
+  cursor cur_partitions is
+    select
+      t.region name,
+      listagg(t.shop_id, ', ')
+        within group (order by t.shop_id) vals
+    from shops t
+    group by t.region
+    order by t.region;
+
 begin
   l_scr :=
     'create table orders (' || chr(10) ||
@@ -200,26 +201,21 @@ create or replace package body generator as
 
 ...
 
-function get_partitions return sys_refcursor
-is
-  l_rc sys_refcursor;
-begin
-  open l_rc for
-    select
-      t.region name,
-      listagg(t.shop_id, ', ')
-        within group (order by t.shop_id) vals
-    from shops t
-    group by t.region
-    order by t.region;
-  return l_rc;
-end get_partitions;
-
 $if false $then
 --%begin orders_ftl
 
-<#import "ftldb.sql_ftl" as sql/>
-<#assign partitions = sql.fetch('generator.get_partitions')/>
+<#assign conn = default_connection()/>
+
+<#assign partitions_sql>
+  select
+    t.region name,
+    listagg(t.shop_id, ', ') within group (order by t.shop_id) vals
+  from shops t
+  group by t.region
+  order by t.region
+</#assign>
+
+<#assign partitions = conn.query(partitions_sql)/>
 
 create table orders (
   order_id integer not null primary key,
@@ -233,10 +229,10 @@ partition by list(shop_id) (
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
-</>
+${"/"}
 
 comment on table orders is 'Orders partitioned by region.'
-</>
+${"/"}
 
 --%end orders_ftl
 $end
@@ -270,16 +266,16 @@ Content of the `orders.ftl` file:
   )
 />
 
-<#assign
-  partitions = conn.query(
-    "select " +
-      "t.region name, " +
-      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " +
-    "from shops t " +
-    "group by t.region " +
-    "order by t.region"
-  )
-/>
+<#assign partitions_sql>
+  select
+    t.region name,
+    listagg(t.shop_id, ', ') within group (order by t.shop_id) vals
+  from shops t
+  group by t.region
+  order by t.region
+</#assign>
+
+<#assign partitions = conn.query(partitions_sql)/>
 
 create table orders (
   order_id integer not null primary key,
@@ -293,22 +289,22 @@ partition by list(shop_id) (
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
-/
+${"/"}
 
 comment on table orders is 'Orders partitioned by region.'
-/
+${"/"}
 
 <#assign void = conn.close()/>
 ```
 
 The table creation OS-shell script:
 ```
-java -cp ../java/* ftldb.CommandLine orders.ftl 1> orders.sql
+java -cp .:../java/* ftldb.CommandLine @orders.ftl 1> orders.sql
 sqlplus scott/tiger@orcl @orders.sql
 ```
 
 > **Notice**: Classpath may differ from the one specified above but must include
-> `ftldb.jar`, `freemarker.jar` and the JDBC driver.
+> processed templates, `ftldb.jar`, `freemarker.jar` and the JDBC driver.
 
 The result of all three executions is the `orders` table created and the
 following script printed:
@@ -333,7 +329,7 @@ comment on table orders is 'Orders partitioned by region.'
 
 Compare these three solutions. As you may see, the two latter are much simpler
 and more readable, since there is no quotation and concatenation in the `create
-table` statement. The FTL template looks just as plain SQL code with few extra
+table` statement. The FTL template looks just as plain SQL code with a few extra
 tags and macros.
 
 Pay attention to how naturally the `orders` table template is integrated into
@@ -358,13 +354,17 @@ cases pure PL/SQL or Java code might be more appropriate.
 Security
 --------
 
-The FTLDB database user requires only several system privileges:
+The FTLDB database user requires only several system privileges during
+installation:
 
   * `CREATE SESSION`
   * `CREATE PROCEDURE`
   * `CREATE TYPE`
   * `CREATE TABLE`
   * `QUOTA` at least 50M on the default tablespace
+
+After FTLDB has been installed, the account may be locked and the privileges
+revoked.
 
 All the objects in the FTLDB schema are created with the invoker-rights option,
 and due to this, execution privileges on them are granted to `PUBLIC`, which is
@@ -405,15 +405,13 @@ page](http://github.com/ftldb/ftldb/releases). The archive includes:
 
   * `doc` directory
     * Java & PL/SQL API documentation
-  * `ftl` directory
-    * FTL macro libraries for basic needs
   * `java` directory
     * `freemarker.jar` - FreeMarker template engine
     * `ftldb.jar` - own classes for working with database connections, queries,
-      callable statements and result sets in FTL (server-side & client-side)
+      callable statements and result sets in FTL (server-side & client-side),
+      standard FTL macro libraries
   * `plsql` directory
     * types and packages providing API for using in PL/SQL
-    * PL/SQL containers for the FTL macro libraries
   * `setup` directory
     * SQL*Plus scripts for creating objects and granting privileges
   * `*.bat` or `*.sh` scripts (depends on OS) - installers and deinstallers
@@ -549,12 +547,12 @@ recommended.
 Do the following:
 
   1. Download and unpack the source archive or clone from the GitHub repository.
-  2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
+  2. Open the `ftldb/src/test/config/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
   3. Run in the command line from the base project directory:  
      `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
      if you don't have an Oracle instance available.
-  4. Check the `target` directory for the installation files.
+  4. Check the `ftldb-ora/target` directory for the installation files.
 
 > **Notice**: The client-side tests are also a good source of usage examples.
 
