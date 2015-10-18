@@ -73,35 +73,35 @@ begin
         );
     end;
   end loop;
-end;
+end switch_privileges;
 
 
 procedure grant_privileges(in_grantees varchar2_nt)
 is
 begin
   switch_privileges(true, in_grantees);
-end;
+end grant_privileges;
 
 
 procedure grant_privileges(in_grantee varchar2)
 is
 begin
   grant_privileges(varchar2_nt(in_grantee));
-end;
+end grant_privileges;
 
 
 procedure revoke_privileges(in_grantees varchar2_nt)
 is
 begin
   switch_privileges(false, in_grantees);
-end;
+end revoke_privileges;
 
 
 procedure revoke_privileges(in_grantee varchar2)
 is
 begin
   revoke_privileges(varchar2_nt(in_grantee));
-end;
+end revoke_privileges;
 
 
 end ftldb_admin;

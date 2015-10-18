@@ -15,5 +15,5 @@
 --
 
 set echo off
-prompt &&_O_RELEASE.
+prompt &&_o_release.
 exit

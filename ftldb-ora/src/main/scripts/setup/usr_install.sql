@@ -35,7 +35,7 @@ spool &&logfile.
 
 prompt SQL*Plus script started.
 
-@@create_plsql_objects &&_user. public
+@@create_plsql_objects &&_user.
 
 prompt SQL*Plus script finished.
 
