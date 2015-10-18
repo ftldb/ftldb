@@ -64,6 +64,12 @@ begin
 end;
 /
 
+prompt Grant execute privileges on FTLDB to ${schema?upper_case} schema.
+begin
+  ${ftldb_schema}.ftldb_admin.grant_privileges('${schema}');
+end;
+/
+
 </#macro>
 
 <@create_schema demo_schema "&&demo_pswd."/>

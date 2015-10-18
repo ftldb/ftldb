@@ -44,7 +44,7 @@ public class TemplateHelper {
      * <p>Usage examples in FTL:
      * <pre>
      * {@code
-     * <@template name = 'ftldb/std.ftl'/>
+     * <@template name = '@ftldb/std.ftl'/>
      * }
      * </pre>
      */

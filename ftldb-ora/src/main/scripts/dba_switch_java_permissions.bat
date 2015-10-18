@@ -21,10 +21,10 @@ if "%~3" == "" goto :usage
 if /i not "%~4" == "grant" if /i not "%~4" == "revoke" goto :usage
 if "%~5" == "" goto :usage
 
-set instance_tns_name=%1
+set tns_name=%1
 set super_user=%2
 set super_user_pswd=%3
-set switch=%4
+set action=%4
 set "logfile=^!%~n0_%1.log"
 set "sqlfile=^!%~n0_%1.sql"
 
@@ -43,13 +43,13 @@ setlocal enabledelayedexpansion
 set i=0
 for %%v in (%*) do (
   set /a i+=1
-  if !i! geq 5 echo @@switch_java_permissions %switch% %%v 1>> "setup\%sqlfile%"
+  if !i! geq 5 echo @@switch_java_permissions %action% %%v 1>> "setup\%sqlfile%"
 )
 endlocal
 
 echo.
 echo Run SQL*Plus script.
-sqlplus -L %super_user%/%super_user_pswd%@%instance_tns_name% %sys_option% ^
+sqlplus -L %super_user%/%super_user_pswd%@%tns_name% %sys_option% ^
   @setup/run_script @%sqlfile% setup/%logfile%
 
 if errorlevel 1 goto :failure
@@ -69,6 +69,6 @@ exit /B 1
 
 :usage
 echo Wrong parameters!
-echo Proper usage: %~nx0 instance_tns_name super_user super_user_pswd grant^|revoke grantee1 [grantee2 [grantee3 ...]]
+echo Proper usage: %~nx0 ^<tns_name^> ^<super_user^> ^<super_user_pswd^> grant^|revoke ^<grantee1^> [^<grantee2^> [^<grantee3^> ...]]
 echo Example: %~nx0 orcl sys manager grant hr oe pm sh
 exit /B 1

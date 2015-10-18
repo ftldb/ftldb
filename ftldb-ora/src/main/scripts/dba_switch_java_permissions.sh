@@ -19,15 +19,15 @@ if [ $# -lt 5 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [
   ([ "$(echo $4 | tr 'A-Z' 'a-z')" != "grant" ] && [ "$(echo $4 | tr 'A-Z' 'a-z')" != "revoke" ])
 then
   echo Wrong parameters!
-  echo Proper usage: $0 instance_tns_name super_user super_user_pswd grant\|revoke grantee1 [grantee2 [grantee3 ...]]
+  echo Proper usage: $0 \<tns_name\> \<super_user\> \<super_user_pswd\> grant\|revoke \<grantee1\> [\<grantee2\> [\<grantee3\> ...]]
   echo Example: $0 orcl sys manager grant hr oe pm sh
   exit 1
 fi
 
-instance_tns_name=$1
+tns_name=$1
 super_user=$2
 super_user_pswd=$3
-switch=$4
+action=$4
 logfile="!$(basename $0 .sh)_${1}.log"
 sqlfile="!$(basename $0 .sh)_${1}.sql"
 
@@ -58,13 +58,13 @@ i=0
 for v in "$@"; do
   i=`expr $i + 1`
   if [ $i -ge 5 ]; then
-    echo @@switch_java_permissions $switch $v 1>> setup/$sqlfile
+    echo @@switch_java_permissions $action $v 1>> setup/$sqlfile
   fi
 done
 
 echo
 echo Run SQL*Plus script.
-sqlplus -L $super_user/$super_user_pswd@$instance_tns_name $sys_option \
+sqlplus -L $super_user/$super_user_pswd@$tns_name $sys_option \
   @setup/run_script @$sqlfile setup/$logfile
 
 exit_if_failed $?

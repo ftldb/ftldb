@@ -15,11 +15,12 @@
 # limitations under the License.
 #
 
-if [ $# -lt 6 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]
+if [ $# -lt 5 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ] ||
+  ([ "$(echo $5 | tr 'A-Z' 'a-z')" != "grant" ] && [ "$(echo $5 | tr 'A-Z' 'a-z')" != "revoke" ])
 then
   echo Wrong parameters!
-  echo Proper usage: $0 \<tns_name\> \<super_user\> \<super_user_pswd\> \<ftldb_schema\> \<demo_schema\> \<demo_pswd\>
-  echo Example: $0 orcl sys manager ftldb ftldemo ftldemo
+  echo Proper usage: $0 \<tns_name\> \<super_user\> \<super_user_pswd\> \<ftldb_schema\> grant\|revoke \<grantee1\> [\<grantee2\> [\<grantee3\> ...]]
+  echo Example: $0 orcl sys manager grant hr oe pm sh
   exit 1
 fi
 
@@ -27,46 +28,50 @@ tns_name=$1
 super_user=$2
 super_user_pswd=$3
 ftldb_schema=$4
-demo_schema=$5
-demo_pswd=$6
-logfile="!$(basename $0 .sh)_${1}_${5}.log"
-sqlfile="!$(basename $0 .sh)_${1}_${5}.sql"
+action=$5
+logfile="!$(basename $0 .sh)_${1}.log"
+sqlfile="!$(basename $0 .sh)_${1}.sql"
+
+if [ "$(echo ${super_user} | tr 'A-Z' 'a-z')" = "sys" ]; then
+  sys_option="as sysdba"
+fi
 
 exit_if_failed () {
   if [ "$1" -gt 0 ]; then
     echo
     echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    echo !!!!!!!!!! INSTALLATION FAILED !!!!!!!!!!!!
+    echo !!!!!!!!!!!!!! SCRIPT FAILED !!!!!!!!!!!!!!
     echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     exit 1
   fi
 }
 
 echo -------------------------------------------
-echo ---------- INSTALLING FTLDB DEMO ----------
+echo ------- SWITCHING PL/SQL PRIVILEGES -------
 echo -------------------------------------------
 echo
 echo Log file: setup/$logfile
 
 echo
-echo Build SQL*Plus installation script.
-java -cp .:java/ftldb.jar:java/freemarker.jar ftldb.CommandLine @setup/install.ftl \
-  $tns_name $super_user $ftldb_schema $demo_schema \
-  1> setup/$sqlfile 2> setup/$logfile
-
-exit_if_failed $?
+echo Build SQL*Plus script.
+1> setup/$sqlfile
+i=0
+for v in "$@"; do
+  i=`expr $i + 1`
+  if [ $i -ge 6 ]; then
+    echo @@switch_plsql_privileges $ftldb_schema $action $v 1>> setup/$sqlfile
+  fi
+done
 
 echo
-echo SQL file: setup/$sqlfile
-
-echo
-echo Run SQL*Plus installation script.
-sqlplus /nolog @setup/$sqlfile $super_user_pswd $demo_pswd setup/$logfile
+echo Run SQL*Plus script.
+sqlplus -L $super_user/$super_user_pswd@$tns_name $sys_option \
+  @setup/run_script @$sqlfile setup/$logfile
 
 exit_if_failed $?
 
 echo
 echo -------------------------------------------
-echo --- INSTALLATION COMPLETED SUCCESSFULLY ---
+echo ------ SCRIPT COMPLETED SUCCESSFULLY ------
 echo -------------------------------------------
 exit 0

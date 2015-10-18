@@ -20,7 +20,7 @@ if "%~2" == "" goto :usage
 if "%~3" == "" goto :usage
 if "%~4" == "" goto :usage
 
-set instance_tns_name=%1
+set tns_name=%1
 set super_user=%2
 set super_user_pswd=%3
 set ftldb_schema=%4
@@ -36,7 +36,7 @@ echo Log file: setup\%logfile%
 
 echo.
 echo Run SQL*Plus deinstallation script.
-sqlplus -L %super_user%/%super_user_pswd%@%instance_tns_name% %sys_option% ^
+sqlplus -L %super_user%/%super_user_pswd%@%tns_name% %sys_option% ^
   @setup/dba_uninstall %ftldb_schema% setup/%logfile%
 
 if errorlevel 1 goto :failure
@@ -56,6 +56,6 @@ exit /B 1
 
 :usage
 echo Wrong parameters!
-echo Proper usage: %~nx0 instance_tns_name super_user super_user_pswd ftldb_schema
+echo Proper usage: %~nx0  ^<tns_name^> ^<super_user^> ^<super_user_pswd^> ^<ftldb_schema^>
 echo Example: %~nx0 orcl sys manager ftldb
 exit /B 1

@@ -18,12 +18,12 @@
 if [ $# -lt 4 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]
 then
   echo Wrong parameters!
-  echo Proper usage: $0 instance_tns_name super_user super_user_pswd demo_schema
+  echo Proper usage: $0 \<tns_name\> \<super_user\> \<super_user_pswd\> \<demo_schema\>
   echo Example: $0 orcl sys manager ftldemo
   exit 1
 fi
 
-instance_tns_name=$1
+tns_name=$1
 super_user=$2
 super_user_pswd=$3
 demo_schema=$4
@@ -49,7 +49,7 @@ echo Log file: setup/$logfile
 echo
 echo Build SQL*Plus deinstallation script.
 java -cp .:java/ftldb.jar:java/freemarker.jar ftldb.CommandLine @setup/uninstall.ftl \
-  $instance_tns_name $super_user $demo_schema \
+  $tns_name $super_user $demo_schema \
   1> setup/$sqlfile 2> setup/$logfile
 
 exit_if_failed $?

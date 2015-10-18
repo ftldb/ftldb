@@ -18,12 +18,12 @@
 if [ $# -lt 4 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]
 then
   echo Wrong parameters!
-  echo Proper usage: $0 instance_tns_name super_user super_user_pswd ftldb_schema
+  echo Proper usage: $0 \<tns_name\> \<super_user\> \<super_user_pswd\> \<ftldb_schema\>
   echo Example: $0 orcl sys manager ftldb
   exit 1
 fi
 
-instance_tns_name=$1
+tns_name=$1
 super_user=$2
 super_user_pswd=$3
 ftldb_schema=$4
@@ -51,7 +51,7 @@ echo Log file: setup/$logfile
 
 echo
 echo Run SQL*Plus deinstallation script.
-sqlplus -L $super_user/$super_user_pswd@$instance_tns_name $sys_option \
+sqlplus -L $super_user/$super_user_pswd@$tns_name $sys_option \
   @setup/dba_uninstall $ftldb_schema setup/$logfile
 
 exit_if_failed $?

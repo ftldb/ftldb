@@ -22,7 +22,7 @@ if "%~4" == "" goto :usage
 if "%~5" == "" goto :usage
 if "%~6" == "" goto :usage
 
-set instance_tns_name=%1
+set tns_name=%1
 set super_user=%2
 set super_user_pswd=%3
 set ftldb_schema=%4
@@ -39,8 +39,8 @@ echo Log file: setup\%logfile%
 
 echo.
 echo Build SQL*Plus installation script.
-java -cp .;java/ftldb.jar;java/freemarker.jar ftldb.CommandLine @setup/install.ftl ^
-  %instance_tns_name% %super_user% %ftldb_schema% %demo_schema% ^
+java -cp .;java/* ftldb.CommandLine @setup/install.ftl ^
+  %tns_name% %super_user% %ftldb_schema% %demo_schema% ^
   1> setup\%sqlfile% 2> setup\%logfile%
 
 if errorlevel 1 goto :failure
@@ -69,6 +69,6 @@ exit /B 1
 
 :usage
 echo Wrong parameters!
-echo Proper usage: %~nx0 instance_tns_name super_user super_user_pswd ftldb_schema demo_schema demo_pswd
+echo Proper usage: %~nx0 ^<tns_name^> ^<super_user^> ^<super_user_pswd^> ^<ftldb_schema^> ^<demo_schema^> ^<demo_pswd^>
 echo Example: %~nx0 orcl sys manager ftldb ftldemo ftldemo
 exit /B 1

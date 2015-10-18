@@ -37,7 +37,7 @@ prompt SQL*Plus script started.
 
 @@switch_java_permissions grant &&user.
 
-@@create_plsql_objects &&user. public
+@@create_plsql_objects &&user.
 
 prompt SQL*Plus script finished.
 

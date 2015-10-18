@@ -53,7 +53,7 @@
                 <artifactId>maven-pldoc-plugin</artifactId>
                 <configuration>
                     <namesCase>mixed</namesCase>
-                    <applicationTitle>${parent.name} ${project.version} PL/SQL API</applicationTitle>
+                    <applicationTitle>${project.parent.name} ${project.version} PL/SQL API</applicationTitle>
                     <fileSets>
                         <fileSet>
                             <directory>${project.basedir}/src/main/plsql</directory>

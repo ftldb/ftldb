@@ -21,7 +21,7 @@ if "%~3" == "" goto :usage
 if "%~4" == "" goto :usage
 if "%~5" == "" goto :usage
 
-set instance_tns_name=%1
+set tns_name=%1
 set super_user=%2
 set super_user_pswd=%3
 set ftldb_schema=%4
@@ -39,13 +39,13 @@ echo Log file: setup\%logfile%
 
 echo.
 echo Run SQL*Plus installation script.
-sqlplus -L %super_user%/%super_user_pswd%@%instance_tns_name% %sys_option% ^
+sqlplus -L %super_user%/%super_user_pswd%@%tns_name% %sys_option% ^
   @setup/dba_install %ftldb_schema% %ftldb_pswd% setup/%logfile%
 
 if errorlevel 1 goto :failure
 
 rem Determine Oracle version.
-set "ora_release_cmd=sqlplus -S -L %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% @setup/get_oracle_release"
+set "ora_release_cmd=sqlplus -S -L %ftldb_schema%/%ftldb_pswd%@%tns_name% @setup/get_oracle_release"
 for /f %%i in ('%ora_release_cmd%') do set "ora_release=%%i"
 
 if "%ora_release:~0,1%" == "1" (
@@ -55,26 +55,16 @@ if "%ora_release:~0,1%" == "1" (
     set ora_11_or_higher=true
   )
 ) else (
-  echo Warning! Unknown or unsupported Oracle version: %ora_release%.
+  echo [WARNING] Unknown or unsupported Oracle version: %ora_release%.
   set ora_11_or_higher=false
 )
 
 if "%ora_11_or_higher%" == "true" (
 
   echo.
-  echo Load freemarker.jar classes into database, generate missing classes ^(setup\%jarfile%^).
-  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
-    -genmissingjar setup/%jarfile% ^
-    -verbose -stdout ^
-    java/freemarker.jar ^
-    1>> setup\%logfile%
-
-  if errorlevel 1 goto :failure
-
-  echo.
-  echo Resolve freemarker.jar classes, grant execute privilege to public.
-  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
-    -resolveonly -grant public ^
+  echo Load and resolve freemarker.jar classes into database, generate missing classes ^(setup\%jarfile%^).
+  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%tns_name% ^
+    -resolve -genmissingjar setup/%jarfile% ^
     -verbose -stdout ^
     java/freemarker.jar ^
     1>> setup\%logfile%
@@ -84,9 +74,9 @@ if "%ora_11_or_higher%" == "true" (
 ) else (
 
   echo.
-  echo Load and resolve freemarker.jar classes into database, ignore missing classes, grant execute privilege to public.
-  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
-    -resolve -unresolvedok -grant public ^
+  echo Load and resolve freemarker.jar classes into database, ignore missing classes.
+  call loadjava -user %ftldb_schema%/%ftldb_pswd%@%tns_name% ^
+    -resolve -unresolvedok ^
     -verbose -stdout ^
     java/freemarker.jar ^
     1>> setup\%logfile%
@@ -96,9 +86,9 @@ if "%ora_11_or_higher%" == "true" (
 )
 
 echo.
-echo Load and resolve ftldb.jar classes into database, grant execute privilege to public.
-call loadjava -user %ftldb_schema%/%ftldb_pswd%@%instance_tns_name% ^
-  -resolve -grant public ^
+echo Load and resolve ftldb.jar classes into database.
+call loadjava -user %ftldb_schema%/%ftldb_pswd%@%tns_name% ^
+  -resolve ^
   -verbose -stdout ^
   java/ftldb.jar ^
   1>> setup\%logfile%
@@ -120,6 +110,6 @@ exit /B 1
 
 :usage
 echo Wrong parameters!
-echo Proper usage: %~nx0 instance_tns_name super_user super_user_pswd ftldb_schema ftldb_pswd
+echo Proper usage: %~nx0 ^<tns_name^> ^<super_user^> ^<super_user_pswd^> ^<ftldb_schema^> ^<ftldb_pswd^>
 echo Example: %~nx0 orcl sys manager ftldb ftldb
 exit /B 1

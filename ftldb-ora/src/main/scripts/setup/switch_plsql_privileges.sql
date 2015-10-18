@@ -14,19 +14,16 @@
 -- limitations under the License.
 --
 
-define action = "&1"
-define grantee = "&2"
+define ftldb_schema = "&1"
+define action = "&2"
+define grantee = "&3"
 
-prompt Switch java.lang.RuntimePermission "getClassLoader" for &&grantee.: &&action..
+prompt Switch execute privileges on FTLDB objects for &&grantee.: &&action..
 begin
-  dbms_java.&&action._permission(
-    grantee => upper('&&grantee.'),
-    permission_type => 'SYS:java.lang.RuntimePermission',
-    permission_name => 'getClassLoader',
-    permission_action => ''
-  );
+  &&ftldb_schema..ftldb_admin.&&action._privileges('&&grantee.');
 end;
 /
 
+undefine ftldb_schema
 undefine action
 undefine grantee

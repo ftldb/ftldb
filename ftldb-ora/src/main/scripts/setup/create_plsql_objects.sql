@@ -15,7 +15,6 @@
 --
 
 define ftldb_schema = "&1"
-define grantee = "&2"
 
 prompt Switch to &&ftldb_schema. schema.
 alter session set current_schema = &&ftldb_schema.
@@ -73,6 +72,12 @@ show errors package ftldb_api
 @plsql/ftldb/ftldb_api.pkb
 show errors package body ftldb_api
 
+prompt Create FTLDB_ADMIN package.
+@plsql/ftldb/ftldb_admin.pks
+show errors package ftldb_admin
+@plsql/ftldb/ftldb_admin.pkb
+show errors package body ftldb_admin
+
 prompt Check for compilation errors.
 declare
   l_err_flg integer;
@@ -92,31 +97,4 @@ begin
 end;
 /
 
-prompt Grant execute privilege on PL/SQL objects to &&grantee..
-/*
-  It's absolutely safe to grant these privileges to PUBLIC due to
-  the invoker-rights security approach.
-*/
-grant execute on number_nt to &&grantee.
-/
-grant execute on varchar2_nt to &&grantee.
-/
-grant execute on clob_nt to &&grantee.
-/
-grant execute on script_ot to &&grantee.
-/
-grant execute on templ_locator_ot to &&grantee.
-/
-grant execute on src_templ_locator_ot to &&grantee.
-/
-grant execute on source_util to &&grantee.
-/
-grant execute on clob_util to &&grantee.
-/
-grant execute on ftldb_wrapper to &&grantee.
-/
-grant execute on ftldb_api to &&grantee.
-/
-
 undefine ftldb_schema
-undefine grantee
