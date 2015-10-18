@@ -366,11 +366,20 @@ installation:
 After FTLDB has been installed, the account may be locked and the privileges
 revoked.
 
-All the objects in the FTLDB schema are created with the invoker-rights option,
-and due to this, execution privileges on them are granted to `PUBLIC`, which is
-quite secure.
+FTLDB API users must be granted execute privileges with the following PL/SQL
+script:
+```sql
+begin
+  &ftldb_schema..ftldb_admin.grant_privileges('&grantee.');
+end;
+/
+```
 
-FreeMarker requires the following permission:
+This block grants privileges only on objects created with the invoker-rights
+option, and due to this, privileges on them may be granted to `PUBLIC`, which
+is quite secure.
+
+FreeMarker requires the following Java permission:
 
   * `java.lang.RuntimePermission "getClassLoader"`
 
@@ -392,7 +401,7 @@ Installation
 
 Before installing FTLDB make sure that you have Oracle Client of same or higher
 version as the database (it must include `sqlplus`, `loadjava`, JRE and the JDBC
-driver). The TNS name of the target instance must be registered in your local
+driver). The TNS name of the target database must be registered in your local
 `tnsnames.ora`.
 
 > **Notice**: Oracle Client version 11.2.0.1.0 for Windows has a buggy
@@ -429,7 +438,7 @@ password and grants it all the required privileges and permissions.
 Run the DBA installation script from the base directory with the following five
 parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. DBA user
   3. DBA password
   4. FTLDB schema name
@@ -449,7 +458,7 @@ On Linux (or another *nix-like OS):
 In order to grant other database users the required Java permissions run the
 `dba_switch_java_permissions` script with the following parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. DBA user
   3. DBA password
   4. `grant` keyword (or `revoke` to revoke the permissions)
@@ -463,6 +472,24 @@ On Linux (or another *nix-like OS):
 
     ./dba_switch_java_permissions.sh orcl sys manager grant hr oe sh
 
+In order to grant other database users execute privileges on FTLDB run the
+`dba_switch_plsql_privileges` script with the following parameters:
+
+  1. target database TNS name
+  2. DBA user
+  3. DBA password
+  4. FTLDB schema name
+  5. `grant` keyword (or `revoke` to revoke the permissions)
+  6. list of grantee users separated by spaces
+
+For example, on Windows you would run in the command line:
+
+    dba_switch_plsql_privileges.bat orcl sys manager ftldb grant hr oe sh
+
+On Linux (or another *nix-like OS):
+
+    ./dba_switch_plsql_privileges.sh orcl sys manager ftldb grant hr oe sh
+
 #### User mode
 
 If you don't have full access to the target database, ask the DBA to create a
@@ -470,13 +497,13 @@ new schema with the required privileges and permissions (or use an existing
 one).
 
 The DBA may simply run the `setup/create_schema.sql` script to create the schema
-and the `setup/dba_switch_java_permissions.sql` script to grant FTLDB and it
-users the required permissions.
+and the `setup/switch_java_permissions.sql` script to grant FTLDB and its users
+the required Java permissions.
 
 To install FTLDB as an ordinary user run the `usr_install` script with the
 following three parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. FTLDB schema name
   3. FTLDB password
 
@@ -487,6 +514,9 @@ For example, on Windows you would run in the command line:
 On Linux (or another *nix-like OS):
 
     ./usr_install.sh orcl ftldb ftldb
+
+Run the `dba_switch_plsql_privileges` script to grant execute privileges on
+FTLDB objects to other users.
 
 > **Notice**: It is not recommended to install FTLDB into a schema containing
 > other objects. Instead, install it as a standalone schema and create local
@@ -522,7 +552,7 @@ or `install.sql` file. Follow the instructions inside.
 The installation process is very similar to the previous one. Run the main
 installation script from the base directory with the following six parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. DBA user
   3. DBA password
   4. FTLDB schema name
@@ -532,14 +562,14 @@ installation script from the base directory with the following six parameters:
 It creates the demo schema and runs the tests. After the installation has
 finished you can connect to the demo schema and run the demos manually.
 
-> **Notice**: Make sure that the target instance has the same TNS name on the
+> **Notice**: Make sure that the target database has the same TNS name on the
 > server and the client. Otherwise some unit tests won't pass.
 
 
 Building the project
 --------------------
 
-In order to make a build by yourself you need an Oracle instance (optional),
+In order to make a build by yourself you need an Oracle database (optional),
 [JDK 6](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (or
 higher) and [Maven 3](http://maven.apache.org/). The latest versions of both are
 recommended.
@@ -551,7 +581,7 @@ Do the following:
      connection parameters for the client-side tests.
   3. Run in the command line from the base project directory:  
      `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
-     if you don't have an Oracle instance available.
+     if you don't have an Oracle database available.
   4. Check the `ftldb-ora/target` directory for the installation files.
 
 > **Notice**: The client-side tests are also a good source of usage examples.
