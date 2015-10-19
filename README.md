@@ -17,7 +17,7 @@ features.
 
 Not an Oracle user? No problem. FTLDB also suits for *client-side* code
 generation for [PostgreSQL](http://postgresql.org), [MySQL](http://mysql.com),
-[DB2](http://ibm.com/software/data/db2) and any other RDBMS providing a JDBC
+[DB2](http://ibm.com/software/data/db2) or any other RDBMS providing a JDBC
 driver.
 
 
@@ -135,18 +135,19 @@ A fragment of the `generator` package:
 ```sql
 create or replace package body generator as
 
-cursor cur_partitions is
-  select
-    t.region name,
-    listagg(t.shop_id, ', ')
-      within group (order by t.shop_id) vals
-  from shops t
-  group by t.region
-  order by t.region;
-
 procedure gen_orders_plsql
 is
   l_scr clob;
+
+  cursor cur_partitions is
+    select
+      t.region name,
+      listagg(t.shop_id, ', ')
+        within group (order by t.shop_id) vals
+    from shops t
+    group by t.region
+    order by t.region;
+
 begin
   l_scr :=
     'create table orders (' || chr(10) ||
@@ -200,26 +201,21 @@ create or replace package body generator as
 
 ...
 
-function get_partitions return sys_refcursor
-is
-  l_rc sys_refcursor;
-begin
-  open l_rc for
-    select
-      t.region name,
-      listagg(t.shop_id, ', ')
-        within group (order by t.shop_id) vals
-    from shops t
-    group by t.region
-    order by t.region;
-  return l_rc;
-end get_partitions;
-
 $if false $then
 --%begin orders_ftl
 
-<#import "ftldb.sql_ftl" as sql/>
-<#assign partitions = sql.fetch('generator.get_partitions')/>
+<#assign conn = default_connection()/>
+
+<#assign partitions_sql>
+  select
+    t.region name,
+    listagg(t.shop_id, ', ') within group (order by t.shop_id) vals
+  from shops t
+  group by t.region
+  order by t.region
+</#assign>
+
+<#assign partitions = conn.query(partitions_sql)/>
 
 create table orders (
   order_id integer not null primary key,
@@ -233,10 +229,10 @@ partition by list(shop_id) (
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
-</>
+${"/"}
 
 comment on table orders is 'Orders partitioned by region.'
-</>
+${"/"}
 
 --%end orders_ftl
 $end
@@ -270,16 +266,16 @@ Content of the `orders.ftl` file:
   )
 />
 
-<#assign
-  partitions = conn.query(
-    "select " +
-      "t.region name, " +
-      "listagg(t.shop_id, ', ') within group (order by t.shop_id) vals " +
-    "from shops t " +
-    "group by t.region " +
-    "order by t.region"
-  )
-/>
+<#assign partitions_sql>
+  select
+    t.region name,
+    listagg(t.shop_id, ', ') within group (order by t.shop_id) vals
+  from shops t
+  group by t.region
+  order by t.region
+</#assign>
+
+<#assign partitions = conn.query(partitions_sql)/>
 
 create table orders (
   order_id integer not null primary key,
@@ -293,22 +289,22 @@ partition by list(shop_id) (
   partition ${p.NAME} values (${p.VALS})<#sep>,</#sep>
 </#list>
 )
-/
+${"/"}
 
 comment on table orders is 'Orders partitioned by region.'
-/
+${"/"}
 
 <#assign void = conn.close()/>
 ```
 
 The table creation OS-shell script:
 ```
-java -cp ../java/* ftldb.CommandLine orders.ftl 1> orders.sql
+java -cp .:../java/* ftldb.CommandLine @orders.ftl 1> orders.sql
 sqlplus scott/tiger@orcl @orders.sql
 ```
 
 > **Notice**: Classpath may differ from the one specified above but must include
-> `ftldb.jar`, `freemarker.jar` and the JDBC driver.
+> processed templates, `ftldb.jar`, `freemarker.jar` and the JDBC driver.
 
 The result of all three executions is the `orders` table created and the
 following script printed:
@@ -333,7 +329,7 @@ comment on table orders is 'Orders partitioned by region.'
 
 Compare these three solutions. As you may see, the two latter are much simpler
 and more readable, since there is no quotation and concatenation in the `create
-table` statement. The FTL template looks just as plain SQL code with few extra
+table` statement. The FTL template looks just as plain SQL code with a few extra
 tags and macros.
 
 Pay attention to how naturally the `orders` table template is integrated into
@@ -358,7 +354,8 @@ cases pure PL/SQL or Java code might be more appropriate.
 Security
 --------
 
-The FTLDB database user requires only several system privileges:
+The FTLDB database user requires only several system privileges during
+installation:
 
   * `CREATE SESSION`
   * `CREATE PROCEDURE`
@@ -366,11 +363,23 @@ The FTLDB database user requires only several system privileges:
   * `CREATE TABLE`
   * `QUOTA` at least 50M on the default tablespace
 
-All the objects in the FTLDB schema are created with the invoker-rights option,
-and due to this, execution privileges on them are granted to `PUBLIC`, which is
-quite secure.
+After FTLDB has been installed, the account may be locked and the privileges
+revoked.
 
-FreeMarker requires the following permission:
+FTLDB API users must be granted execute privileges with the following PL/SQL
+script:
+```sql
+begin
+  &ftldb_schema..ftldb_admin.grant_privileges('&grantee.');
+end;
+/
+```
+
+This block grants privileges only on objects created with the invoker-rights
+option, and due to this, privileges on them may be granted to `PUBLIC`, which
+is quite secure.
+
+FreeMarker requires the following Java permission:
 
   * `java.lang.RuntimePermission "getClassLoader"`
 
@@ -392,7 +401,7 @@ Installation
 
 Before installing FTLDB make sure that you have Oracle Client of same or higher
 version as the database (it must include `sqlplus`, `loadjava`, JRE and the JDBC
-driver). The TNS name of the target instance must be registered in your local
+driver). The TNS name of the target database must be registered in your local
 `tnsnames.ora`.
 
 > **Notice**: Oracle Client version 11.2.0.1.0 for Windows has a buggy
@@ -405,15 +414,13 @@ page](http://github.com/ftldb/ftldb/releases). The archive includes:
 
   * `doc` directory
     * Java & PL/SQL API documentation
-  * `ftl` directory
-    * FTL macro libraries for basic needs
   * `java` directory
     * `freemarker.jar` - FreeMarker template engine
     * `ftldb.jar` - own classes for working with database connections, queries,
-      callable statements and result sets in FTL (server-side & client-side)
+      callable statements and result sets in FTL (server-side & client-side),
+      standard FTL macro libraries
   * `plsql` directory
     * types and packages providing API for using in PL/SQL
-    * PL/SQL containers for the FTL macro libraries
   * `setup` directory
     * SQL*Plus scripts for creating objects and granting privileges
   * `*.bat` or `*.sh` scripts (depends on OS) - installers and deinstallers
@@ -431,7 +438,7 @@ password and grants it all the required privileges and permissions.
 Run the DBA installation script from the base directory with the following five
 parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. DBA user
   3. DBA password
   4. FTLDB schema name
@@ -451,7 +458,7 @@ On Linux (or another *nix-like OS):
 In order to grant other database users the required Java permissions run the
 `dba_switch_java_permissions` script with the following parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. DBA user
   3. DBA password
   4. `grant` keyword (or `revoke` to revoke the permissions)
@@ -465,6 +472,24 @@ On Linux (or another *nix-like OS):
 
     ./dba_switch_java_permissions.sh orcl sys manager grant hr oe sh
 
+In order to grant other database users execute privileges on FTLDB run the
+`dba_switch_plsql_privileges` script with the following parameters:
+
+  1. target database TNS name
+  2. DBA user
+  3. DBA password
+  4. FTLDB schema name
+  5. `grant` keyword (or `revoke` to revoke the permissions)
+  6. list of grantee users separated by spaces
+
+For example, on Windows you would run in the command line:
+
+    dba_switch_plsql_privileges.bat orcl sys manager ftldb grant hr oe sh
+
+On Linux (or another *nix-like OS):
+
+    ./dba_switch_plsql_privileges.sh orcl sys manager ftldb grant hr oe sh
+
 #### User mode
 
 If you don't have full access to the target database, ask the DBA to create a
@@ -472,13 +497,13 @@ new schema with the required privileges and permissions (or use an existing
 one).
 
 The DBA may simply run the `setup/create_schema.sql` script to create the schema
-and the `setup/dba_switch_java_permissions.sql` script to grant FTLDB and it
-users the required permissions.
+and the `setup/switch_java_permissions.sql` script to grant FTLDB and its users
+the required Java permissions.
 
 To install FTLDB as an ordinary user run the `usr_install` script with the
 following three parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. FTLDB schema name
   3. FTLDB password
 
@@ -489,6 +514,9 @@ For example, on Windows you would run in the command line:
 On Linux (or another *nix-like OS):
 
     ./usr_install.sh orcl ftldb ftldb
+
+Run the `dba_switch_plsql_privileges` script to grant execute privileges on
+FTLDB objects to other users.
 
 > **Notice**: It is not recommended to install FTLDB into a schema containing
 > other objects. Instead, install it as a standalone schema and create local
@@ -524,7 +552,7 @@ or `install.sql` file. Follow the instructions inside.
 The installation process is very similar to the previous one. Run the main
 installation script from the base directory with the following six parameters:
 
-  1. target instance TNS name
+  1. target database TNS name
   2. DBA user
   3. DBA password
   4. FTLDB schema name
@@ -534,14 +562,14 @@ installation script from the base directory with the following six parameters:
 It creates the demo schema and runs the tests. After the installation has
 finished you can connect to the demo schema and run the demos manually.
 
-> **Notice**: Make sure that the target instance has the same TNS name on the
+> **Notice**: Make sure that the target database has the same TNS name on the
 > server and the client. Otherwise some unit tests won't pass.
 
 
 Building the project
 --------------------
 
-In order to make a build by yourself you need an Oracle instance (optional),
+In order to make a build by yourself you need an Oracle database (optional),
 [JDK 6](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (or
 higher) and [Maven 3](http://maven.apache.org/). The latest versions of both are
 recommended.
@@ -549,12 +577,12 @@ recommended.
 Do the following:
 
   1. Download and unpack the source archive or clone from the GitHub repository.
-  2. Open the `src/test/ftl/dbconn.config.ftl` file and set valid JDBC
+  2. Open the `ftldb/src/test/config/dbconn.config.ftl` file and set valid JDBC
      connection parameters for the client-side tests.
   3. Run in the command line from the base project directory:  
      `mvn clean package` or `mvn clean package -Dmaven.test.skip=true`  
-     if you don't have an Oracle instance available.
-  4. Check the `target` directory for the installation files.
+     if you don't have an Oracle database available.
+  4. Check the `ftldb-ora/target` directory for the installation files.
 
 > **Notice**: The client-side tests are also a good source of usage examples.
 

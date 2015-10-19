@@ -6,11 +6,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ftldb</groupId>
-    <artifactId>ftldb</artifactId>
-    <version>1.4.1</version>
+    <artifactId>ftldb-root</artifactId>
+    <version>1.5.0-nightly</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>freemarker</module>
+        <module>ftldb</module>
+        <module>ftldb-ora</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <freemarker.version>2.3.23</freemarker.version>
+        <root.basedir>${project.basedir}</root.basedir>
     </properties>
 
     <name>FTLDB</name>
@@ -41,240 +50,136 @@
         </repository>
     </repositories>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.23</version>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>2.3.23</version>
+            </dependency>
 
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <version>12.1.0.1</version>
-            <scope>provided</scope>
-        </dependency>
+            <dependency>
+                <groupId>com.oracle</groupId>
+                <artifactId>ojdbc6</artifactId>
+                <version>12.1.0.1</version>
+                <scope>provided</scope>
+            </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>ftldb/version.properties</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>ftldb/version.properties</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.3</version>
+                    <configuration>
+                        <source>1.4</source>
+                        <target>1.4</target>
+                        <!-- JUnit tests use annotations -->
+                        <testSource>1.5</testSource>
+                        <testTarget>1.5</testTarget>
+                    </configuration>
+                </plugin>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <source>1.4</source>
-                    <target>1.4</target>
-                    <!-- JUnit tests use annotations -->
-                    <testSource>1.5</testSource>
-                    <testTarget>1.5</testTarget>
-                </configuration>
-            </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
-                <configuration>
-                    <workingDirectory>src/test/ftl</workingDirectory>
-                </configuration>
-            </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
-                <configuration>
-                    <finalName>${project.artifactId}</finalName>
-                    <archive>
-                        <addMavenDescriptor>false</addMavenDescriptor>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <mainClass>ftldb.CommandLine</mainClass>
-                        </manifest>
-                        <manifestEntries>
-                            <Class-Path>freemarker.jar</Class-Path>
-                            <Built-By>${user.name}</Built-By>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>2.4.1</version>
+                </plugin>
 
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>2.11</version>
-                <configuration>
-                    <header>src/main/resources/META-INF/LICENSE</header>
-                    <mapping>
-                        <java>SLASHSTAR_STYLE</java>
-                        <sql>DOUBLEDASHES_STYLE</sql>
-                        <pck>DOUBLEDASHES_STYLE</pck>
-                        <pks>DOUBLEDASHES_STYLE</pks>
-                        <pkb>DOUBLEDASHES_STYLE</pkb>
-                        <prc>DOUBLEDASHES_STYLE</prc>
-                        <fnc>DOUBLEDASHES_STYLE</fnc>
-                        <typ>DOUBLEDASHES_STYLE</typ>
-                        <tps>DOUBLEDASHES_STYLE</tps>
-                        <tpb>DOUBLEDASHES_STYLE</tpb>
-                        <ftc>DOUBLEDASHES_STYLE</ftc>
-                    </mapping>
-                    <includes>
-                        <include>src/**</include>
-                    </includes>
-                    <excludes>
-                        <exclude>src/main/resources/**</exclude>
-                        <exclude>src/assembly/**</exclude>
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>2.11</version>
+                    <configuration>
+                        <header>${root.basedir}/src/license/LICENSE</header>
+                        <mapping>
+                            <java>SLASHSTAR_STYLE</java>
+                            <sql>DOUBLEDASHES_STYLE</sql>
+                            <pck>DOUBLEDASHES_STYLE</pck>
+                            <pks>DOUBLEDASHES_STYLE</pks>
+                            <pkb>DOUBLEDASHES_STYLE</pkb>
+                            <prc>DOUBLEDASHES_STYLE</prc>
+                            <fnc>DOUBLEDASHES_STYLE</fnc>
+                            <typ>DOUBLEDASHES_STYLE</typ>
+                            <tps>DOUBLEDASHES_STYLE</tps>
+                            <tpb>DOUBLEDASHES_STYLE</tpb>
+                        </mapping>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <configuration>
-                    <javaApiLinks>
-                        <property>
-                            <!-- J2SE 1.4.2 API is not available online anymore -->
-                            <name>api_1.4</name>
-                            <value>http://docs.oracle.com/javase/1.5.0/docs/api/</value>
-                        </property>
-                    </javaApiLinks>
-                    <links>
-                        <!-- Freemarker API -->
-                        <link>http://freemarker.org/docs/api/</link>
-                        <!-- Oracle Database JDBC Java API Reference 12.1 -->
-                        <link>http://docs.oracle.com/database/121/JAJDB/</link>
-                    </links>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>javadoc</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.3</version>
+                    <configuration>
+                        <javaApiLinks>
+                            <property>
+                                <!-- J2SE 1.4.2 API is not available online anymore -->
+                                <name>api_1.4</name>
+                                <value>http://docs.oracle.com/javase/1.5.0/docs/api/</value>
+                            </property>
+                        </javaApiLinks>
+                        <links>
+                            <!-- Freemarker API -->
+                            <link>http://freemarker.org/docs/api/</link>
+                            <!-- Oracle Database JDBC Java API Reference 12.1 -->
+                            <link>http://docs.oracle.com/database/121/JAJDB/</link>
+                        </links>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadoc</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>javadoc</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
 
-            <plugin>
-                <groupId>net.sourceforge.pldoc</groupId>
-                <artifactId>maven-pldoc-plugin</artifactId>
-                <version>3.0.13</version>
-                <configuration>
-                    <namesCase>mixed</namesCase>
-                    <applicationTitle>${project.name} ${project.version} PL/SQL API</applicationTitle>
-                    <fileSets>
-                        <fileSet>
-                            <directory>src/main/plsql</directory>
-                            <includes>
-                                <include>**/*.pks</include>
-                                <include>**/*.typ</include>
-                                <include>**/*.tps</include>
-                            </includes>
-                        </fileSet>
-                    </fileSets>
-                    <reportOutputDirectory>target/site</reportOutputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-plsqldoc</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>pldoc</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+                <plugin>
+                    <groupId>net.sourceforge.pldoc</groupId>
+                    <artifactId>maven-pldoc-plugin</artifactId>
+                    <version>3.0.13</version>
+                </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.5.5</version>
-                <executions>
-                    <execution>
-                        <id>assembly-prod</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/assembly/install-win.xml</descriptor>
-                                <descriptor>src/assembly/install-linux.xml</descriptor>
-                                <descriptor>src/assembly/demo-win.xml</descriptor>
-                                <descriptor>src/assembly/demo-linux.xml</descriptor>
-                                <descriptor>src/assembly/source.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>assembly-ci</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>ci</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>src/assembly/install-ci.xml</descriptor>
-                                <descriptor>src/assembly/demo-ci.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-            </plugin>
-
-            <plugin>
-                <groupId>net.sourceforge.pldoc</groupId>
-                <artifactId>maven-pldoc-plugin</artifactId>
-                <version>3.0.13</version>
-            </plugin>
-        </plugins>
-    </reporting>
 
 </project>

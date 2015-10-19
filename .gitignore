@@ -1,5 +1,4 @@
 *.iml
 .idea
 target
-**/.svn
-src/demo/plsql/_temp/**
+

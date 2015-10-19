@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>ftldb</groupId>
+        <artifactId>ftldb-root</artifactId>
+        <version>1.5.0-nightly</version>
+    </parent>
+
+    <artifactId>ftldb-ora</artifactId>
+    <packaging>pom</packaging>
+    <name>FTLDB for Oracle</name>
+
+    <properties>
+        <root.basedir>${project.basedir}/..</root.basedir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>ftldb</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>${freemarker.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ftldb</groupId>
+            <artifactId>ftldb</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>${project.basedir}/src/**</include>
+                    </includes>
+                    <excludes>
+                        <exclude>${project.basedir}/src/assembly/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>net.sourceforge.pldoc</groupId>
+                <artifactId>maven-pldoc-plugin</artifactId>
+                <configuration>
+                    <namesCase>mixed</namesCase>
+                    <applicationTitle>${project.parent.name} ${project.version} PL/SQL API</applicationTitle>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${project.basedir}/src/main/plsql</directory>
+                            <includes>
+                                <include>**/*.pks</include>
+                                <include>**/*.typ</include>
+                                <include>**/*.tps</include>
+                            </includes>
+                        </fileSet>
+                    </fileSets>
+                    <reportOutputDirectory>${project.build.directory}/site</reportOutputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-plsqldoc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>pldoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>assembly-release</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/install-win.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/install-linux.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/demo-win.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/demo-linux.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>assembly-ci</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>ci</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/install-ci.xml</descriptor>
+                                <descriptor>${project.basedir}/src/assembly/demo-ci.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
