@@ -550,7 +550,7 @@ is
     '(\s*@\s*(' || c_any_name || '))?' || --\6 \7
     '\s*$';
 begin
-  if not nvl(regexp_like(in_src_name, c_src_name_ptrn), false) then
+  if not nvl(regexp_like(in_src_name, c_src_name_ptrn, 'c'), false) then
     raise_application_error(
       gc_invalid_argument_num,
       'failed to parse template name ' || in_src_name
@@ -610,7 +610,7 @@ begin
     l_prefix ||
     substr(
       regexp_replace(
-        substr(in_long_name, instr(in_long_name, '/', -1)), '[^0-9A-Za-z_]'
+        substr(in_long_name, instr(in_long_name, '/', -1)), '[^0-9A-Za-z_]', 'c'
       ),
       1, 30 - length(l_prefix)
     );
@@ -1017,7 +1017,7 @@ is
 begin
   if
     not nvl(
-      regexp_like(in_section_name, '^[A-Za-z][0-9A-Za-z_$#]{0,29}$'), false
+      regexp_like(in_section_name, '^[A-Za-z][0-9A-Za-z_$#]{0,29}$', 'c'), false
     )
   then
     raise_application_error(
