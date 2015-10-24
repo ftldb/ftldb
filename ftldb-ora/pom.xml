@@ -59,7 +59,6 @@
                             <directory>${project.basedir}/src/main/plsql</directory>
                             <includes>
                                 <include>**/*.pks</include>
-                                <include>**/*.typ</include>
                                 <include>**/*.tps</include>
                             </includes>
                         </fileSet>

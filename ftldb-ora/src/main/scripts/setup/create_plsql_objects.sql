@@ -21,15 +21,15 @@ alter session set current_schema = &&ftldb_schema.
 /
 
 prompt Create NUMBER_NT type.
-@plsql/ftldb/number_nt.typ
+@plsql/ftldb/number_nt.tps
 show errors type number_nt
 
 prompt Create VARCHAR2_NT type.
-@plsql/ftldb/varchar2_nt.typ
+@plsql/ftldb/varchar2_nt.tps
 show errors type varchar2_nt
 
 prompt Create CLOB_NT type.
-@plsql/ftldb/clob_nt.typ
+@plsql/ftldb/clob_nt.tps
 show errors type clob_nt
 
 prompt Create CLOB_UTIL package.

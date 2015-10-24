@@ -14,7 +14,7 @@
 -- limitations under the License.
 --
 
-create or replace package body ftldb_admin is
+create or replace package body ftldb_admin as
 
 
 /**

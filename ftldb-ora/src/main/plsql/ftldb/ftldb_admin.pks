@@ -14,7 +14,7 @@
 -- limitations under the License.
 --
 
-create or replace package ftldb_admin authid definer is
+create or replace package ftldb_admin authid definer as
 /**
  * This package grants/revokes privileges on FTLDB objects.
  * @headcom
