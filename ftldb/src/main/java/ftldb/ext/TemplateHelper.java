@@ -18,6 +18,7 @@ package ftldb.ext;
 
 import freemarker.core.Environment;
 import freemarker.core.EnvironmentInternalsAccessor;
+import freemarker.log.Logger;
 import freemarker.template.*;
 
 import java.io.IOException;
@@ -50,6 +51,8 @@ public class TemplateHelper {
      */
     public static class TemplateDirective implements TemplateDirectiveModel {
 
+        private static final Logger LOGGER = Logger.getLogger("ftldb");
+
         private static final String PARAM_NAME_NAME = "name";
 
         public void execute(Environment env, Map params, TemplateModel[] loopVars, TemplateDirectiveBody body)
@@ -78,8 +81,8 @@ public class TemplateHelper {
             String referenceName = env.getCurrentTemplate().getName();
 
             if (referenceName != null && !referenceName.equals(declaredName)) {
-                System.err.println("[WARNING] Declared template name \"" + declaredName + "\" does not coincide"
-                        + " with reference name \"" + referenceName + "\" passed to template loader.");
+                LOGGER.warn("Declared template name " + declaredName + " does not coincide"
+                        + " with reference name " + referenceName + " passed to template loader.");
             }
         }
 
