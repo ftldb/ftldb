@@ -21,6 +21,20 @@ create or replace package ftldb_admin authid definer as
  */
 
 
+-- The list of grantable PL/SQL units
+gc_grantable_plsql_units constant varchar2_nt := varchar2_nt(
+  'FTLDB_WRAPPER', 'FTLDB_API', 'CLOB_UTIL', 'SOURCE_UTIL',  --packages
+  'NUMBER_NT', 'VARCHAR2_NT', 'CLOB_NT',                     --collection types
+  'SCRIPT_OT', 'TEMPL_LOCATOR_OT', 'SRC_TEMPL_LOCATOR_OT'    --object types
+);
+
+
+-- The list of grantable Java packages (including subpackages)
+gc_grantable_java_packages constant varchar2_nt := varchar2_nt(
+  'freemarker', 'ftldb'
+);
+
+
 /**
  * Grants privileges on FTLDB objects to the specified user.
  *

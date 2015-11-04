@@ -52,13 +52,22 @@ begin
       table(in_grantees) u, user_objects o
     where (
         o.object_type in ('FUNCTION', 'PROCEDURE', 'PACKAGE', 'TYPE') and
-        o.object_name not in ($$plsql_unit)
+        o.object_name in (
+          select value(t) from table(gc_grantable_plsql_units) t
+        )
       ) or (
         o.object_type in ('JAVA CLASS', 'JAVA RESOURCE') and
-        regexp_substr(dbms_java.longname(o.object_name), '^[^/]+/') in (
-          'ftldb/', 'freemarker/'
+        exists (
+          select * from table(gc_grantable_java_packages) t
+          where instr(dbms_java.longname(o.object_name), value(t) || '/') = 1
         )
       )
+    order by
+      value(u), o.object_type,
+      case
+        when o.object_name like '/%' then dbms_java.longname(o.object_name)
+        else o.object_name
+      end
   ) loop
     begin
       execute immediate r.statement;
