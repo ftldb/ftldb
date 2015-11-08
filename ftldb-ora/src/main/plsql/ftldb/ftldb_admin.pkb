@@ -21,8 +21,8 @@ create or replace package body ftldb_admin as
  * Switches privileges on/off for the specified list of users.
  */
 procedure switch_privileges(
-  in_enable boolean,
-  in_grantees varchar2_nt
+  in_enable in boolean,
+  in_grantees in varchar2_nt
 )
 is
   e_cannot_revoke_absent_priv exception;
@@ -85,28 +85,28 @@ begin
 end switch_privileges;
 
 
-procedure grant_privileges(in_grantees varchar2_nt)
+procedure grant_privileges(in_grantees in varchar2_nt)
 is
 begin
   switch_privileges(true, in_grantees);
 end grant_privileges;
 
 
-procedure grant_privileges(in_grantee varchar2)
+procedure grant_privileges(in_grantee in varchar2)
 is
 begin
   grant_privileges(varchar2_nt(in_grantee));
 end grant_privileges;
 
 
-procedure revoke_privileges(in_grantees varchar2_nt)
+procedure revoke_privileges(in_grantees in varchar2_nt)
 is
 begin
   switch_privileges(false, in_grantees);
 end revoke_privileges;
 
 
-procedure revoke_privileges(in_grantee varchar2)
+procedure revoke_privileges(in_grantee in varchar2)
 is
 begin
   revoke_privileges(varchar2_nt(in_grantee));

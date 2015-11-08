@@ -119,6 +119,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <includeDependencySources>true</includeDependencySources>
+                    <dependencySourceIncludes>
+                        <dependencySourceInclude>ftldb:*</dependencySourceInclude>
+                    </dependencySourceIncludes>
+                    <doctitle>${project.parent.name} ${project.version} Java API</doctitle>
+                    <windowtitle>${project.parent.name} ${project.version} Java API</windowtitle>
+                </configuration>
             </plugin>
         </plugins>
     </build>

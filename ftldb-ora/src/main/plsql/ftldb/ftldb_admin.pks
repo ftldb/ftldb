@@ -40,7 +40,7 @@ gc_grantable_java_packages constant varchar2_nt := varchar2_nt(
  *
  * @param  in_grantee  the grantee name
  */
-procedure grant_privileges(in_grantee varchar2);
+procedure grant_privileges(in_grantee in varchar2);
 
 
 /**
@@ -48,7 +48,7 @@ procedure grant_privileges(in_grantee varchar2);
  *
  * @param  in_grantees  the grantee name list
  */
-procedure grant_privileges(in_grantees varchar2_nt);
+procedure grant_privileges(in_grantees in varchar2_nt);
 
 
 /**
@@ -56,7 +56,7 @@ procedure grant_privileges(in_grantees varchar2_nt);
  *
  * @param  in_grantee  the grantee name
  */
-procedure revoke_privileges(in_grantee varchar2);
+procedure revoke_privileges(in_grantee in varchar2);
 
 
 /**
@@ -64,7 +64,7 @@ procedure revoke_privileges(in_grantee varchar2);
  *
  * @param  in_grantee  the grantee name list
  */
-procedure revoke_privileges(in_grantees varchar2_nt);
+procedure revoke_privileges(in_grantees in varchar2_nt);
 
 
 end ftldb_admin;
