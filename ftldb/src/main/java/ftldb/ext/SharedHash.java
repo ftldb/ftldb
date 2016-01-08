@@ -55,19 +55,6 @@ public class SharedHash {
 
 
     /**
-     * Same as {@link #put(String, Object)}.
-     *
-     * @param key the key name
-     * @param value the key value
-     *
-     * @deprecated Left for backward compatibility.
-     */
-    public void set(String key, Object value) {
-        put(key, value);
-    }
-
-
-    /**
      * Returns the previously set key from the storage. If the key is not set, returns null.
      *
      * @param key the key name
@@ -95,18 +82,6 @@ public class SharedHash {
      */
     public void remove(String key) {
         storage.remove(key);
-    }
-
-
-    /**
-     * Same as {@link #remove(String)}.
-     *
-     * @param key the key name
-     *
-     * @deprecated Left for backward compatibility.
-     */
-    public void clear(String key) {
-        remove(key);
     }
 
 
