@@ -21,10 +21,12 @@ import freemarker.ext.beans.BeanModel;
 import freemarker.template.*;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -38,9 +40,12 @@ public class Connector {
     private static ConnectionAdapter defaultConnection;
 
 
-    private static ConnectionAdapter newConnection() throws TemplateModelException {
+    private static ConnectionAdapter newConnection(String url, Properties info)
+            throws TemplateModelException {
         try {
-            return new ConnectionAdapter(DriverManager.getConnection("jdbc:default:connection"));
+            Connection connection = DriverManager.getConnection(url, info);
+            connection.setAutoCommit(false);
+            return new ConnectionAdapter(connection);
         } catch (SQLException e) {
             throw new TemplateModelException(e);
         }
@@ -49,11 +54,21 @@ public class Connector {
 
     private static ConnectionAdapter newConnection(String url, String user, String password)
             throws TemplateModelException {
-        try {
-            return new ConnectionAdapter(DriverManager.getConnection(url, user, password));
-        } catch (SQLException e) {
-            throw new TemplateModelException(e);
-        }
+        Properties info = new Properties();
+        if (user != null) info.setProperty("user", user);
+        if (password != null) info.setProperty("password", password);
+        return newConnection(url, info);
+    }
+
+
+    private static ConnectionAdapter newConnection(String url)
+            throws TemplateModelException {
+        return newConnection(url, new Properties());
+    }
+
+
+    private static ConnectionAdapter newConnection() throws TemplateModelException {
+        return newConnection("jdbc:default:connection");
     }
 
 
@@ -74,12 +89,25 @@ public class Connector {
      * This class implements an FTL method named {@code new_connection} that gets a new {@link java.sql.Connection} from
      * the {@link DriverManager} and wraps it into a {@link ConnectionAdapter}.
      *
-     * <p>Method definition: {@code ConnectionAdapter new_connection(String url, String user, String password)}
+     * <p>Method definition: {@code ConnectionAdapter new_connection(String url, TemplateHashModel info)}
+     * <p>Method arguments:
+     * <pre>
+     *     {@code url} - a database url of the form <code>jdbc:<em>subprotocol</em>:<em>subname</em></code>
+     *     {@code info} - a list of arbitrary string tag/value pairs as connection arguments
+     * </pre>
+     *
+     * <p>Method overloading: {@code ConnectionAdapter new_connection(String url, String user, String password)}
      * <p>Method arguments:
      * <pre>
      *     {@code url} - a database url of the form <code>jdbc:<em>subprotocol</em>:<em>subname</em></code>
      *     {@code user} - the database user on whose behalf the connection is being made
      *     {@code password} - the user's password
+     * </pre>
+     *
+     * <p>Method overloading: {@code ConnectionAdapter new_connection(String url)}.
+     * <p>Method arguments:
+     * <pre>
+     *     {@code url} - a database url of the form <code>jdbc:<em>subprotocol</em>:<em>subname</em></code>
      * </pre>
      *
      * <p>Method overloading: {@code ConnectionAdapter new_connection()}. Returns the driver's default connection with
@@ -89,7 +117,9 @@ public class Connector {
      * <pre>
      * {@code
      * <#assign inner_conn = new_connection()/>
-     * <#assign ext_conn = new_connection("jdbc:oracle:thin@//localhost:1521/orcl", "scott", "tiger")/>
+     * <#assign ext_conn1 = new_connection("jdbc:oracle:thin:scott/tiger@//localhost:1521/orcl")/>
+     * <#assign ext_conn2 = new_connection("jdbc:oracle:thin:@//localhost:1521/orcl", "scott", "tiger")/>
+     * <#assign ext_conn3 = new_connection("jdbc:oracle:thin:@//localhost:1521/orcl", {"user" : "scott", "password" : "tiger"}/>
      * }
      * </pre>
      */
@@ -97,23 +127,70 @@ public class Connector {
 
         public Object exec(List args) throws TemplateModelException {
 
+            if (args.size() > 3) {
+                throw new TemplateModelException("Wrong number of arguments: expected 0 to 3, got " + args.size());
+            }
+
             if (args.size() == 0) {
                 return newConnection();
             }
 
-            if (args.size() != 3) {
-                throw new TemplateModelException("Wrong number of arguments: expected 0 or 3, got " + args.size());
+            if (args.size() == 1) {
+                Object o = args.get(0);
+                String url;
+                if (!(o instanceof TemplateScalarModel)) {
+                    throw new TemplateModelException("Illegal type of argument #1: "
+                            + "expected string, got " + o.getClass().getName());
+                }
+                url = ((TemplateScalarModel) o).getAsString();
+                return newConnection(url);
             }
 
+            if (args.size() == 2) {
+                Object o = args.get(0);
+                String url;
+                if (!(o instanceof TemplateScalarModel)) {
+                    throw new TemplateModelException("Illegal type of argument #1: "
+                            + "expected string, got " + o.getClass().getName());
+                }
+                url = ((TemplateScalarModel) o).getAsString();
+
+                o = args.get(1);
+                Properties info = new Properties();
+                if (!(o instanceof TemplateHashModelEx)) {
+                    throw new TemplateModelException("Illegal type of argument #2: "
+                            + "expected hash, got " + o.getClass().getName());
+                }
+                TemplateHashModelEx hash = (TemplateHashModelEx) o;
+                TemplateModelIterator it = hash.keys().iterator();
+                while (it.hasNext()) {
+                    Object keyObj = it.next();
+                    if (!(keyObj instanceof TemplateScalarModel)) {
+                        throw new TemplateModelException("Illegal type of property key: "
+                                + "expected string, got " + keyObj.getClass().getName());
+                    }
+                    String key = ((TemplateScalarModel) keyObj).getAsString();
+                    Object valObj = hash.get(key);
+                    if (!(valObj instanceof TemplateScalarModel)) {
+                        throw new TemplateModelException("Illegal type of property value: "
+                                + "expected string, got " + valObj.getClass().getName());
+                    }
+                    String val = ((TemplateScalarModel) valObj).getAsString();
+                    info.setProperty(key, val);
+                }
+
+                return newConnection(url, info);
+            }
+
+            // else if args.size() == 3
             String[] strArgs = new String[3];
             for (int i = 0; i < 3; i++) {
                 Object o = args.get(i);
-                if (o instanceof TemplateScalarModel) {
-                    strArgs[i] = ((TemplateScalarModel) o).getAsString();
-                } else {
+                if (!(o instanceof TemplateScalarModel)) {
                     throw new TemplateModelException("Illegal type of argument #" + (i + 1) + ": "
-                            + "expected string, got " + args.get(i).getClass().getName());
+                            + "expected string, got " + o.getClass().getName());
                 }
+                strArgs[i] = ((TemplateScalarModel) o).getAsString();
             }
 
             String url = strArgs[0];

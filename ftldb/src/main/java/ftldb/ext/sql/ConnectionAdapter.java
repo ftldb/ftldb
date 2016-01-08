@@ -23,7 +23,8 @@ import java.util.Map;
 
 
 /**
- * This class is a wrapper for working with JDBC connections in FTL.
+ * This class is a wrapper for working with JDBC connections in FTL. Some basic methods are accessible directly, the
+ * others can be invoked via the inner JDBC connection instance.
  */
 public class ConnectionAdapter {
 
@@ -120,6 +121,26 @@ public class ConnectionAdapter {
      */
     public Map exec(String statement, Map inBinds, Map outBinds) throws SQLException {
         return call(statement, inBinds, outBinds);
+    }
+
+
+    /**
+     * Commits transaction in the inner JDBC connection.
+     *
+     * @throws SQLException if a database access error occurs
+     */
+    public void commit() throws SQLException {
+        connection.commit();
+    }
+
+
+    /**
+     * Rollbacks transaction in the inner JDBC connection.
+     *
+     * @throws SQLException if a database access error occurs
+     */
+    public void rollback() throws SQLException {
+        connection.rollback();
     }
 
 
