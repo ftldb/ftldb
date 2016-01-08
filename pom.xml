@@ -7,7 +7,7 @@
 
     <groupId>ftldb</groupId>
     <artifactId>ftldb-root</artifactId>
-    <version>1.5.0-nightly</version>
+    <version>1.5.0-RC</version>
     <packaging>pom</packaging>
 
     <modules>

@@ -8,7 +8,7 @@
     <parent>
         <groupId>ftldb</groupId>
         <artifactId>ftldb-root</artifactId>
-        <version>1.5.0-nightly</version>
+        <version>1.5.0-RC</version>
     </parent>
 
     <artifactId>freemarker</artifactId>
@@ -38,10 +38,10 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>${project.basedir}/src/**</include>
+                        <include>src/**</include>
                     </includes>
                     <excludes>
-                        <exclude>${project.basedir}/src/main/java/freemarker/cache/TemplateNameFormat*</exclude>
+                        <exclude>src/main/java/freemarker/cache/TemplateNameFormat*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
