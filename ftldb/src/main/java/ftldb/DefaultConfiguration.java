@@ -69,6 +69,7 @@ public class DefaultConfiguration extends Configuration {
         setSharedVariable("static", new StaticMethod());
         setSharedVariable("template", new TemplateHelper.TemplateDirective());
         setSharedVariable("template_name", new TemplateHelper.TemplateNameMethod());
+        setSharedVariable("template_dirname", new TemplateHelper.TemplateDirnameMethod());
         setSharedVariable("template_line", new TemplateHelper.TemplateLineMethod());
         setSharedVariable("new_connection", new Connector.NewConnectionMethod());
         setSharedVariable("default_connection", new Connector.GetDefaultConnectionMethod());

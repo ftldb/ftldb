@@ -33,7 +33,7 @@ public class TemplateProcessorTest {
     }
 
     private static String processBody(String templBody) throws Exception {
-        Configurator.setConfiguration(new ftldb.DefaultConfiguration());
+        Configurator.setConfiguration(new FileInputStream(new File("config/ftldb_config.xml")));
         Configurator.getConfiguration().setDefaultEncoding("UTF-8");
         StringWriter sw = new StringWriter();
         TemplateProcessor.process(new StringReader(templBody), sw);
@@ -61,7 +61,7 @@ public class TemplateProcessorTest {
 
     @Test
     public void testInclude() throws Exception {
-        process("@ftldb/test_include.ftl");
+        process("@ftldb/include/test_include.ftl");
     }
 
     @Test

@@ -18,6 +18,7 @@ package ftldb.ext;
 
 import freemarker.core.Environment;
 import freemarker.core.EnvironmentInternalsAccessor;
+import freemarker.core.TemplateElement;
 import freemarker.log.Logger;
 import freemarker.template.*;
 
@@ -90,10 +91,15 @@ public class TemplateHelper {
 
 
     /**
-     * This class implements an FTL method named {@code template_name} that returns the current template name. No arguments
-     * are needed.
+     * This class implements an FTL method named {@code template_name} that returns the name of a template at the
+     * specified stack depth: {@code 0} - current template, {@code +N} - N-th stack element from the top, {@code -N} -
+     * N-th stack element from the bottom.
      *
-     * <p>Method definition: {@code String template_name()}
+     * <p>Method definition: {@code template_name(int depth)}
+     * <p>Method arguments:
+     * <pre>
+     *     {@code depth} - call stack depth (optional)
+     * </pre>
      *
      * <p>Usage examples in FTL:
      * <pre>
@@ -105,10 +111,62 @@ public class TemplateHelper {
     public static class TemplateNameMethod implements TemplateMethodModelEx {
 
         public Object exec(List args) throws TemplateModelException {
-            if (args.size() != 0) {
-                throw new TemplateModelException("No arguments needed");
+
+            if (args.size() > 1) {
+                throw new TemplateModelException("Wrong number of arguments: expected 0 or 1, got " + args.size());
             }
-            return Environment.getCurrentEnvironment().getCurrentTemplate().getName();
+
+            int depth;
+
+            if (args.size() == 1) {
+                Object o = args.get(0);
+
+                if (!(o instanceof TemplateNumberModel)) {
+                    throw new TemplateModelException("Illegal type of argument: expected int, got " +
+                            o.getClass().getName());
+                }
+
+                depth = ((TemplateNumberModel) o).getAsNumber().intValue();
+            } else {
+                depth = 0;
+            }
+
+            TemplateElement[] stack = EnvironmentInternalsAccessor.getInstructionStackSnapshot();
+            int ln = stack.length;
+
+            if (depth > ln - 1 || depth < -ln) return null;
+
+            if (depth < 0) depth = ln + depth;
+
+            return stack[depth].getTemplate().getName();
+
+        }
+
+    }
+
+
+    /**
+     * This class implements an FTL method named {@code template_dirname} that returns the dirname of a template at the
+     * specified stack depth: {@code 0} - current template, {@code +N} - N-th stack element from the top, {@code -N} -
+     * N-th stack element from the bottom. Dirname is returned only for templates prefixed with @-sign if they have
+     * a parent dir (see loaders {@link ftldb.FileTemplateLoader}, {@link ftldb.ResourceTemplateLoader},
+     * {@link ftldb.oracle.DatabaseTemplateLoader}).
+     *
+     * <p>Method definition: {@code template_dirname(int depth)}
+     * <p>Method arguments:
+     * <pre>
+     *     {@code depth} - call stack depth (optional)
+     * </pre>
+     */
+    public static class TemplateDirnameMethod implements TemplateMethodModelEx {
+
+        public Object exec(List args) throws TemplateModelException {
+
+            String templateName = (String) new TemplateNameMethod().exec(args);
+            return (templateName.matches("@.+/.+"))
+                    ? templateName.substring(1, templateName.lastIndexOf('/'))
+                    : "";
+
         }
 
     }

@@ -15,8 +15,19 @@
     limitations under the License.
 
 -->
-<@template name = "@ftldb/test_include.ftl"/>
--- ${template_name()} START --
-Include another template:
-<#include "@@test_included.ftl">
--- ${template_name()} END --
+<@template name = "@ftldb/include/mylib.ftl"/>
+
+<#import "@ftldb/std.ftl" as std/>
+
+<#macro include1 name>
+######## including ${name} ########
+  <@std.include name = name skip = 1/>
+##########################################################
+</#macro>
+
+<#macro include2 name>
+======== including ${name} ========
+  <#local name = std.to_abs_name(name, 1)/>
+  <#include name/>
+==========================================================
+</#macro>

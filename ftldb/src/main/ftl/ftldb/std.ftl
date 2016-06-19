@@ -211,6 +211,31 @@
 
 
 <#--
+-- Converts a relative name to an absolute name for templates referenced via @@.
+-- Analyzes the call stack, skips some levels until finds the proper parent,
+-- then uses its dirname as a base for the specified template.
+--
+-- @param  name  the template name
+-- @param  skip  extra stack levels to skip (if called from another func/macro)
+-->
+<#function to_abs_name
+  name
+  skip = 0
+>
+  <#if name?starts_with('@@')>
+    <#local parent_dir_name = template_dirname(skip + 1)!''/>
+    <#if parent_dir_name == ''>
+      <#return name[1..]/>
+    <#else/>
+      <#return '@' + parent_dir_name + '/' + name[2..]/>
+    </#if>
+  <#else/>
+    <#return name/>
+  </#if>
+</#function>
+
+
+<#--
 -- Includes the specified template passing the specified arguments to it. This
 -- macro should be used instead of the built-in #include directive for including
 -- parameterized templates that use the "template_args" shared variable inside.
@@ -221,6 +246,8 @@
 --                         is not found, otherwise does
 -- @param  parse           if true processes the template, otherwise only prints
 -- @param  encoding        overrides the encoding of the top-level template
+-- @param  skip            extra stack levels to skip while determining the
+--                         proper abs path of the included template
 -->
 <#macro include
   name
@@ -228,7 +255,9 @@
   ignore_missing = false
   parse = true
   encoding = ''
+  skip = 0
 >
+  <#local name = to_abs_name(name, skip + 1)/>
   <#local template_args = args/>
   <#if encoding == ''>
     <#include
