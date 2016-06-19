@@ -109,22 +109,6 @@ public class ConnectionAdapter {
 
 
     /**
-     * Executes a callable statement with the aid of the inner {@link CallExecutor}.
-     *
-     * @deprecated The old name of the {@link #call(String, Map, Map)} method.
-     *
-     * @param statement the callable statement to be executed
-     * @param inBinds the map of in bind variable indices to their values
-     * @param outBinds the map of out bind variable indices to their types
-     * @return the map of out bind variable indices to their values
-     * @throws SQLException if a database access error occurs
-     */
-    public Map exec(String statement, Map inBinds, Map outBinds) throws SQLException {
-        return call(statement, inBinds, outBinds);
-    }
-
-
-    /**
      * Commits transaction in the inner JDBC connection.
      *
      * @throws SQLException if a database access error occurs
