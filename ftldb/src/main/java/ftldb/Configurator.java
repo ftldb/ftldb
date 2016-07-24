@@ -73,19 +73,22 @@ public class Configurator {
                         : new RuntimeException(e);
             }
         });
-        Object obj;
-        do {
+        Configuration cfg = null;
+        for (;;) {
             try {
-                obj = decoder.readObject();
+                Object obj = decoder.readObject();
+                if (obj instanceof Configuration) {
+                    cfg = (Configuration) obj;
+                }
             } catch (ArrayIndexOutOfBoundsException e) {
-                obj = null;
+                break;
             }
-            if (obj == null) {
-                throw new RuntimeException("Provided XML contains no " + Configuration.class.getName() + " objects");
-            }
-        } while (!(obj instanceof Configuration));
+        }
+        if (cfg == null) {
+            throw new RuntimeException("Provided XML contains no " + Configuration.class.getName() + " objects");
+        }
         decoder.close();
-        return (Configuration) obj;
+        return cfg;
     }
 
 
