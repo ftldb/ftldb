@@ -141,42 +141,62 @@ public class ShellCommandExecutor {
 
     private static Map executeCommand(String[] cmdArray, String encoding) throws Exception {
 
-        Process p;
+        List stdoutLines = new ArrayList();
+        Exception[] stdoutEx = new Exception[1];
+        List stderrLines = new ArrayList();
+        Exception[] stderrEx = new Exception[1];
+
         Map result = new HashMap(2, 1);
 
-        p = (cmdArray.length == 1)
+        Process p = (cmdArray.length == 1)
                 ? Runtime.getRuntime().exec(cmdArray[0])
                 : Runtime.getRuntime().exec(cmdArray);
+
+        Thread stdoutT = readStandardStream(p.getInputStream(), encoding, stdoutLines, stdoutEx);
+        Thread stderrT = readStandardStream(p.getErrorStream(), encoding, stderrLines, stderrEx);
+
         p.waitFor();
-        result.put("stdout", readStandardStream(p.getInputStream(), encoding));
-        result.put("stderr", readStandardStream(p.getErrorStream(), encoding));
+        stdoutT.join();
+        stderrT.join();
+
+        if (stdoutEx[0] != null) throw stdoutEx[0];
+        if (stderrEx[0] != null) throw stderrEx[0];
+
+        result.put("stdout", stdoutLines.toArray(new String[stdoutLines.size()]));
+        result.put("stderr", stderrLines.toArray(new String[stderrLines.size()]));
 
         return result;
-
     }
 
 
-    private static String[] readStandardStream(InputStream stream, String encoding) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream, encoding));
+    private static Thread readStandardStream(final InputStream stream, final String encoding, final List messages,
+                                             final Exception[] ex) {
+        Thread ret = new Thread(
+                new Runnable() {
+                    public void run() {
+                        try {
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, encoding));
+                            String line;
+                            try {
+                                while ((line = reader.readLine()) != null) {
+                                    messages.add(line);
+                                }
+                            } catch (IOException e) {
+                                try {
+                                    reader.close();
+                                } catch (IOException e2) {
+                                }
+                                ex[0] = e;
+                            }
 
-        List lines = new ArrayList(16);
-        String line;
-
-        try {
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-        } catch (IOException e) {
-            try {
-                reader.close();
-            } catch (IOException e2) {
-                throw (IOException) e2.initCause(e);
-            }
-            throw e;
-        }
-        reader.close();
-
-        return (String[]) lines.toArray(new String[lines.size()]);
+                        } catch (Exception e) {
+                            ex[0] = e;
+                        }
+                    }
+                }
+        );
+        ret.start();
+        return ret;
     }
 
 
