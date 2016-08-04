@@ -8,7 +8,7 @@
     <parent>
         <groupId>ftldb</groupId>
         <artifactId>ftldb-root</artifactId>
-        <version>1.5.0-RC</version>
+        <version>1.5.0</version>
     </parent>
 
     <artifactId>ftldb-ora</artifactId>
